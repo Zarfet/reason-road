@@ -30,12 +30,12 @@ export default function Landing() {
             transition={{ duration: 0.6 }}
           >
             <motion.div 
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-nexus-emerald-light text-accent text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-nexus-emerald-light text-foreground text-sm font-medium"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-4 w-4 text-accent" />
               Evidence-based interface selection
             </motion.div>
 
