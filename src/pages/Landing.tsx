@@ -78,6 +78,7 @@ export default function Landing() {
 
         {/* Features */}
         <section className="py-16">
+          <h2 className="sr-only">Key Features</h2>
           <motion.div 
             className="grid md:grid-cols-3 gap-8"
             initial={{ opacity: 0, y: 30 }}
