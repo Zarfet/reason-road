@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Target, Download, ArrowLeft, Check, X, AlertTriangle } from 'lucide-react';
@@ -7,6 +7,34 @@ import { Card } from '@/components/ui/card';
 import { useAssessment } from '@/context/AssessmentContext';
 import { PARADIGM_LABELS, PARADIGM_DESCRIPTIONS } from '@/types/assessment';
 import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
+
+/**
+ * Safely renders markdown bold syntax (**text**) as React elements
+ * without using dangerouslySetInnerHTML to prevent XSS attacks
+ */
+function renderBoldMarkdown(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const regex = /\*\*(.*?)\*\*/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Add the bold text
+    parts.push(<strong key={match.index}>{match[1]}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+
+  // Add remaining text after last match
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
+}
 
 export default function Results() {
   const navigate = useNavigate();
@@ -143,10 +171,9 @@ export default function Results() {
                 {reasoningBullets.map((bullet, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                    <span 
-                      className="text-foreground"
-                      dangerouslySetInnerHTML={{ __html: bullet.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
-                    />
+                    <span className="text-foreground">
+                      {renderBoldMarkdown(bullet)}
+                    </span>
                   </li>
                 ))}
               </ul>
