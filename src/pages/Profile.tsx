@@ -25,9 +25,20 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, ArrowLeft, User, Calendar, LogOut, FileText, Loader2 } from 'lucide-react';
+import { Target, ArrowLeft, User, Calendar, LogOut, FileText, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,6 +64,7 @@ export default function Profile() {
   
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   /**
    * Fetch user's assessments from database
@@ -107,6 +119,39 @@ export default function Profile() {
         description: 'You have been logged out successfully.',
       });
       navigate('/');
+    }
+  };
+
+  /**
+   * Handle assessment deletion
+   */
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    setDeletingId(assessmentId);
+    
+    try {
+      const { error } = await supabase
+        .from('assessments')
+        .delete()
+        .eq('id', assessmentId);
+
+      if (error) {
+        console.error('Error deleting assessment:', error);
+        toast({
+          title: 'Error',
+          description: 'Could not delete the assessment.',
+          variant: 'destructive',
+        });
+      } else {
+        setAssessments(prev => prev.filter(a => a.id !== assessmentId));
+        toast({
+          title: 'Deleted',
+          description: 'Assessment deleted successfully.',
+        });
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -256,15 +301,50 @@ export default function Profile() {
                               </div>
                             </div>
                           </div>
-                          {assessment.is_completed && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => navigate(`/results/${assessment.id}`)}
-                            >
-                              View Results
-                            </Button>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {assessment.is_completed && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => navigate(`/results/${assessment.id}`)}
+                              >
+                                View Results
+                              </Button>
+                            )}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  disabled={deletingId === assessment.id}
+                                >
+                                  {deletingId === assessment.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Assessment</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this assessment? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteAssessment(assessment.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
