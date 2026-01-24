@@ -58,33 +58,99 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = "Chart";
 
+/**
+ * Validates a CSS color value to prevent injection attacks.
+ * Only allows safe color formats: hex, rgb, rgba, hsl, hsla, and named colors.
+ */
+function isValidCSSColor(color: string): boolean {
+  // Allow hex colors: #fff, #ffffff, #ffffffff
+  if (/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(color)) {
+    return true;
+  }
+  // Allow rgb/rgba: rgb(255, 255, 255), rgba(255, 255, 255, 0.5)
+  if (/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*(0|1|0?\.\d+))?\s*\)$/.test(color)) {
+    return true;
+  }
+  // Allow hsl/hsla: hsl(360, 100%, 50%), hsla(360, 100%, 50%, 0.5)
+  if (/^hsla?\(\s*\d{1,3}\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*(,\s*(0|1|0?\.\d+))?\s*\)$/.test(color)) {
+    return true;
+  }
+  // Allow CSS variable references: var(--color-name)
+  if (/^var\(--[a-zA-Z0-9-]+\)$/.test(color)) {
+    return true;
+  }
+  // Allow common named colors (subset for safety)
+  const namedColors = [
+    'transparent', 'currentColor', 'inherit',
+    'black', 'white', 'red', 'green', 'blue', 'yellow', 'orange', 'purple', 'pink', 'gray', 'grey'
+  ];
+  if (namedColors.includes(color.toLowerCase())) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Sanitizes a CSS key to prevent injection.
+ * Only allows alphanumeric characters, hyphens, and underscores.
+ */
+function sanitizeCSSKey(key: string): string {
+  return key.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+/**
+ * ChartStyle component - Injects CSS custom properties for chart theming.
+ * Uses React's useInsertionEffect for safe, validated CSS injection.
+ */
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(([_, config]) => config.theme || config.color);
 
-  if (!colorConfig.length) {
-    return null;
-  }
+  React.useInsertionEffect(() => {
+    if (!colorConfig.length) {
+      return;
+    }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
-}
-`,
-          )
-          .join("\n"),
-      }}
-    />
-  );
+    // Sanitize the chart ID to prevent selector injection
+    const sanitizedId = id.replace(/[^a-zA-Z0-9_-]/g, '');
+    
+    // Build CSS rules safely with validation
+    const cssRules = Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        const properties = colorConfig
+          .map(([key, itemConfig]) => {
+            const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+            if (color && isValidCSSColor(color)) {
+              const sanitizedKey = sanitizeCSSKey(key);
+              return `  --color-${sanitizedKey}: ${color};`;
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .join('\n');
+        
+        return properties ? `${prefix} [data-chart=${sanitizedId}] {\n${properties}\n}` : null;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    if (!cssRules) {
+      return;
+    }
+
+    // Create and insert style element
+    const styleElement = document.createElement('style');
+    styleElement.setAttribute('data-chart-style', sanitizedId);
+    styleElement.textContent = cssRules;
+    document.head.appendChild(styleElement);
+
+    // Cleanup on unmount
+    return () => {
+      styleElement.remove();
+    };
+  }, [id, colorConfig]);
+
+  // No DOM output - styles are injected via useInsertionEffect
+  return null;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
