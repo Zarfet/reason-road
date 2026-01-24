@@ -25,7 +25,7 @@ export type Database = {
           responses: Json | null
           time_to_complete_seconds: number | null
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           agreement_rating?: number | null
@@ -37,7 +37,7 @@ export type Database = {
           responses?: Json | null
           time_to_complete_seconds?: number | null
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           agreement_rating?: number | null
@@ -49,7 +49,7 @@ export type Database = {
           responses?: Json | null
           time_to_complete_seconds?: number | null
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
