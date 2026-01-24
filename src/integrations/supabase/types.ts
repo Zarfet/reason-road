@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assessments: {
+        Row: {
+          agreement_rating: number | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          paradigm_results: Json | null
+          pdf_downloaded: boolean | null
+          responses: Json | null
+          time_to_complete_seconds: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          agreement_rating?: number | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          paradigm_results?: Json | null
+          pdf_downloaded?: boolean | null
+          responses?: Json | null
+          time_to_complete_seconds?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          agreement_rating?: number | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          paradigm_results?: Json | null
+          pdf_downloaded?: boolean | null
+          responses?: Json | null
+          time_to_complete_seconds?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
