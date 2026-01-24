@@ -1,24 +1,55 @@
+/**
+ * NEXUS - Landing Page
+ * 
+ * Purpose: Home page introducing the NEXUS assessment tool
+ * 
+ * Features:
+ * - Hero section with value proposition
+ * - Feature cards highlighting key benefits
+ * - Step-by-step process overview
+ * - Auth-aware CTA button
+ * 
+ * SEO:
+ * - H1 contains main keyword
+ * - Semantic HTML structure
+ * - Descriptive content
+ * 
+ * Auth Integration:
+ * - Checks if user is logged in
+ * - CTA changes based on auth state:
+ *   - Logged in: "Continue to Assessment" → /assessment
+ *   - Not logged in: "Start Assessment" → /auth
+ * 
+ * Dependencies: framer-motion, react-router-dom, useAuth hook
+ */
+
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, Target, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Navbar } from '@/components/layout/Navbar';
+import { useAuth } from '@/hooks/useAuth';
 
+/**
+ * Landing page component
+ * Main entry point for the NEXUS application
+ */
 export default function Landing() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  /**
+   * Handle CTA button click
+   * Navigates to assessment (auth handled by ProtectedRoute)
+   */
+  const handleStartAssessment = () => {
+    navigate('/assessment');
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="nexus-container py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
-              <Target className="h-4 w-4 text-accent-foreground" />
-            </div>
-            <span className="font-semibold text-lg text-foreground">NEXUS</span>
-          </div>
-        </div>
-      </header>
+      {/* Navbar with auth state */}
+      <Navbar />
 
       {/* Hero Section */}
       <main className="nexus-container pb-20">
@@ -29,6 +60,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {/* Badge */}
             <motion.div 
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-nexus-emerald-light text-foreground text-sm font-medium"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -39,6 +71,7 @@ export default function Landing() {
               Evidence-based interface selection
             </motion.div>
 
+            {/* Headline */}
             <motion.h1 
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight"
               initial={{ opacity: 0, y: 20 }}
@@ -50,6 +83,7 @@ export default function Landing() {
               {' '}on Wrong Interface Choices
             </motion.h1>
 
+            {/* Subheadline */}
             <motion.p 
               className="text-xl text-muted-foreground max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
@@ -59,6 +93,7 @@ export default function Landing() {
               Evidence-based paradigm selection in 5 minutes. Get a multi-modal recommendation backed by 47+ research papers.
             </motion.p>
 
+            {/* CTA Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -67,16 +102,17 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 className="gap-2 px-8 py-6 text-lg bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
-                onClick={() => navigate('/assessment')}
+                onClick={handleStartAssessment}
+                disabled={loading}
               >
-                Start Assessment
+                {loading ? 'Loading...' : user ? 'Continue to Assessment' : 'Start Assessment'}
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </motion.div>
           </motion.div>
         </section>
 
-        {/* Features */}
+        {/* Features Section */}
         <section className="py-16">
           <h2 className="sr-only">Key Features</h2>
           <motion.div 
@@ -103,7 +139,7 @@ export default function Landing() {
           </motion.div>
         </section>
 
-        {/* How it works */}
+        {/* How It Works Section */}
         <section className="py-16">
           <motion.div 
             className="text-center space-y-12"
@@ -135,6 +171,13 @@ export default function Landing() {
   );
 }
 
+/**
+ * Feature card component for highlighting key benefits
+ * 
+ * @param icon - Lucide icon component
+ * @param title - Feature title
+ * @param description - Feature description
+ */
 function FeatureCard({ 
   icon, 
   title, 
@@ -159,6 +202,13 @@ function FeatureCard({
   );
 }
 
+/**
+ * Step card component for the process overview
+ * 
+ * @param number - Step number (1-4)
+ * @param title - Step title
+ * @param description - Step description
+ */
 function StepCard({ 
   number, 
   title, 
