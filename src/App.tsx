@@ -39,6 +39,7 @@ const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Assessment = lazy(() => import("./pages/Assessment"));
 const Results = lazy(() => import("./pages/Results"));
+const SavedResults = lazy(() => import("./pages/SavedResults"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -93,6 +94,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/results/:id" 
+                element={
+                  <ProtectedRoute>
+                    <SavedResults />
                   </ProtectedRoute>
                 } 
               />
