@@ -1,7 +1,7 @@
 import { useEffect, ReactNode, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, Download, ArrowLeft, Check, X, AlertTriangle } from 'lucide-react';
+import { Target, Download, ArrowLeft, Check, X, AlertTriangle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAssessment } from '@/context/AssessmentContext';
@@ -95,10 +95,16 @@ export default function Results() {
               </div>
               <span className="font-semibold text-lg text-foreground">NEXUS</span>
             </div>
-            <Button variant="outline" size="sm" onClick={handleStartOver}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Start Over
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
+                <User className="h-4 w-4 mr-2" />
+                My Assessments
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleStartOver}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Start Over
+              </Button>
+            </div>
           </div>
         </div>
       </header>
