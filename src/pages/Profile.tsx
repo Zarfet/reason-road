@@ -260,13 +260,7 @@ export default function Profile() {
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => {
-                                // TODO: Implement view results with saved data
-                                toast({
-                                  title: 'Coming soon',
-                                  description: 'Viewing saved results will be available soon.',
-                                });
-                              }}
+                              onClick={() => navigate(`/results/${assessment.id}`)}
                             >
                               View Results
                             </Button>
