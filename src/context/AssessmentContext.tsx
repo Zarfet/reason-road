@@ -34,10 +34,12 @@
  * Dependencies: scoring.ts, assessment types
  */
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import type { AssessmentAnswers, WizardStep, RecommendationResult } from '@/types/assessment';
 import { WIZARD_STEPS, DESIGN_VALUES } from '@/types/assessment';
 import { calculateScores, generateRecommendation } from '@/lib/scoring';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 /**
  * Context type definition
@@ -59,10 +61,12 @@ interface AssessmentContextType {
   // Data actions
   updateAnswer: <K extends keyof AssessmentAnswers>(key: K, value: AssessmentAnswers[K]) => void;
   completeAssessment: () => void;
+  saveAssessmentToDb: () => Promise<{ success: boolean; error?: string }>;
   resetAssessment: () => void;
   
   // Computed values
   progress: number;
+  isSaving: boolean;
   canProceed: boolean;
 }
 
@@ -99,6 +103,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   const [answers, setAnswers] = useState<AssessmentAnswers>(initialAnswers);
   const [isComplete, setIsComplete] = useState(false);
   const [recommendation, setRecommendation] = useState<RecommendationResult | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Track assessment start time for time_to_complete calculation
+  const startTimeRef = useRef<number>(Date.now());
 
   // Derived state
   const currentStepName = WIZARD_STEPS[currentStep];
@@ -194,6 +202,58 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   }, [answers]);
 
   /**
+   * Save the assessment to the database
+   * Should be called after completeAssessment
+   */
+  const saveAssessmentToDb = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+    if (!recommendation) {
+      return { success: false, error: 'No recommendation available' };
+    }
+
+    setIsSaving(true);
+    
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        return { success: false, error: 'User not authenticated' };
+      }
+
+      // Calculate time to complete in seconds
+      const timeToComplete = Math.round((Date.now() - startTimeRef.current) / 1000);
+
+      // Insert the assessment
+      const { error } = await supabase
+        .from('assessments')
+        .insert([{
+          user_id: user.id,
+          responses: JSON.parse(JSON.stringify(answers)) as Json,
+          paradigm_results: JSON.parse(JSON.stringify(recommendation)) as Json,
+          is_completed: true,
+          time_to_complete_seconds: timeToComplete,
+        }]);
+
+      if (error) {
+        console.error('Error saving assessment:', error);
+        return { success: false, error: error.message };
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✓ Assessment saved to database');
+      }
+
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error saving assessment:', errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSaving(false);
+    }
+  }, [answers, recommendation]);
+
+  /**
    * Reset all assessment state
    * Used when starting a new assessment
    */
@@ -202,6 +262,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     setAnswers(initialAnswers);
     setIsComplete(false);
     setRecommendation(null);
+    startTimeRef.current = Date.now(); // Reset timer
   }, []);
 
   const value: AssessmentContextType = {
@@ -215,9 +276,11 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
     goToStep,
     updateAnswer,
     completeAssessment,
+    saveAssessmentToDb,
     resetAssessment,
     progress,
     canProceed,
+    isSaving,
   };
 
   return (

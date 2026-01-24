@@ -1,4 +1,4 @@
-import { useEffect, ReactNode } from 'react';
+import { useEffect, ReactNode, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Target, Download, ArrowLeft, Check, X, AlertTriangle } from 'lucide-react';
@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { useAssessment } from '@/context/AssessmentContext';
 import { PARADIGM_LABELS, PARADIGM_DESCRIPTIONS } from '@/types/assessment';
 import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Safely renders markdown bold syntax (**text**) as React elements
@@ -38,13 +39,37 @@ function renderBoldMarkdown(text: string): ReactNode[] {
 
 export default function Results() {
   const navigate = useNavigate();
-  const { recommendation, answers, isComplete, resetAssessment } = useAssessment();
+  const { toast } = useToast();
+  const { recommendation, answers, isComplete, resetAssessment, saveAssessmentToDb } = useAssessment();
+  const hasSavedRef = useRef(false);
 
   useEffect(() => {
     if (!isComplete || !recommendation) {
       navigate('/assessment');
     }
   }, [isComplete, recommendation, navigate]);
+
+  // Save assessment to database when results are shown
+  useEffect(() => {
+    const saveAssessment = async () => {
+      if (isComplete && recommendation && !hasSavedRef.current) {
+        hasSavedRef.current = true;
+        const result = await saveAssessmentToDb();
+        
+        if (result.success) {
+          toast({
+            title: "Assessment guardado",
+            description: "Tu evaluación ha sido guardada exitosamente.",
+          });
+        } else if (result.error) {
+          console.error('Failed to save assessment:', result.error);
+          // Don't show error toast to avoid disrupting the user experience
+        }
+      }
+    };
+    
+    saveAssessment();
+  }, [isComplete, recommendation, saveAssessmentToDb, toast]);
 
   if (!recommendation) {
     return null;
