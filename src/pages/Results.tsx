@@ -24,6 +24,7 @@ import { StepIndicator } from '@/components/results/StepIndicator';
 import { ResultsHero } from '@/components/results/ResultsHero';
 import { ReasoningPanel } from '@/components/results/ReasoningPanel';
 import { AlternativesPanel } from '@/components/results/AlternativesPanel';
+import { ResearchPanel } from '@/components/results/ResearchPanel';
 
 export default function Results() {
   const navigate = useNavigate();
@@ -120,9 +121,13 @@ export default function Results() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Left Column - Why This Recommendation */}
-          <div className="lg:col-span-3">
+          {/* Left Column - Why This Recommendation + Research */}
+          <div className="lg:col-span-3 space-y-6">
             <ReasoningPanel bullets={reasoningBullets} redFlags={redFlags} />
+            <ResearchPanel 
+              paradigm={recommendation.primary.paradigm}
+              userDemographics={answers.userDemographics}
+            />
           </div>
 
           {/* Right Column - Alternatives */}
