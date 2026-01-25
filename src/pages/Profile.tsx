@@ -276,7 +276,10 @@ export default function Profile() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Card className="nexus-card hover:border-accent/30 transition-colors cursor-pointer">
+                    <Card 
+                      className="nexus-card hover:border-accent/30 transition-colors cursor-pointer"
+                      onClick={() => assessment.is_completed && navigate(`/results/${assessment.id}`)}
+                    >
                       <CardContent className="py-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
@@ -302,15 +305,6 @@ export default function Profile() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {assessment.is_completed && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => navigate(`/results/${assessment.id}`)}
-                              >
-                                View Results
-                              </Button>
-                            )}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button 
@@ -318,6 +312,7 @@ export default function Profile() {
                                   size="sm"
                                   className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                   disabled={deletingId === assessment.id}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
                                   {deletingId === assessment.id ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -326,7 +321,7 @@ export default function Profile() {
                                   )}
                                 </Button>
                               </AlertDialogTrigger>
-                              <AlertDialogContent>
+                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Delete Assessment</AlertDialogTitle>
                                   <AlertDialogDescription>
