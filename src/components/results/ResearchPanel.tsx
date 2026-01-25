@@ -110,33 +110,45 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
 
         {!loading && !error && papers.length > 0 && (
           <div className="space-y-4">
-            {papers.map((paper, index) => (
-              <motion.div
-                key={index}
-                className="p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-accent/30 transition-colors"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-foreground text-sm leading-tight mb-1">
-                      {paper.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {paper.authors} • {paper.year} • {paper.venue}
-                    </p>
-                    <p className="text-xs text-foreground/80 mb-2">
-                      {paper.abstract}
-                    </p>
-                    <p className="text-xs text-accent">
-                      → {paper.relevance}
-                    </p>
+            {papers.map((paper, index) => {
+              const searchUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(paper.title)}`;
+              
+              return (
+                <motion.div
+                  key={index}
+                  className="p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-accent/30 transition-colors"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 * index }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground text-sm leading-tight mb-1">
+                        {paper.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {paper.authors} • {paper.year} • {paper.venue}
+                      </p>
+                      <p className="text-xs text-foreground/80 mb-2">
+                        {paper.abstract}
+                      </p>
+                      <p className="text-xs text-accent">
+                        → {paper.relevance}
+                      </p>
+                    </div>
+                    <a
+                      href={searchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 mt-0.5 p-1 rounded hover:bg-accent/10 transition-colors"
+                      title="Search on Google Scholar"
+                    >
+                      <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-accent" />
+                    </a>
                   </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
             
             <p className="text-xs text-muted-foreground text-center pt-2 italic">
               Papers suggested by AI based on your assessment context
