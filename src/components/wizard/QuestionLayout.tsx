@@ -1,11 +1,5 @@
 import { motion } from 'framer-motion';
 import { Info } from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 
 interface QuestionLayoutProps {
   question: string;
@@ -22,25 +16,16 @@ export function QuestionLayout({ question, hint, children }: QuestionLayoutProps
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
         <h2 className="text-question text-foreground leading-tight">
           {question}
         </h2>
         
         {hint && (
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="hint" className="border-none">
-              <AccordionTrigger className="py-2 text-sm text-muted-foreground hover:text-foreground hover:no-underline">
-                <span className="flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  Why this matters
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground pb-0">
-                {hint}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <Info className="h-4 w-4 shrink-0 mt-0.5 text-accent" />
+            <span>{hint}</span>
+          </div>
         )}
       </div>
 
