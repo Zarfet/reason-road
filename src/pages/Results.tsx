@@ -17,6 +17,7 @@ import { Target, Download, ArrowLeft, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAssessment } from '@/context/AssessmentContext';
 import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
+import { generatePDFReport } from '@/lib/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 
 // Results components
@@ -69,6 +70,14 @@ export default function Results() {
   const handleStartOver = () => {
     resetAssessment();
     navigate('/');
+  };
+
+  const handleDownloadPDF = () => {
+    generatePDFReport({ answers, recommendation });
+    toast({
+      title: "PDF generado",
+      description: "Tu reporte ha sido descargado.",
+    });
   };
 
   return (
@@ -146,11 +155,11 @@ export default function Results() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
         >
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleDownloadPDF}>
             <Download className="h-4 w-4" />
             Download PDF Report
           </Button>
-          <Button 
+          <Button
             className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
             onClick={handleStartOver}
           >
