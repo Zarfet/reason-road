@@ -85,14 +85,14 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="flex items-center gap-2 px-2"
+                  className="flex items-center gap-2 px-2 hover:text-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 bg-accent/10">
                     <AvatarFallback className="text-sm font-medium text-accent">
                       {user.email?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline text-sm text-muted-foreground">
+                  <span className="hidden sm:inline text-sm text-muted-foreground group-hover:text-accent-foreground">
                     {user.email}
                   </span>
                 </Button>

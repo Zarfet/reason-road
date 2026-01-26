@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target } from 'lucide-react';
+import { Target, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { WizardProgress } from '@/components/wizard/WizardProgress';
 import { WizardNavigation } from '@/components/wizard/WizardNavigation';
 import { useAssessment } from '@/context/AssessmentContext';
@@ -20,10 +21,15 @@ import {
 
 export default function Assessment() {
   const navigate = useNavigate();
-  const { currentStepName } = useAssessment();
+  const { currentStepName, resetAssessment } = useAssessment();
 
   const handleComplete = () => {
     navigate('/results');
+  };
+
+  const handleCancel = () => {
+    resetAssessment();
+    navigate('/');
   };
 
   const renderStep = () => {
@@ -60,11 +66,22 @@ export default function Assessment() {
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
-              <Target className="h-4 w-4 text-accent-foreground" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
+                <Target className="h-4 w-4 text-accent-foreground" />
+              </div>
+              <span className="font-semibold text-lg text-foreground">NEXUS</span>
             </div>
-            <span className="font-semibold text-lg text-foreground">NEXUS</span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleCancel}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+              Cancel
+            </Button>
           </div>
         </div>
       </header>
