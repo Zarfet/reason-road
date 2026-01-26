@@ -27,6 +27,7 @@ import {
   type RecommendationResult,
 } from '@/types/assessment';
 import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
+import { generatePDFReport } from '@/lib/pdfGenerator';
 
 // Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
@@ -119,6 +120,14 @@ export default function SavedResults() {
   const reasoningBullets = getReasoningBullets(answers, recommendation);
   const redFlags = getRedFlags(answers, recommendation);
 
+  const handleDownloadPDF = () => {
+    generatePDFReport({ 
+      answers, 
+      recommendation, 
+      createdAt: assessment.created_at 
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -194,11 +203,11 @@ export default function SavedResults() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
         >
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleDownloadPDF}>
             <Download className="h-4 w-4" />
             Download PDF Report
           </Button>
-          <Button 
+          <Button
             className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
             onClick={() => navigate('/assessment')}
           >
