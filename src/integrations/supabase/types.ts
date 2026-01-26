@@ -23,6 +23,7 @@ export type Database = {
           paradigm_results: Json | null
           pdf_downloaded: boolean | null
           responses: Json | null
+          share_token: string | null
           time_to_complete_seconds: number | null
           updated_at: string
           user_id: string
@@ -35,6 +36,7 @@ export type Database = {
           paradigm_results?: Json | null
           pdf_downloaded?: boolean | null
           responses?: Json | null
+          share_token?: string | null
           time_to_complete_seconds?: number | null
           updated_at?: string
           user_id: string
@@ -47,6 +49,7 @@ export type Database = {
           paradigm_results?: Json | null
           pdf_downloaded?: boolean | null
           responses?: Json | null
+          share_token?: string | null
           time_to_complete_seconds?: number | null
           updated_at?: string
           user_id?: string

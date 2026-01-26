@@ -1,33 +1,31 @@
 /**
- * NEXUS - Saved Results Page
+ * NEXUS - Shared Results Page (Public)
  * 
- * Purpose: Display results of a previously saved assessment
+ * Purpose: Display results of a shared assessment without authentication
  * 
  * Features:
- * - Load assessment by ID from URL params
+ * - Load assessment by share_token from URL params
  * - Display paradigm recommendation with scores
  * - Show reasoning bullets and red flags
  * - Two-column layout with alternatives
- * - Step indicator
+ * - No edit capabilities (view only)
  * 
  * Security:
- * - Protected route (requires authentication)
- * - RLS ensures only user's own assessments are fetched
+ * - Public route (no authentication required)
+ * - RLS ensures only assessments with share_token can be viewed
  */
 
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, ArrowLeft, Download, Loader2, User } from 'lucide-react';
+import { Target, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { 
   type AssessmentAnswers,
   type RecommendationResult,
 } from '@/types/assessment';
 import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
-import { generatePDFReport } from '@/lib/pdfGenerator';
 
 // Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
@@ -35,56 +33,46 @@ import { ResultsHero } from '@/components/results/ResultsHero';
 import { ReasoningPanel } from '@/components/results/ReasoningPanel';
 import { AlternativesPanel } from '@/components/results/AlternativesPanel';
 import { ResearchPanel } from '@/components/results/ResearchPanel';
-import { ShareButton } from '@/components/results/ShareButton';
 
 interface StoredAssessment {
   id: string;
   responses: AssessmentAnswers;
   paradigm_results: RecommendationResult;
   created_at: string;
-  share_token: string | null;
 }
 
-export default function SavedResults() {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const { toast } = useToast();
+export default function SharedResults() {
+  const { token } = useParams<{ token: string }>();
   
   const [assessment, setAssessment] = useState<StoredAssessment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadAssessment() {
-      if (!id) {
-        navigate('/profile');
+    async function loadSharedAssessment() {
+      if (!token) {
+        setError('Invalid share link');
+        setLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('assessments')
-          .select('*')
-          .eq('id', id)
+          .select('id, responses, paradigm_results, created_at')
+          .eq('share_token', token)
           .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching assessment:', error);
-          toast({
-            title: 'Error',
-            description: 'Could not load the assessment.',
-            variant: 'destructive',
-          });
-          navigate('/profile');
+        if (fetchError) {
+          console.error('Error fetching shared assessment:', fetchError);
+          setError('Could not load the shared assessment.');
+          setLoading(false);
           return;
         }
 
         if (!data) {
-          toast({
-            title: 'Not found',
-            description: 'Assessment not found.',
-            variant: 'destructive',
-          });
-          navigate('/profile');
+          setError('This assessment is no longer shared or does not exist.');
+          setLoading(false);
           return;
         }
 
@@ -93,18 +81,17 @@ export default function SavedResults() {
           responses: data.responses as unknown as AssessmentAnswers,
           paradigm_results: data.paradigm_results as unknown as RecommendationResult,
           created_at: data.created_at,
-          share_token: data.share_token ?? null,
         });
       } catch (err) {
         console.error('Unexpected error:', err);
-        navigate('/profile');
+        setError('An unexpected error occurred.');
       } finally {
         setLoading(false);
       }
     }
 
-    loadAssessment();
-  }, [id, navigate, toast]);
+    loadSharedAssessment();
+  }, [token]);
 
   if (loading) {
     return (
@@ -114,22 +101,31 @@ export default function SavedResults() {
     );
   }
 
-  if (!assessment || !assessment.paradigm_results) {
-    return null;
+  if (error || !assessment || !assessment.paradigm_results) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+            <Target className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h1 className="text-xl font-semibold text-foreground">
+            {error || 'Assessment not found'}
+          </h1>
+          <p className="text-muted-foreground max-w-md">
+            This shared link may have expired or the assessment owner has disabled sharing.
+          </p>
+          <Button asChild>
+            <Link to="/">Go to NEXUS Home</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const recommendation = assessment.paradigm_results;
   const answers = assessment.responses;
   const reasoningBullets = getReasoningBullets(answers, recommendation);
   const redFlags = getRedFlags(answers, recommendation);
-
-  const handleDownloadPDF = () => {
-    generatePDFReport({ 
-      answers, 
-      recommendation, 
-      createdAt: assessment.created_at 
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,13 +140,11 @@ export default function SavedResults() {
               <span className="font-semibold text-lg text-foreground">NEXUS</span>
             </Link>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
-                <User className="h-4 w-4 mr-2" />
-                My Assessments
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/assessment')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                New Assessment
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                Shared Assessment
+              </span>
+              <Button size="sm" asChild>
+                <Link to="/assessment">Take Your Own Assessment</Link>
               </Button>
             </div>
           </div>
@@ -199,26 +193,21 @@ export default function SavedResults() {
           </div>
         </motion.div>
 
-        {/* Actions */}
+        {/* CTA */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
+          className="flex justify-center mt-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
         >
-          <Button variant="outline" className="gap-2" onClick={handleDownloadPDF}>
-            <Download className="h-4 w-4" />
-            Download PDF Report
-          </Button>
-          <ShareButton 
-            assessmentId={assessment.id} 
-            initialShareToken={assessment.share_token} 
-          />
-          <Button
+          <Button 
+            size="lg"
             className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
-            onClick={() => navigate('/assessment')}
+            asChild
           >
-            Run New Assessment
+            <Link to="/assessment">
+              Take Your Own Assessment
+            </Link>
           </Button>
         </motion.div>
       </main>
