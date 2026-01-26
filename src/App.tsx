@@ -40,6 +40,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Assessment = lazy(() => import("./pages/Assessment"));
 const Results = lazy(() => import("./pages/Results"));
 const SavedResults = lazy(() => import("./pages/SavedResults"));
+const SharedResults = lazy(() => import("./pages/SharedResults"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -105,6 +106,9 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Public shared results route */}
+              <Route path="/shared/:token" element={<SharedResults />} />
               
               {/* 404 fallback */}
               <Route path="*" element={<NotFound />} />

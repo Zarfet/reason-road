@@ -10,7 +10,7 @@
  * - Step indicator
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Target, Download, ArrowLeft, User } from 'lucide-react';
@@ -26,12 +26,14 @@ import { ResultsHero } from '@/components/results/ResultsHero';
 import { ReasoningPanel } from '@/components/results/ReasoningPanel';
 import { AlternativesPanel } from '@/components/results/AlternativesPanel';
 import { ResearchPanel } from '@/components/results/ResearchPanel';
+import { ShareButton } from '@/components/results/ShareButton';
 
 export default function Results() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { recommendation, answers, isComplete, resetAssessment, saveAssessmentToDb } = useAssessment();
   const hasSavedRef = useRef(false);
+  const [savedAssessmentId, setSavedAssessmentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isComplete || !recommendation) {
@@ -46,7 +48,8 @@ export default function Results() {
         hasSavedRef.current = true;
         const result = await saveAssessmentToDb();
         
-        if (result.success) {
+        if (result.success && result.assessmentId) {
+          setSavedAssessmentId(result.assessmentId);
           toast({
             title: "Assessment guardado",
             description: "Tu evaluación ha sido guardada exitosamente.",
@@ -159,6 +162,9 @@ export default function Results() {
             <Download className="h-4 w-4" />
             Download PDF Report
           </Button>
+          {savedAssessmentId && (
+            <ShareButton assessmentId={savedAssessmentId} />
+          )}
           <Button
             className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
             onClick={handleStartOver}

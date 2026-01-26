@@ -61,7 +61,7 @@ interface AssessmentContextType {
   // Data actions
   updateAnswer: <K extends keyof AssessmentAnswers>(key: K, value: AssessmentAnswers[K]) => void;
   completeAssessment: () => void;
-  saveAssessmentToDb: () => Promise<{ success: boolean; error?: string }>;
+  saveAssessmentToDb: () => Promise<{ success: boolean; assessmentId?: string; error?: string }>;
   resetAssessment: () => void;
   
   // Computed values
@@ -205,7 +205,7 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
    * Save the assessment to the database
    * Should be called after completeAssessment
    */
-  const saveAssessmentToDb = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+  const saveAssessmentToDb = useCallback(async (): Promise<{ success: boolean; assessmentId?: string; error?: string }> => {
     if (!recommendation) {
       return { success: false, error: 'No recommendation available' };
     }
@@ -223,8 +223,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       // Calculate time to complete in seconds
       const timeToComplete = Math.round((Date.now() - startTimeRef.current) / 1000);
 
-      // Insert the assessment
-      const { error } = await supabase
+      // Insert the assessment and return the ID
+      const { data, error } = await supabase
         .from('assessments')
         .insert([{
           user_id: user.id,
@@ -232,7 +232,9 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           paradigm_results: JSON.parse(JSON.stringify(recommendation)) as Json,
           is_completed: true,
           time_to_complete_seconds: timeToComplete,
-        }]);
+        }])
+        .select('id')
+        .single();
 
       if (error) {
         console.error('Error saving assessment:', error);
@@ -240,10 +242,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('✓ Assessment saved to database');
+        console.log('✓ Assessment saved to database:', data.id);
       }
 
-      return { success: true };
+      return { success: true, assessmentId: data.id };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error('Error saving assessment:', errorMessage);
