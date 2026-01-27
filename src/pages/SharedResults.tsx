@@ -25,7 +25,7 @@ import {
   type AssessmentAnswers,
   type RecommendationResult,
 } from '@/types/assessment';
-import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
+import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/lib/scoring';
 
 // Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
@@ -126,6 +126,7 @@ export default function SharedResults() {
   const answers = assessment.responses;
   const reasoningBullets = getReasoningBullets(answers, recommendation);
   const redFlags = getRedFlags(answers, recommendation);
+  const confidenceLevel = calculateConfidenceLevel(answers, recommendation);
 
   return (
     <div className="min-h-screen bg-background">
@@ -189,6 +190,7 @@ export default function SharedResults() {
             <AlternativesPanel 
               allScores={recommendation.allScores}
               primaryParadigm={recommendation.primary.paradigm}
+              confidenceLevel={confidenceLevel}
             />
           </div>
         </motion.div>

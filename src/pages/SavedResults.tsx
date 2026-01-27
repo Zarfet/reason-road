@@ -26,7 +26,7 @@ import {
   type AssessmentAnswers,
   type RecommendationResult,
 } from '@/types/assessment';
-import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
+import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/lib/scoring';
 import { generatePDFReport } from '@/lib/pdfGenerator';
 
 // Results components
@@ -122,6 +122,7 @@ export default function SavedResults() {
   const answers = assessment.responses;
   const reasoningBullets = getReasoningBullets(answers, recommendation);
   const redFlags = getRedFlags(answers, recommendation);
+  const confidenceLevel = calculateConfidenceLevel(answers, recommendation);
 
   const handleDownloadPDF = () => {
     generatePDFReport({ 
@@ -195,6 +196,7 @@ export default function SavedResults() {
             <AlternativesPanel 
               allScores={recommendation.allScores}
               primaryParadigm={recommendation.primary.paradigm}
+              confidenceLevel={confidenceLevel}
             />
           </div>
         </motion.div>
