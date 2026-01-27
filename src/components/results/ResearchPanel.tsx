@@ -69,6 +69,11 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-accent" />
             Supporting Research
+            {!loading && papers.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground">
+                ({papers.length} papers found)
+              </span>
+            )}
           </h2>
           {!loading && (
             <Button

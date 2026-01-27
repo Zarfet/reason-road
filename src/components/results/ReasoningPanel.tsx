@@ -6,10 +6,11 @@ import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import type { RedFlag } from '@/lib/scoring';
 
 interface ReasoningPanelProps {
   bullets: string[];
-  redFlags?: string[];
+  redFlags?: RedFlag[];
 }
 
 /**
@@ -74,10 +75,15 @@ export function ReasoningPanel({ bullets, redFlags = [] }: ReasoningPanelProps) 
               <AlertTriangle className="h-5 w-5 text-amber-600" />
               Red Flags to Watch
             </h2>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {redFlags.map((flag, index) => (
                 <li key={index} className="text-foreground text-sm">
-                  • {flag}
+                  <div className="flex items-start gap-2">
+                    <span>• {flag.text}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 ml-3 italic">
+                    Source: {flag.source}
+                  </p>
                 </li>
               ))}
             </ul>

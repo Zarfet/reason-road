@@ -3,7 +3,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Info } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { 
   PARADIGM_LABELS, 
@@ -11,10 +11,39 @@ import {
   type ParadigmScores,
   type ParadigmPercentages 
 } from '@/types/assessment';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AlternativesPanelProps {
   allScores: ParadigmPercentages;
   primaryParadigm: keyof ParadigmScores;
+}
+
+/**
+ * Get explanation for why a paradigm received its score
+ */
+function getScoreExplanation(paradigm: keyof ParadigmScores, score: number, primaryScore: number): string {
+  const diff = primaryScore - score;
+  
+  const paradigmStrengths: Record<keyof ParadigmScores, string> = {
+    traditional_screen: 'complex tasks, visual feedback, and explicit user control',
+    invisible: 'repetitive tasks, high frequency usage, and predictable workflows',
+    ai_vectorial: 'unstructured content, exploration, and intelligent assistance',
+    spatial: '3D/spatial data, immersive experiences, and visual-heavy workflows',
+    voice: 'hands-free contexts, accessibility needs, and simple commands',
+  };
+
+  if (score >= 50) {
+    return `Strong fit (${score}%). Excels at ${paradigmStrengths[paradigm]}. Only ${diff}% behind primary—consider hybrid approach.`;
+  } else if (score >= 30) {
+    return `Moderate fit (${score}%). Good for ${paradigmStrengths[paradigm]}, but your requirements favor other paradigms. ${diff}% gap from primary.`;
+  } else {
+    return `Low fit (${score}%). Designed for ${paradigmStrengths[paradigm]}, which doesn't align well with your context. ${diff}% gap suggests this isn't ideal.`;
+  }
 }
 
 export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPanelProps) {
@@ -22,6 +51,8 @@ export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPa
   const alternatives = Object.entries(allScores)
     .filter(([paradigm]) => paradigm !== primaryParadigm)
     .sort((a, b) => b[1] - a[1]);
+
+  const primaryScore = allScores[primaryParadigm];
 
   const getMatchBadgeColor = (score: number) => {
     if (score >= 50) return 'bg-accent/20 text-accent';
@@ -36,33 +67,51 @@ export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPa
       </h2>
 
       <div className="space-y-6">
-        {alternatives.map(([paradigm, score], index) => {
-          const isLowMatch = score < 30;
-          
-          return (
-            <motion.div
-              key={paradigm}
-              className="space-y-2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-            >
-              <h3 className="font-medium text-foreground">
-                {PARADIGM_LABELS[paradigm as keyof ParadigmScores]}
-              </h3>
-              
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getMatchBadgeColor(score)}`}>
-                {score}% Match
-                {isLowMatch && <AlertTriangle className="h-3 w-3" />}
-              </span>
+        <TooltipProvider>
+          {alternatives.map(([paradigm, score], index) => {
+            const isLowMatch = score < 30;
+            const explanation = getScoreExplanation(paradigm as keyof ParadigmScores, score, primaryScore);
+            
+            return (
+              <motion.div
+                key={paradigm}
+                className="space-y-2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.1 }}
+              >
+                <h3 className="font-medium text-foreground">
+                  {PARADIGM_LABELS[paradigm as keyof ParadigmScores]}
+                </h3>
+                
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getMatchBadgeColor(score)}`}>
+                    {score}% Match
+                    {isLowMatch && <AlertTriangle className="h-3 w-3" />}
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="p-0.5 rounded hover:bg-muted transition-colors">
+                        <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent 
+                      side="left" 
+                      className="max-w-xs p-3 bg-card border-l-4 border-l-accent shadow-lg"
+                    >
+                      <p className="text-sm">{explanation}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
 
-              <p className="text-sm text-muted-foreground">
-                {isLowMatch && <span className="font-medium text-foreground">High risk. </span>}
-                {PARADIGM_DESCRIPTIONS[paradigm as keyof ParadigmScores]}
-              </p>
-            </motion.div>
-          );
-        })}
+                <p className="text-sm text-muted-foreground">
+                  {isLowMatch && <span className="font-medium text-foreground">High risk. </span>}
+                  {PARADIGM_DESCRIPTIONS[paradigm as keyof ParadigmScores]}
+                </p>
+              </motion.div>
+            );
+          })}
+        </TooltipProvider>
       </div>
 
       {/* Confidence callout */}

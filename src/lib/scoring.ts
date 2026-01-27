@@ -360,8 +360,13 @@ export function getReasoningBullets(answers: AssessmentAnswers, recommendation: 
  * Purpose: Alert users to potential issues with their recommended
  * paradigms based on conflicting requirements or contexts.
  */
-export function getRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult): string[] {
-  const flags: string[] = [];
+export interface RedFlag {
+  text: string;
+  source: string;
+}
+
+export function getRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult): RedFlag[] {
+  const flags: RedFlag[] = [];
 
   // CONTROL CONTRADICTION
   // User wants control but prefers automation
@@ -369,31 +374,46 @@ export function getRedFlags(answers: AssessmentAnswers, recommendation: Recommen
     answers.valuesRanking.slice(0, 2).includes('User Control') && 
     answers.controlPreference === 'Automatic'
   ) {
-    flags.push('⚠️ You prioritized Control but prefer automation—consider explicit override mechanisms');
+    flags.push({
+      text: '⚠️ You prioritized Control but prefer automation—consider explicit override mechanisms',
+      source: 'Values Ranking (User Control) vs Control Preference (Automatic)'
+    });
   }
 
   // INVISIBLE + SERIOUS ERRORS
   // Automation with high-stakes errors is risky
   if (recommendation.primary.paradigm === 'invisible' && answers.errorConsequence === 'Serious') {
-    flags.push('⚠️ Invisible automation with high-stakes errors needs confirmation checkpoints');
+    flags.push({
+      text: '⚠️ Invisible automation with high-stakes errors needs confirmation checkpoints',
+      source: 'Error Consequence (Serious) with Invisible paradigm recommendation'
+    });
   }
 
   // AR/VR IN SOCIAL SETTINGS
   // Spatial interfaces can be socially awkward
   if (recommendation.allScores.spatial > 20 && answers.contextOfUse === 'Social situations') {
-    flags.push('⚠️ AR/VR can create social barriers—consider discreet alternatives');
+    flags.push({
+      text: '⚠️ AR/VR can create social barriers—consider discreet alternatives',
+      source: 'Context of Use (Social situations) with Spatial score > 20%'
+    });
   }
 
   // VOICE IN PUBLIC
   // Voice interfaces may be inappropriate in public
   if (recommendation.allScores.voice > 25 && answers.contextOfUse === 'Social situations') {
-    flags.push('⚠️ Voice interfaces may be inappropriate in public—add silent alternatives');
+    flags.push({
+      text: '⚠️ Voice interfaces may be inappropriate in public—add silent alternatives',
+      source: 'Context of Use (Social situations) with Voice score > 25%'
+    });
   }
 
   // ENSURE OVERRIDE FOR INVISIBLE
   // All invisible/automated systems need escape hatches
   if (recommendation.primary.paradigm === 'invisible' || recommendation.secondary.paradigm === 'invisible') {
-    flags.push('⚠️ Ensure override mechanism accessible in <3 seconds');
+    flags.push({
+      text: '⚠️ Ensure override mechanism accessible in <3 seconds',
+      source: 'Invisible/Ambient paradigm in top 2 recommendations'
+    });
   }
 
   // Return top 5 most relevant flags

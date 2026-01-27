@@ -74,10 +74,10 @@ export default function Assessment() {
               <span className="font-semibold text-lg text-foreground">NEXUS</span>
             </div>
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
               onClick={handleCancel}
-              className="gap-2 text-muted-foreground hover:text-foreground"
+              className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground border-accent"
             >
               <X className="h-4 w-4" />
               Cancel
