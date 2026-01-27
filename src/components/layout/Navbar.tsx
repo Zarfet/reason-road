@@ -85,7 +85,7 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="flex items-center gap-2 px-2 hover:text-accent-foreground"
+                  className="group flex items-center gap-2 px-2 hover:text-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 bg-accent/10">
                     <AvatarFallback className="text-sm font-medium text-accent">
