@@ -16,7 +16,7 @@ import { motion } from 'framer-motion';
 import { Target, Download, ArrowLeft, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAssessment } from '@/context/AssessmentContext';
-import { getReasoningBullets, getRedFlags } from '@/lib/scoring';
+import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/lib/scoring';
 import { generatePDFReport } from '@/lib/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 
@@ -69,6 +69,7 @@ export default function Results() {
 
   const reasoningBullets = getReasoningBullets(answers, recommendation);
   const redFlags = getRedFlags(answers, recommendation);
+  const confidenceLevel = calculateConfidenceLevel(answers, recommendation);
 
   const handleStartOver = () => {
     resetAssessment();
@@ -147,6 +148,7 @@ export default function Results() {
             <AlternativesPanel 
               allScores={recommendation.allScores}
               primaryParadigm={recommendation.primary.paradigm}
+              confidenceLevel={confidenceLevel}
             />
           </div>
         </motion.div>

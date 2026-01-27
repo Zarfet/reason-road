@@ -3,7 +3,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { AlertTriangle, Info } from 'lucide-react';
+import { AlertTriangle, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { 
   PARADIGM_LABELS, 
@@ -11,17 +11,43 @@ import {
   type ParadigmScores,
   type ParadigmPercentages 
 } from '@/types/assessment';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface AlternativesPanelProps {
   allScores: ParadigmPercentages;
   primaryParadigm: keyof ParadigmScores;
+  confidenceLevel: number;
 }
+
+/**
+ * Paradigm-specific research references
+ */
+const PARADIGM_REFERENCES: Record<keyof ParadigmScores, { title: string; url: string; description: string }> = {
+  traditional_screen: {
+    title: 'Nielsen Norman Group (2023). Screen-Based UI Best Practices',
+    url: 'https://www.nngroup.com/articles/screen-ui-best-practices/',
+    description: 'Proven patterns for visual interfaces with high information density and complex interactions.'
+  },
+  invisible: {
+    title: 'Weiser, M. (1991). The Computer for the 21st Century',
+    url: 'https://www.lri.fr/~mbl/Stanford/CS477/papers/Weiser-SciAm.pdf',
+    description: 'Foundational work on ubiquitous computing and ambient intelligence interfaces.'
+  },
+  ai_vectorial: {
+    title: 'Amershi et al. (2019). Guidelines for Human-AI Interaction',
+    url: 'https://doi.org/10.1145/3290605.3300233',
+    description: 'Microsoft Research guidelines for designing effective AI-powered interfaces.'
+  },
+  spatial: {
+    title: 'Milgram & Kishino (1994). Reality-Virtuality Continuum',
+    url: 'https://doi.org/10.1587/bplus.E77-D.1321',
+    description: 'Seminal taxonomy for AR/VR interface design and spatial computing.'
+  },
+  voice: {
+    title: 'Pearl, C. (2016). Designing Voice User Interfaces',
+    url: 'https://www.oreilly.com/library/view/designing-voice-user/9781491955406/',
+    description: 'Comprehensive guide to conversational interface design principles.'
+  }
+};
 
 /**
  * Get explanation for why a paradigm received its score
@@ -38,15 +64,15 @@ function getScoreExplanation(paradigm: keyof ParadigmScores, score: number, prim
   };
 
   if (score >= 50) {
-    return `Strong fit (${score}%). Excels at ${paradigmStrengths[paradigm]}. Only ${diff}% behind primary—consider hybrid approach.`;
+    return `Strong fit. Excels at ${paradigmStrengths[paradigm]}. Only ${diff}% behind primary—consider hybrid approach.`;
   } else if (score >= 30) {
-    return `Moderate fit (${score}%). Good for ${paradigmStrengths[paradigm]}, but your requirements favor other paradigms. ${diff}% gap from primary.`;
+    return `Moderate fit. Good for ${paradigmStrengths[paradigm]}, but your requirements favor other paradigms.`;
   } else {
-    return `Low fit (${score}%). Designed for ${paradigmStrengths[paradigm]}, which doesn't align well with your context. ${diff}% gap suggests this isn't ideal.`;
+    return `Low fit. Designed for ${paradigmStrengths[paradigm]}, which doesn't align well with your context.`;
   }
 }
 
-export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPanelProps) {
+export function AlternativesPanel({ allScores, primaryParadigm, confidenceLevel }: AlternativesPanelProps) {
   // Get alternatives (all except primary), sorted by score descending
   const alternatives = Object.entries(allScores)
     .filter(([paradigm]) => paradigm !== primaryParadigm)
@@ -60,6 +86,12 @@ export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPa
     return 'bg-red-100 text-red-700';
   };
 
+  const getConfidenceColor = (level: number) => {
+    if (level >= 80) return 'text-accent';
+    if (level >= 60) return 'text-amber-600';
+    return 'text-red-600';
+  };
+
   return (
     <Card className="nexus-card h-fit">
       <h2 className="text-lg font-semibold text-foreground mb-6">
@@ -67,51 +99,53 @@ export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPa
       </h2>
 
       <div className="space-y-6">
-        <TooltipProvider>
-          {alternatives.map(([paradigm, score], index) => {
-            const isLowMatch = score < 30;
-            const explanation = getScoreExplanation(paradigm as keyof ParadigmScores, score, primaryScore);
-            
-            return (
-              <motion.div
-                key={paradigm}
-                className="space-y-2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-              >
+        {alternatives.map(([paradigm, score], index) => {
+          const isLowMatch = score < 30;
+          const explanation = getScoreExplanation(paradigm as keyof ParadigmScores, score, primaryScore);
+          const reference = PARADIGM_REFERENCES[paradigm as keyof ParadigmScores];
+          
+          return (
+            <motion.div
+              key={paradigm}
+              className="space-y-2 border-b border-border/50 last:border-0 pb-4 last:pb-0"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 + index * 0.1 }}
+            >
+              <div className="flex items-center justify-between">
                 <h3 className="font-medium text-foreground">
                   {PARADIGM_LABELS[paradigm as keyof ParadigmScores]}
                 </h3>
-                
-                <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getMatchBadgeColor(score)}`}>
-                    {score}% Match
-                    {isLowMatch && <AlertTriangle className="h-3 w-3" />}
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="p-0.5 rounded hover:bg-muted transition-colors">
-                        <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent 
-                      side="left" 
-                      className="max-w-xs p-3 bg-card border-l-4 border-l-accent shadow-lg"
-                    >
-                      <p className="text-sm">{explanation}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getMatchBadgeColor(score)}`}>
+                  {score}% Match
+                  {isLowMatch && <AlertTriangle className="h-3 w-3" />}
+                </span>
+              </div>
 
-                <p className="text-sm text-muted-foreground">
-                  {isLowMatch && <span className="font-medium text-foreground">High risk. </span>}
-                  {PARADIGM_DESCRIPTIONS[paradigm as keyof ParadigmScores]}
-                </p>
-              </motion.div>
-            );
-          })}
-        </TooltipProvider>
+              <p className="text-sm text-muted-foreground">
+                {isLowMatch && <span className="font-medium text-foreground">High risk. </span>}
+                {explanation}
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                {PARADIGM_DESCRIPTIONS[paradigm as keyof ParadigmScores]}
+              </p>
+
+              <div className="mt-2 pt-2 border-t border-border/30">
+                <p className="text-xs text-muted-foreground mb-1">{reference.description}</p>
+                <a 
+                  href={reference.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-accent hover:underline flex items-center gap-1"
+                >
+                  {reference.title}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Confidence callout */}
@@ -121,9 +155,14 @@ export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPa
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
       >
-        <h4 className="font-medium text-foreground mb-1">Confidence Level</h4>
+        <div className="flex items-center justify-between mb-1">
+          <h4 className="font-medium text-foreground">Confidence Level</h4>
+          <span className={`text-lg font-bold ${getConfidenceColor(confidenceLevel)}`}>
+            {confidenceLevel}%
+          </span>
+        </div>
         <p className="text-sm text-muted-foreground">
-          Based on your assessment responses, contextualized to your project requirements and user demographics.
+          Based on response consistency, answer completeness, and score differentiation between paradigms.
         </p>
       </motion.div>
     </Card>

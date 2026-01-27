@@ -4,7 +4,7 @@
 
 import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, AlertTriangle } from 'lucide-react';
+import { ArrowRight, AlertTriangle, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { RedFlag } from '@/lib/scoring';
 
@@ -75,15 +75,30 @@ export function ReasoningPanel({ bullets, redFlags = [] }: ReasoningPanelProps) 
               <AlertTriangle className="h-5 w-5 text-amber-600" />
               Red Flags to Watch
             </h2>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {redFlags.map((flag, index) => (
-                <li key={index} className="text-foreground text-sm">
+                <li key={index} className="border-b border-amber-200/50 last:border-0 pb-4 last:pb-0">
                   <div className="flex items-start gap-2">
-                    <span>• {flag.text}</span>
+                    <span className="text-foreground text-sm font-medium">{flag.text}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 ml-3 italic">
-                    Source: {flag.source}
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                    {flag.description}
                   </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground italic">
+                      Source: {flag.source}
+                    </span>
+                    <span className="text-muted-foreground">•</span>
+                    <a 
+                      href={flag.reference.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-accent hover:underline flex items-center gap-1"
+                    >
+                      {flag.reference.title}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
                 </li>
               ))}
             </ul>
