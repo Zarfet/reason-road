@@ -191,7 +191,6 @@ export default function SharedResults() {
             <AlternativesPanel 
               allScores={recommendation.allScores}
               primaryParadigm={recommendation.primary.paradigm}
-              confidenceLevel={confidenceLevel}
             />
           </div>
         </motion.div>

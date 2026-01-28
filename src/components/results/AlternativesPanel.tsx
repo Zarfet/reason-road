@@ -15,7 +15,6 @@ import {
 interface AlternativesPanelProps {
   allScores: ParadigmPercentages;
   primaryParadigm: keyof ParadigmScores;
-  confidenceLevel: number;
 }
 
 /**
@@ -72,7 +71,7 @@ function getScoreExplanation(paradigm: keyof ParadigmScores, score: number, prim
   }
 }
 
-export function AlternativesPanel({ allScores, primaryParadigm, confidenceLevel }: AlternativesPanelProps) {
+export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPanelProps) {
   // Get alternatives (all except primary), sorted by score descending
   const alternatives = Object.entries(allScores)
     .filter(([paradigm]) => paradigm !== primaryParadigm)
@@ -84,12 +83,6 @@ export function AlternativesPanel({ allScores, primaryParadigm, confidenceLevel 
     if (score >= 50) return 'bg-accent/20 text-accent';
     if (score >= 30) return 'bg-amber-100 text-amber-700';
     return 'bg-red-100 text-red-700';
-  };
-
-  const getConfidenceColor = (level: number) => {
-    if (level >= 80) return 'text-accent';
-    if (level >= 60) return 'text-amber-600';
-    return 'text-red-600';
   };
 
   return (
@@ -147,24 +140,6 @@ export function AlternativesPanel({ allScores, primaryParadigm, confidenceLevel 
           );
         })}
       </div>
-
-      {/* Confidence callout */}
-      <motion.div
-        className="mt-8 p-4 border-l-4 border-l-accent bg-accent/5 rounded-r-lg"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-      >
-        <div className="flex items-center justify-between mb-1">
-          <h4 className="font-medium text-foreground">Confidence Level</h4>
-          <span className={`text-lg font-bold ${getConfidenceColor(confidenceLevel)}`}>
-            {confidenceLevel}%
-          </span>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Based on response consistency, answer completeness, and score differentiation between paradigms.
-        </p>
-      </motion.div>
     </Card>
   );
 }

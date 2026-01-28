@@ -63,18 +63,23 @@ export function ResultsHero({
 
         {confidenceLevel !== undefined && (
           <motion.div
-            className="flex items-center justify-center gap-2 mt-4"
+            className="flex flex-col items-center gap-1 mt-4"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <span className="text-muted text-sm">Confidence Level:</span>
-            <span className={`font-bold text-lg ${
-              confidenceLevel >= 70 ? 'text-accent' : 
-              confidenceLevel >= 50 ? 'text-yellow-400' : 'text-red-400'
-            }`}>
-              {confidenceLevel}%
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-muted text-sm">Confidence Level:</span>
+              <span className={`font-bold text-lg ${
+                confidenceLevel >= 70 ? 'text-accent' : 
+                confidenceLevel >= 50 ? 'text-yellow-400' : 'text-red-400'
+              }`}>
+                {confidenceLevel}%
+              </span>
+            </div>
+            <p className="text-muted/70 text-xs max-w-md">
+              Based on response consistency, answer completeness, and score differentiation between paradigms.
+            </p>
           </motion.div>
         )}
       </div>
