@@ -11,6 +11,7 @@ interface ResultsHeroProps {
   secondaryPct?: number;
   projectName?: string;
   userDemographics?: string;
+  confidenceLevel?: number;
 }
 
 export function ResultsHero({
@@ -19,6 +20,7 @@ export function ResultsHero({
   secondaryPct = 0,
   projectName,
   userDemographics,
+  confidenceLevel,
 }: ResultsHeroProps) {
   const subtitle = [projectName, userDemographics]
     .filter(Boolean)
@@ -57,6 +59,23 @@ export function ResultsHero({
           >
             Best fit for {subtitle}
           </motion.p>
+        )}
+
+        {confidenceLevel !== undefined && (
+          <motion.div
+            className="flex items-center justify-center gap-2 mt-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <span className="text-muted text-sm">Confidence Level:</span>
+            <span className={`font-bold text-lg ${
+              confidenceLevel >= 70 ? 'text-accent' : 
+              confidenceLevel >= 50 ? 'text-yellow-400' : 'text-red-400'
+            }`}>
+              {confidenceLevel}%
+            </span>
+          </motion.div>
         )}
       </div>
     </div>

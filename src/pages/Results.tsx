@@ -123,6 +123,7 @@ export default function Results() {
           secondaryPct={recommendation.secondary.pct}
           projectName={answers.projectName}
           userDemographics={answers.userDemographics}
+          confidenceLevel={confidenceLevel}
         />
       </div>
 
