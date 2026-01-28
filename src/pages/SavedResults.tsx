@@ -197,7 +197,6 @@ export default function SavedResults() {
             <AlternativesPanel 
               allScores={recommendation.allScores}
               primaryParadigm={recommendation.primary.paradigm}
-              confidenceLevel={confidenceLevel}
             />
           </div>
         </motion.div>
