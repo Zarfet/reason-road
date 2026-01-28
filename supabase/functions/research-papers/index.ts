@@ -6,6 +6,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Valid paradigm values (whitelist)
+const VALID_PARADIGMS = [
+  "traditional_screen",
+  "invisible",
+  "ai_vectorial",
+  "spatial",
+  "voice",
+];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -42,14 +51,46 @@ serve(async (req) => {
     const userId = claimsData.claims.sub;
     console.log(`Authenticated user: ${userId}`);
 
-    const { paradigm, userDemographics } = await req.json();
+    const body = await req.json();
+    const { paradigm, userDemographics } = body;
+
+    // Input validation: paradigm (required, must be from whitelist)
+    if (!paradigm || typeof paradigm !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Invalid paradigm parameter: required string" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!VALID_PARADIGMS.includes(paradigm)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid paradigm: must be one of ${VALID_PARADIGMS.join(", ")}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Input validation: userDemographics (optional, max 500 chars)
+    if (userDemographics !== undefined && userDemographics !== null) {
+      if (typeof userDemographics !== "string" || userDemographics.length > 500) {
+        return new Response(
+          JSON.stringify({ error: "Invalid userDemographics: must be string under 500 characters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Sanitize inputs for prompt injection prevention
+    const sanitizedParadigm = paradigm.replace(/[\n\r]/g, " ").trim();
+    const sanitizedDemographics = userDemographics
+      ? userDemographics.replace(/[\n\r]/g, " ").trim().slice(0, 500)
+      : "general users";
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log(`Fetching research for paradigm: ${paradigm}, demographics: ${userDemographics}`);
+    console.log(`Fetching research for paradigm: ${sanitizedParadigm}, demographics: ${sanitizedDemographics}`);
 
     const systemPrompt = `You are an academic research assistant specializing in Human-Computer Interaction (HCI), User Experience (UX), and interface design. Your task is to suggest 5 relevant peer-reviewed academic papers that support a specific interface paradigm recommendation.
 
@@ -61,7 +102,7 @@ Focus on papers from reputable sources like:
 
 Provide papers from 2018-2025 when possible.`;
 
-    const userPrompt = `Find 5 peer-reviewed academic papers that support the use of "${paradigm}" interface paradigm for "${userDemographics || 'general users'}".
+    const userPrompt = `Find 5 peer-reviewed academic papers that support the use of "${sanitizedParadigm}" interface paradigm for "${sanitizedDemographics}".
 
 Return your response as a JSON array with this exact structure:
 [
