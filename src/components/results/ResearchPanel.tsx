@@ -71,7 +71,7 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
             Supporting Research
             {!loading && papers.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">
-                ({papers.length} papers found)
+                ({papers.length} retrieved)
               </span>
             )}
           </h2>
@@ -156,7 +156,7 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
             })}
             
             <p className="text-xs text-muted-foreground text-center pt-2 italic">
-              Papers suggested by AI based on your assessment context
+              AI-generated suggestions based on your paradigm context. These are not sourced from a curated database—verify citations via Google Scholar links.
             </p>
           </div>
         )}
