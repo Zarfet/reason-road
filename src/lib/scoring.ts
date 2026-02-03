@@ -34,9 +34,9 @@
  * - Red flags for potential conflicts
  * 
  * Research Basis:
- * Algorithm weights derived from analysis of 47+ academic papers
+ * Algorithm weights derived from established HCI research principles
  * on interface paradigm selection and human-computer interaction.
- * 
+ *
  * Dependencies: AssessmentAnswers type from @/types/assessment
  */
 

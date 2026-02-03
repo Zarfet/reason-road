@@ -90,7 +90,7 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              Evidence-based paradigm selection in 5 minutes. Get a multi-modal recommendation backed by 47+ research papers.
+              Evidence-based paradigm selection in 5 minutes. Get AI-powered recommendations grounded in HCI research principles.
             </motion.p>
 
             {/* CTA Button */}
