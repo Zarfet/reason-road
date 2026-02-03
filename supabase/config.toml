@@ -2,3 +2,6 @@ project_id = "megknrtbehidjgmeifqa"
 
 [functions.research-papers]
 verify_jwt = false
+
+[functions.case-studies]
+verify_jwt = false
