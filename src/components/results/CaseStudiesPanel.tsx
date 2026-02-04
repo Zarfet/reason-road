@@ -305,15 +305,14 @@ function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
             → Lesson: {study.lessonsLearned}
           </p>
         </div>
-        <a
-          href={searchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 mt-0.5 p-1.5 rounded hover:bg-accent/10 transition-colors"
+        <button
+          type="button"
+          onClick={() => window.open(searchUrl, '_blank', 'noopener,noreferrer')}
+          className="shrink-0 mt-0.5 p-1.5 rounded hover:bg-accent/10 transition-colors cursor-pointer"
           title="Search for more info on Google"
         >
           <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-accent" />
-        </a>
+        </button>
       </div>
     </motion.div>
   );
