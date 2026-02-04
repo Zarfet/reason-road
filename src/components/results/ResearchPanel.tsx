@@ -1,8 +1,13 @@
 /**
  * Panel showing supporting academic research
+ * 
+ * Features:
+ * - LocalStorage cache to avoid refetching
+ * - AI-generated paper suggestions
+ * - External links via window.open() for preview compatibility
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -23,14 +28,75 @@ interface ResearchPanelProps {
   userDemographics?: string;
 }
 
+// Cache key generator
+function getCacheKey(paradigm: string, userDemographics?: string): string {
+  const demographics = userDemographics?.trim() || 'general';
+  return `nexus_research_${paradigm}_${demographics}`.toLowerCase().replace(/\s+/g, '_');
+}
+
+// Cache duration: 7 days
+const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface CachedData {
+  papers: ResearchPaper[];
+  timestamp: number;
+}
+
+function getCachedPapers(paradigm: string, userDemographics?: string): ResearchPaper[] | null {
+  try {
+    const key = getCacheKey(paradigm, userDemographics);
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    
+    const data: CachedData = JSON.parse(cached);
+    const now = Date.now();
+    
+    // Check if cache is still valid
+    if (now - data.timestamp > CACHE_DURATION_MS) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    
+    return data.papers;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedPapers(paradigm: string, userDemographics: string | undefined, papers: ResearchPaper[]): void {
+  try {
+    const key = getCacheKey(paradigm, userDemographics);
+    const data: CachedData = {
+      papers,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps) {
   const [papers, setPapers] = useState<ResearchPaper[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fromCache, setFromCache] = useState(false);
 
-  const fetchResearch = async () => {
+  const fetchResearch = useCallback(async (forceRefresh = false) => {
+    // Check localStorage cache first (unless force refresh)
+    if (!forceRefresh) {
+      const cached = getCachedPapers(paradigm, userDemographics);
+      if (cached && cached.length > 0) {
+        setPapers(cached);
+        setFromCache(true);
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
+    setFromCache(false);
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('research-papers', {
@@ -45,18 +111,33 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
         throw new Error(data.error);
       }
 
-      setPapers(data?.papers || []);
+      const fetchedPapers = data?.papers || [];
+      setPapers(fetchedPapers);
+      
+      // Cache the results
+      if (fetchedPapers.length > 0) {
+        setCachedPapers(paradigm, userDemographics, fetchedPapers);
+      }
     } catch (err) {
       console.error('Failed to fetch research:', err);
       setError(err instanceof Error ? err.message : 'Failed to load research');
     } finally {
       setLoading(false);
     }
-  };
+  }, [paradigm, userDemographics]);
 
   useEffect(() => {
     fetchResearch();
-  }, [paradigm, userDemographics]);
+  }, [fetchResearch]);
+
+  const handleRefresh = () => {
+    fetchResearch(true);
+  };
+
+  const handleOpenScholar = (title: string) => {
+    const searchUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
+    window.open(searchUrl, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <motion.div
@@ -71,7 +152,7 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
             Supporting Research
             {!loading && papers.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">
-                ({papers.length} retrieved)
+                ({papers.length} retrieved{fromCache ? ', cached' : ''})
               </span>
             )}
           </h2>
@@ -79,8 +160,9 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
             <Button
               variant="ghost"
               size="sm"
-              onClick={fetchResearch}
+              onClick={handleRefresh}
               className="text-muted-foreground hover:text-foreground"
+              title="Refresh research papers"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -101,7 +183,7 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
         {error && !loading && (
           <div className="text-center py-8">
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <Button variant="outline" size="sm" onClick={fetchResearch}>
+            <Button variant="outline" size="sm" onClick={() => fetchResearch(true)}>
               Try Again
             </Button>
           </div>
@@ -115,45 +197,40 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
 
         {!loading && !error && papers.length > 0 && (
           <div className="space-y-4">
-            {papers.map((paper, index) => {
-              const searchUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(paper.title)}`;
-              
-              return (
-                <motion.div
-                  key={index}
-                  className="p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-accent/30 transition-colors"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-foreground text-sm leading-tight mb-1">
-                        {paper.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {paper.authors} • {paper.year} • {paper.venue}
-                      </p>
-                      <p className="text-xs text-foreground/80 mb-2">
-                        {paper.abstract}
-                      </p>
-                      <p className="text-xs text-accent">
-                        → {paper.relevance}
-                      </p>
-                    </div>
-                    <a
-                      href={searchUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 mt-0.5 p-1 rounded hover:bg-accent/10 transition-colors"
-                      title="Search on Google Scholar"
-                    >
-                      <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-accent" />
-                    </a>
+            {papers.map((paper, index) => (
+              <motion.div
+                key={index}
+                className="p-4 rounded-lg bg-muted/30 border border-border/50 hover:border-accent/30 transition-colors"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-foreground text-sm leading-tight mb-1">
+                      {paper.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {paper.authors} • {paper.year} • {paper.venue}
+                    </p>
+                    <p className="text-xs text-foreground/80 mb-2">
+                      {paper.abstract}
+                    </p>
+                    <p className="text-xs text-accent">
+                      → {paper.relevance}
+                    </p>
                   </div>
-                </motion.div>
-              );
-            })}
+                  <button
+                    type="button"
+                    onClick={() => handleOpenScholar(paper.title)}
+                    className="shrink-0 mt-0.5 p-1.5 rounded hover:bg-accent/10 transition-colors cursor-pointer"
+                    title="Search on Google Scholar"
+                  >
+                    <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-accent" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
             
             <p className="text-xs text-muted-foreground text-center pt-2 italic">
               AI-generated suggestions based on your paradigm context. These are not sourced from a curated database—verify citations via Google Scholar links.
