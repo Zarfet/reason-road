@@ -1,9 +1,14 @@
 /**
  * Panel showing real-world case studies (successes and failures)
  * related to the recommended paradigm
+ * 
+ * Features:
+ * - LocalStorage cache to avoid refetching
+ * - Displays AI-generated case studies
+ * - External links to Google Search for verification
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, ThumbsUp, ThumbsDown, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -24,16 +29,85 @@ interface CaseStudy {
 interface CaseStudiesPanelProps {
   paradigm: string;
   userDemographics?: string;
+  cachedCases?: CaseStudy[];
+  onCasesFetched?: (cases: CaseStudy[]) => void;
 }
 
-export function CaseStudiesPanel({ paradigm, userDemographics }: CaseStudiesPanelProps) {
-  const [cases, setCases] = useState<CaseStudy[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Cache key generator
+function getCacheKey(paradigm: string, userDemographics?: string): string {
+  const demographics = userDemographics?.trim() || 'general';
+  return `nexus_case_studies_${paradigm}_${demographics}`.toLowerCase().replace(/\s+/g, '_');
+}
 
-  const fetchCaseStudies = async () => {
+// Cache duration: 7 days
+const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface CachedData {
+  cases: CaseStudy[];
+  timestamp: number;
+}
+
+function getCachedCases(paradigm: string, userDemographics?: string): CaseStudy[] | null {
+  try {
+    const key = getCacheKey(paradigm, userDemographics);
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    
+    const data: CachedData = JSON.parse(cached);
+    const now = Date.now();
+    
+    // Check if cache is still valid
+    if (now - data.timestamp > CACHE_DURATION_MS) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    
+    return data.cases;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedCases(paradigm: string, userDemographics: string | undefined, cases: CaseStudy[]): void {
+  try {
+    const key = getCacheKey(paradigm, userDemographics);
+    const data: CachedData = {
+      cases,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function CaseStudiesPanel({ 
+  paradigm, 
+  userDemographics,
+  cachedCases,
+  onCasesFetched 
+}: CaseStudiesPanelProps) {
+  const [cases, setCases] = useState<CaseStudy[]>(cachedCases || []);
+  const [loading, setLoading] = useState(!cachedCases);
+  const [error, setError] = useState<string | null>(null);
+  const [fromCache, setFromCache] = useState(false);
+
+  const fetchCaseStudies = useCallback(async (forceRefresh = false) => {
+    // Check localStorage cache first (unless force refresh)
+    if (!forceRefresh) {
+      const cached = getCachedCases(paradigm, userDemographics);
+      if (cached && cached.length > 0) {
+        setCases(cached);
+        setFromCache(true);
+        setLoading(false);
+        onCasesFetched?.(cached);
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
+    setFromCache(false);
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('case-studies', {
@@ -48,18 +122,38 @@ export function CaseStudiesPanel({ paradigm, userDemographics }: CaseStudiesPane
         throw new Error(data.error);
       }
 
-      setCases(data?.cases || []);
+      const fetchedCases = data?.cases || [];
+      setCases(fetchedCases);
+      
+      // Cache the results
+      if (fetchedCases.length > 0) {
+        setCachedCases(paradigm, userDemographics, fetchedCases);
+      }
+      
+      onCasesFetched?.(fetchedCases);
     } catch (err) {
       console.error('Failed to fetch case studies:', err);
       setError(err instanceof Error ? err.message : 'Failed to load case studies');
     } finally {
       setLoading(false);
     }
-  };
+  }, [paradigm, userDemographics, onCasesFetched]);
 
   useEffect(() => {
+    // If we have cached cases from props, use them
+    if (cachedCases && cachedCases.length > 0) {
+      setCases(cachedCases);
+      setFromCache(true);
+      setLoading(false);
+      return;
+    }
+    
     fetchCaseStudies();
-  }, [paradigm, userDemographics]);
+  }, [paradigm, userDemographics, cachedCases, fetchCaseStudies]);
+
+  const handleRefresh = () => {
+    fetchCaseStudies(true);
+  };
 
   const successes = cases.filter(c => c.outcome === 'success');
   const failures = cases.filter(c => c.outcome === 'failure');
@@ -77,7 +171,7 @@ export function CaseStudiesPanel({ paradigm, userDemographics }: CaseStudiesPane
             Real-World Case Studies
             {!loading && cases.length > 0 && (
               <span className="text-sm font-normal text-muted-foreground">
-                ({cases.length} retrieved)
+                ({cases.length} retrieved{fromCache ? ', cached' : ''})
               </span>
             )}
           </h2>
@@ -85,8 +179,9 @@ export function CaseStudiesPanel({ paradigm, userDemographics }: CaseStudiesPane
             <Button
               variant="ghost"
               size="sm"
-              onClick={fetchCaseStudies}
+              onClick={handleRefresh}
               className="text-muted-foreground hover:text-foreground"
+              title="Refresh case studies"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -107,7 +202,7 @@ export function CaseStudiesPanel({ paradigm, userDemographics }: CaseStudiesPane
         {error && !loading && (
           <div className="text-center py-8">
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <Button variant="outline" size="sm" onClick={fetchCaseStudies}>
+            <Button variant="outline" size="sm" onClick={() => fetchCaseStudies(true)}>
               Try Again
             </Button>
           </div>
@@ -162,7 +257,9 @@ export function CaseStudiesPanel({ paradigm, userDemographics }: CaseStudiesPane
 }
 
 function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
-  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(`${study.name} ${study.company} ${study.outcome}`)}`;
+  // Create a Google search URL for the case study
+  const searchQuery = `${study.name} ${study.company} ${study.year} ${study.outcome === 'success' ? 'success story' : 'failure case study'}`;
+  const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
   
   return (
     <motion.div
@@ -212,8 +309,8 @@ function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
           href={searchUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 mt-0.5 p-1 rounded hover:bg-accent/10 transition-colors"
-          title="Search for more info"
+          className="shrink-0 mt-0.5 p-1.5 rounded hover:bg-accent/10 transition-colors"
+          title="Search for more info on Google"
         >
           <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-accent" />
         </a>

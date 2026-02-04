@@ -33,6 +33,7 @@ import { ResultsHero } from '@/components/results/ResultsHero';
 import { ReasoningPanel } from '@/components/results/ReasoningPanel';
 import { AlternativesPanel } from '@/components/results/AlternativesPanel';
 import { ResearchPanel } from '@/components/results/ResearchPanel';
+import { CaseStudiesPanel } from '@/components/results/CaseStudiesPanel';
 
 interface StoredAssessment {
   id: string;
@@ -177,10 +178,14 @@ export default function SharedResults() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Left Column - Why This Recommendation + Research */}
+          {/* Left Column - Why This Recommendation + Research + Case Studies */}
           <div className="lg:col-span-3 space-y-6">
             <ReasoningPanel bullets={reasoningBullets} redFlags={redFlags} />
             <ResearchPanel 
+              paradigm={recommendation.primary.paradigm}
+              userDemographics={answers.userDemographics}
+            />
+            <CaseStudiesPanel
               paradigm={recommendation.primary.paradigm}
               userDemographics={answers.userDemographics}
             />
