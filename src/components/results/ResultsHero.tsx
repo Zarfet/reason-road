@@ -1,23 +1,41 @@
 /**
- * Hero section for results page with dark background
+ * Hero section for results page with paradigm breakdown
+ * Updated for Bento Grid layout
  */
 
 import { motion } from 'framer-motion';
+import { Target, Monitor, Eye, Sparkles, Glasses, Mic } from 'lucide-react';
 import { PARADIGM_LABELS, type ParadigmScores } from '@/types/assessment';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 interface ResultsHeroProps {
   primaryParadigm: keyof ParadigmScores;
   secondaryParadigm?: keyof ParadigmScores;
+  tertiaryParadigm?: keyof ParadigmScores;
+  primaryPct?: number;
   secondaryPct?: number;
+  tertiaryPct?: number;
   projectName?: string;
   userDemographics?: string;
   confidenceLevel?: number;
 }
 
+const paradigmIcons: Record<keyof ParadigmScores, React.ReactNode> = {
+  traditional_screen: <Monitor className="h-5 w-5" />,
+  invisible: <Eye className="h-5 w-5" />,
+  ai_vectorial: <Sparkles className="h-5 w-5" />,
+  spatial: <Glasses className="h-5 w-5" />,
+  voice: <Mic className="h-5 w-5" />,
+};
+
 export function ResultsHero({
   primaryParadigm,
   secondaryParadigm,
+  tertiaryParadigm,
+  primaryPct = 0,
   secondaryPct = 0,
+  tertiaryPct = 0,
   projectName,
   userDemographics,
   confidenceLevel,
@@ -26,23 +44,33 @@ export function ResultsHero({
     .filter(Boolean)
     .join(' for ');
 
+  const breakdownItems = [
+    { paradigm: primaryParadigm, pct: primaryPct },
+    ...(secondaryParadigm && secondaryPct > 5 ? [{ paradigm: secondaryParadigm, pct: secondaryPct }] : []),
+    ...(tertiaryParadigm && tertiaryPct > 5 ? [{ paradigm: tertiaryParadigm, pct: tertiaryPct }] : []),
+  ];
+
   return (
-    <div className="bg-foreground text-background py-12 md:py-16 -mx-4 md:-mx-8 px-4 md:px-8">
-      <div className="max-w-4xl mx-auto text-center space-y-4">
+    <div className="bg-foreground text-background py-10 md:py-14 -mx-4 md:-mx-8 px-4 md:px-8">
+      <div className="max-w-5xl mx-auto">
+        {/* Badge */}
         <motion.div
-          className="inline-flex items-center px-4 py-1.5 rounded-full bg-accent text-accent-foreground text-sm font-medium"
+          className="flex justify-center mb-6"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.1 }}
         >
-          RECOMMENDED
+          <Badge className="bg-accent text-accent-foreground px-4 py-1.5 text-sm font-medium">
+            RECOMMENDED STRATEGY
+          </Badge>
         </motion.div>
 
+        {/* Main Recommendation */}
         <motion.h1
-          className="text-3xl md:text-5xl font-bold"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
         >
           {PARADIGM_LABELS[primaryParadigm]}
           {secondaryParadigm && secondaryPct > 15 && (
@@ -52,24 +80,48 @@ export function ResultsHero({
 
         {subtitle && (
           <motion.p
-            className="text-muted text-lg"
+            className="text-muted text-lg text-center mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.3 }}
           >
             Best fit for {subtitle}
           </motion.p>
         )}
 
+        {/* Multi-modal Breakdown */}
+        <motion.div
+          className="flex flex-wrap justify-center gap-4 md:gap-8 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          {breakdownItems.map((item, index) => (
+            <div key={item.paradigm} className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-background/10 flex items-center justify-center">
+                {paradigmIcons[item.paradigm]}
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{item.pct}%</p>
+                <p className="text-sm text-muted">{PARADIGM_LABELS[item.paradigm]}</p>
+              </div>
+              {index < breakdownItems.length - 1 && (
+                <div className="hidden md:block w-px h-10 bg-muted/30 ml-4" />
+              )}
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Confidence Level */}
         {confidenceLevel !== undefined && (
           <motion.div
-            className="flex flex-col items-center gap-1 mt-4"
+            className="flex flex-col items-center gap-2"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-muted text-sm">Confidence Level:</span>
+              <span className="text-muted text-sm">Confidence:</span>
               <span className={`font-bold text-lg ${
                 confidenceLevel >= 70 ? 'text-accent' : 
                 confidenceLevel >= 50 ? 'text-yellow-400' : 'text-red-400'
@@ -77,8 +129,8 @@ export function ResultsHero({
                 {confidenceLevel}%
               </span>
             </div>
-            <p className="text-muted/70 text-xs max-w-md">
-              Based on response consistency, answer completeness, and score differentiation between paradigms.
+            <p className="text-muted/70 text-xs max-w-md text-center">
+              Based on response consistency and score differentiation
             </p>
           </motion.div>
         )}
