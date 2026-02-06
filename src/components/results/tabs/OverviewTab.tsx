@@ -8,6 +8,7 @@
  * - Why This Recommendation
  */
 
+import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Monitor, 
@@ -30,6 +31,30 @@ interface OverviewTabProps {
   recommendation: RecommendationResult;
   reasoningBullets: string[];
   redFlags: RedFlag[];
+}
+
+/**
+ * Safely renders markdown bold syntax (**text**) as React elements
+ */
+function renderBoldMarkdown(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const regex = /\*\*(.*?)\*\*/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(<strong key={match.index}>{match[1]}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
 }
 
 const paradigmIcons: Record<keyof ParadigmScores, React.ReactNode> = {
@@ -85,8 +110,8 @@ export function OverviewTab({ recommendation, reasoningBullets, redFlags }: Over
         </div>
       </BentoBox>
 
-      {/* Key Strengths - SMALL */}
-      <BentoBox size="small">
+      {/* Key Strengths - MEDIUM */}
+      <BentoBox size="medium">
         <BentoHeader 
           title="Key Strengths" 
           icon={<CheckCircle className="h-5 w-5 text-accent" />}
@@ -102,14 +127,14 @@ export function OverviewTab({ recommendation, reasoningBullets, redFlags }: Over
               className="flex items-start gap-2 text-sm text-muted-foreground"
             >
               <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-              <span>{bullet}</span>
+              <span>{renderBoldMarkdown(bullet)}</span>
             </motion.li>
           ))}
         </ul>
       </BentoBox>
 
-      {/* What to Avoid - SMALL */}
-      <BentoBox size="small">
+      {/* What to Avoid - MEDIUM (same as Key Strengths) */}
+      <BentoBox size="medium">
         <BentoHeader 
           title="What to Avoid" 
           icon={<XCircle className="h-5 w-5 text-destructive" />}
@@ -126,7 +151,7 @@ export function OverviewTab({ recommendation, reasoningBullets, redFlags }: Over
             >
               <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
               <span>
-                {PARADIGM_LABELS[paradigm]} ({pct}% match) - Low fit for your context
+                <strong>{PARADIGM_LABELS[paradigm]}</strong> ({pct}% match) - Low fit for your context
               </span>
             </motion.li>
           ))}
@@ -165,7 +190,7 @@ export function OverviewTab({ recommendation, reasoningBullets, redFlags }: Over
               <div className="shrink-0 h-6 w-6 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent">
                 {index + 1}
               </div>
-              <p className="text-sm text-foreground">{bullet}</p>
+              <p className="text-sm text-foreground">{renderBoldMarkdown(bullet)}</p>
             </motion.div>
           ))}
         </div>
