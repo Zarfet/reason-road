@@ -71,45 +71,6 @@ export function OverviewTab({ recommendation, reasoningBullets, redFlags }: Over
 
   return (
     <BentoGrid className="mt-6">
-      {/* Multi-modal Strategy - LARGE */}
-      <BentoBox size="large">
-        <BentoHeader 
-          title="Your Multi-Modal Strategy" 
-          subtitle="Recommended paradigm mix based on your inputs"
-          icon={<Sparkles className="h-5 w-5 text-accent" />}
-        />
-        
-        <div className="space-y-4 mt-6">
-          {allScores.slice(0, 3).map(([paradigm, pct], index) => (
-            <motion.div
-              key={paradigm}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center gap-4"
-            >
-              <div className="shrink-0 h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                {paradigmIcons[paradigm]}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-foreground">
-                    {PARADIGM_LABELS[paradigm]}
-                  </span>
-                  <span className="text-lg font-bold text-foreground">
-                    {pct}%
-                  </span>
-                </div>
-                <Progress 
-                  value={pct} 
-                  className="h-2"
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </BentoBox>
-
       {/* Key Strengths - MEDIUM */}
       <BentoBox size="medium">
         <BentoHeader 

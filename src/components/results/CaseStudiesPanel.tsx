@@ -215,36 +215,43 @@ export function CaseStudiesPanel({
         )}
 
         {!loading && !error && cases.length > 0 && (
-          <div className="space-y-6">
-            {/* Failures Section */}
-            {failures.length > 0 && (
+          <div className="space-y-4">
+            {/* Two-column layout: Failures left, Successes right */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Failures Column - Left */}
               <div>
                 <h3 className="text-sm font-medium text-destructive flex items-center gap-2 mb-3">
                   <ThumbsDown className="h-4 w-4" />
                   Projects to Learn From (Failures)
                 </h3>
                 <div className="space-y-3">
-                  {failures.map((study, index) => (
-                    <CaseStudyCard key={`failure-${index}`} study={study} index={index} />
-                  ))}
+                  {failures.length > 0 ? (
+                    failures.map((study, index) => (
+                      <CaseStudyCard key={`failure-${index}`} study={study} index={index} />
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No failure cases found</p>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* Successes Section */}
-            {successes.length > 0 && (
+              {/* Successes Column - Right */}
               <div>
                 <h3 className="text-sm font-medium text-green-600 dark:text-green-400 flex items-center gap-2 mb-3">
                   <ThumbsUp className="h-4 w-4" />
                   Success Stories
                 </h3>
                 <div className="space-y-3">
-                  {successes.map((study, index) => (
-                    <CaseStudyCard key={`success-${index}`} study={study} index={index} />
-                  ))}
+                  {successes.length > 0 ? (
+                    successes.map((study, index) => (
+                      <CaseStudyCard key={`success-${index}`} study={study} index={index} />
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No success cases found</p>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
             
             <p className="text-xs text-muted-foreground text-center pt-2 italic">
               AI-generated case studies based on your paradigm context. Verify details independently before making decisions.

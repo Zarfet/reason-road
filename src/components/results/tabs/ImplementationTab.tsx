@@ -132,8 +132,8 @@ export function ImplementationTab({ recommendation }: ImplementationTabProps) {
         </div>
       </BentoBox>
 
-      {/* Technical Stack - LARGE */}
-      <BentoBox size="large">
+      {/* Technical Stack - WIDE (full width) */}
+      <BentoBox size="wide">
         <BentoHeader 
           title="Recommended Tech Stack" 
           subtitle="Technologies commonly used for this paradigm"
