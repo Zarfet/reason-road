@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { useAssessment } from '@/context/AssessmentContext';
 import { QuestionLayout } from './QuestionLayout';
 import { OptionCard } from './OptionCard';
 import { ValuesRanking } from './ValuesRanking';
+import { DemographicsExamples } from './DemographicsExamples';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { HelpCircle, AlertCircle } from 'lucide-react';
+import { validateDemographics } from '@/types/assessment';
 import type { 
   TaskComplexity, 
   Frequency, 
@@ -20,13 +25,29 @@ import type {
 // Step 0: Project Context
 export function StepContext() {
   const { answers, updateAnswer } = useAssessment();
+  const [demographicsError, setDemographicsError] = useState('');
+  const [touched, setTouched] = useState(false);
+
+  const handleDemographicsChange = (value: string) => {
+    updateAnswer('userDemographics', value);
+    // Only validate if already touched
+    if (touched) {
+      setDemographicsError(validateDemographics(value));
+    }
+  };
+
+  const handleDemographicsBlur = () => {
+    setTouched(true);
+    setDemographicsError(validateDemographics(answers.userDemographics));
+  };
 
   return (
     <QuestionLayout 
       question="Tell us about your project"
-      hint="This information helps us provide more specific recommendations. All fields are optional."
+      hint="Demographics are critical for accurate paradigm recommendations."
     >
       <div className="space-y-6">
+        {/* Project Name - Optional */}
         <div className="space-y-2">
           <Label htmlFor="projectName">Project name (optional)</Label>
           <Input
@@ -37,15 +58,55 @@ export function StepContext() {
           />
         </div>
         
+        {/* User Demographics - MANDATORY */}
         <div className="space-y-2">
-          <Label htmlFor="demographics">User demographics (optional)</Label>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="demographics" className="text-base">
+              Primary User Demographics
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-sm">
+                  <p className="font-semibold mb-2">Why is this critical?</p>
+                  <ul className="text-sm space-y-1">
+                    <li>• VR has 78% rejection in elderly users</li>
+                    <li>• Invisible interfaces confuse non-technical users</li>
+                    <li>• Voice is essential for visually impaired</li>
+                    <li>• Age affects technology adoption rates</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">
+            Describe age range, tech literacy, profession, or accessibility needs
+          </p>
+          
           <Textarea
             id="demographics"
-            placeholder="e.g., Healthcare professionals ages 30-55, tech-savvy, hospital environment"
+            placeholder="e.g., Healthcare workers, 30-50 years old, moderate tech literacy, comfortable with tablets but not VR"
             value={answers.userDemographics || ''}
-            onChange={(e) => updateAnswer('userDemographics', e.target.value)}
-            rows={3}
+            onChange={(e) => handleDemographicsChange(e.target.value)}
+            onBlur={handleDemographicsBlur}
+            rows={4}
+            className={demographicsError && touched ? 'border-destructive' : ''}
           />
+          
+          {/* Validation Error */}
+          {demographicsError && touched && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" />
+              {demographicsError}
+            </p>
+          )}
+          
+          {/* Examples Accordion */}
+          <DemographicsExamples />
         </div>
       </div>
     </QuestionLayout>

@@ -97,10 +97,10 @@ export type GeographicDeployment = 'Primarily Europe' | 'Primarily US' | 'Global
  * Stored in context and persisted to database
  */
 export interface AssessmentAnswers {
-  // Step 0: Project Context (optional metadata)
-  projectName?: string;
-  userDemographics?: string;
-  geography: GeographicDeployment | null;
+  // Step 0: Project Context
+  projectName: string;                    // Optional (metadata only)
+  userDemographics: string;               // MANDATORY - min 15 chars
+  geography: GeographicDeployment | null; // MANDATORY - must be selected
   
   // Step 1: Values Ranking (ordered array, top = highest priority)
   valuesRanking: DesignValue[];
@@ -114,6 +114,31 @@ export interface AssessmentAnswers {
   explorationMode: ExplorationMode | null;
   errorConsequence: ErrorConsequence | null;
   controlPreference: ControlPreference | null;
+}
+
+/**
+ * Validation helper for demographics field
+ * Returns error message or empty string if valid
+ */
+export function validateDemographics(value: string): string {
+  if (!value || value.trim().length === 0) {
+    return "User demographics are required";
+  }
+  
+  if (value.trim().length < 15) {
+    return "Please provide more detail (minimum 15 characters)";
+  }
+  
+  // Check for key demographic indicators
+  const hasAgeInfo = /\d{2}[-+]|\d{2}s|young|elderly|teen|adult|senior|millennial|gen\s*z|child|kid/i.test(value);
+  const hasTechInfo = /tech|literacy|savvy|beginner|expert|familiar|experience|proficient|comfortable/i.test(value);
+  const hasProfessionInfo = /healthcare|developer|engineer|designer|manager|student|teacher|professional|worker|nurse|doctor|sales|retail/i.test(value);
+  
+  if (!hasAgeInfo && !hasTechInfo && !hasProfessionInfo) {
+    return "Please include age range, tech literacy, or profession";
+  }
+  
+  return ""; // Valid
 }
 
 // ============================================
