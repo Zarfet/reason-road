@@ -36,7 +36,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import type { AssessmentAnswers, WizardStep, RecommendationResult } from '@/types/assessment';
-import { WIZARD_STEPS, DESIGN_VALUES } from '@/types/assessment';
+import { WIZARD_STEPS, DESIGN_VALUES, validateDemographics } from '@/types/assessment';
 import { calculateScores, generateRecommendation } from '@/lib/scoring';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
@@ -119,7 +119,12 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
   const canProceed = (() => {
     switch (currentStepName) {
       case 'context':
-        return true; // Optional fields
+        // Validate demographics (mandatory)
+        const demographicsError = validateDemographics(answers.userDemographics);
+        if (demographicsError) {
+          return false;
+        }
+        return true;
       case 'values':
         return answers.valuesRanking.length === 5;
       case 'complexity':
