@@ -4,20 +4,28 @@
  * Purpose: Calculate paradigm recommendations based on DIKW assessment answers
  * 
  * Algorithm Overview:
- * This scoring system uses weighted contributions from 10 question categories
+ * This scoring system uses weighted contributions from 11 question categories
  * to determine the optimal interface paradigm for a given context.
  * 
- * Weight Distribution (100% total):
- * - VALUES ranking:     30% (strongest influence - top value priority)
- * - Task Complexity:    15% (simple vs complex workflows)
- * - Frequency:          10% (daily use vs occasional)
- * - Predictability:     10% (routine vs varied tasks)
- * - Context of Use:     10% (desktop, mobile, hands-free)
- * - Information Type:   10% (structured data vs unstructured)
- * - Exploration Mode:    5% (browse vs targeted)
- * - Error Consequence:   5% (trivial vs serious errors)
- * - Control Preference:  3% (automatic vs manual)
- * - Geography:           2% (regulatory considerations)
+ * Weight Distribution (105% total, normalized):
+ * - VALUES ranking:        30% (strongest influence - top value priority)
+ * - USER DEMOGRAPHICS:      8% (age, tech literacy, profession, accessibility)
+ * - Task Complexity:       12% (simple vs complex workflows)
+ * - Frequency:             10% (daily use vs occasional)
+ * - Predictability:        10% (routine vs varied tasks)
+ * - Context of Use:        10% (desktop, mobile, hands-free)
+ * - Information Type:      10% (structured data vs unstructured)
+ * - Exploration Mode:       5% (browse vs targeted)
+ * - Error Consequence:      5% (trivial vs serious errors)
+ * - Control Preference:     3% (automatic vs manual)
+ * - Geography:              2% (regulatory considerations)
+ * 
+ * Demographics Influence Examples:
+ * - Elderly users → Voice +0.08, Spatial -0.12 (VR rejection rate 78%)
+ * - Low tech literacy → Traditional +0.08, Invisible -0.10 (need guidance)
+ * - Visual impairment → Voice +0.12 (CRITICAL), Screens -0.10
+ * - Manual workers → Voice +0.08, Traditional -0.08 (hands occupied)
+ * - Healthcare → Traditional +0.05 (precision), Invisible -0.05 (safety)
  * 
  * Paradigms Scored:
  * 1. traditional_screen - Mobile/desktop screens with visual UI
@@ -102,25 +110,151 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 2: TASK COMPLEXITY (15% weight)
+  // STEP 2: USER DEMOGRAPHICS (8% weight)
+  // Parse demographics string for key indicators
+  // ========================================
+  if (answers.userDemographics) {
+    const demographics = answers.userDemographics.toLowerCase();
+    
+    // ============ AGE-RELATED ADJUSTMENTS ============
+    
+    // Elderly / Senior users (60+, 65+, 70+)
+    const isElderly = /\b(elderly|senior|60\+|65\+|70\+|80\+|retired|retirement)\b/.test(demographics);
+    if (isElderly) {
+      scores.voice += 0.08;              // Voice is natural for elderly
+      scores.traditional_screen += 0.05; // Familiar paradigm
+      scores.spatial -= 0.12;            // VR: 78% rejection rate (motion sickness)
+      scores.invisible -= 0.05;          // Automation causes anxiety in elderly
+    }
+    
+    // Young users (Gen Z, teens, 18-25, millennials)
+    const isYoung = /\b(young|teen|18[-–]25|gen\s*z|millennial|student|college)\b/.test(demographics);
+    if (isYoung && !isElderly) {
+      scores.spatial += 0.06;            // Early adopters of AR/VR
+      scores.ai_vectorial += 0.04;       // Comfortable with AI
+      scores.invisible += 0.03;          // Trust automation
+    }
+    
+    // Middle-aged (30-50, 40s, 50s)
+    const isMiddleAged = /\b(30[-–]50|40s?|50s?|middle[-\s]age|adult)\b/.test(demographics);
+    if (isMiddleAged && !isElderly && !isYoung) {
+      scores.traditional_screen += 0.04; // Prefer proven interfaces
+      scores.ai_vectorial += 0.02;       // Selective AI adoption
+    }
+    
+    // ============ TECH LITERACY ADJUSTMENTS ============
+    
+    // Low tech literacy (beginner, non-technical, limited experience)
+    const isLowTech = /\b(non[-\s]?tech|beginner|novice|limited\s+tech|low\s+literacy|unfamiliar|inexperienced)\b/.test(demographics);
+    if (isLowTech) {
+      scores.traditional_screen += 0.08; // Need explicit visual guidance
+      scores.voice += 0.05;              // Intuitive interaction
+      scores.invisible -= 0.10;          // Automation confuses beginners
+      scores.ai_vectorial -= 0.05;       // AI "black box" effect
+      scores.spatial -= 0.08;            // VR learning curve too steep
+    }
+    
+    // High tech literacy (tech-savvy, developers, engineers, experts)
+    const isHighTech = /\b(tech[-\s]?savvy|developer|engineer|programmer|expert|proficient|advanced|early\s+adopter)\b/.test(demographics);
+    if (isHighTech && !isLowTech) {
+      scores.ai_vectorial += 0.06;       // Comfortable with AI tools
+      scores.spatial += 0.04;            // Willing to try VR/AR
+      scores.invisible += 0.04;          // Trust automation
+      scores.traditional_screen -= 0.03; // May find traditional "boring"
+    }
+    
+    // Moderate tech literacy (default assumption if not specified)
+    const isModerateTech = /\b(moderate|average|some\s+experience|familiar|comfortable)\b/.test(demographics);
+    if (isModerateTech && !isLowTech && !isHighTech) {
+      scores.traditional_screen += 0.04; // Balanced approach
+      scores.ai_vectorial += 0.02;
+    }
+    
+    // ============ PROFESSION-BASED ADJUSTMENTS ============
+    
+    // Healthcare (doctors, nurses, medical, hospital)
+    if (/\b(healthcare|medical|doctor|nurse|physician|hospital|clinic|patient|caregiver)\b/.test(demographics)) {
+      scores.traditional_screen += 0.05; // Precision critical, visual confidence
+      scores.voice += 0.03;              // Hands-free during procedures
+      scores.invisible -= 0.05;          // Need explicit control (safety)
+      scores.spatial -= 0.03;            // VR not practical in clinical settings
+    }
+    
+    // Software/Tech industry (developers, engineers, designers)
+    if (/\b(software|developer|engineer|programmer|designer|tech\s+industry|IT|startup)\b/.test(demographics)) {
+      scores.ai_vectorial += 0.05;       // Power users of AI tools
+      scores.traditional_screen += 0.03; // Need screens for coding/design
+      scores.spatial += 0.02;            // Open to new paradigms
+    }
+    
+    // Education (teachers, professors, students)
+    if (/\b(teacher|professor|educator|student|academic|university|school)\b/.test(demographics)) {
+      scores.traditional_screen += 0.04; // Visual learning aids
+      scores.ai_vectorial += 0.03;       // AI tutoring potential
+      scores.spatial += 0.02;            // Educational VR applications
+    }
+    
+    // Manual workers (factory, warehouse, construction, field work)
+    if (/\b(factory|warehouse|construction|field\s+work|manual\s+labor|hands[-\s]?free|operator)\b/.test(demographics)) {
+      scores.voice += 0.08;              // Hands occupied
+      scores.invisible += 0.05;          // Automation helpful
+      scores.traditional_screen -= 0.08; // Hands not free for screens
+      scores.spatial += 0.03;            // AR for overlays (if hands-free)
+    }
+    
+    // Gaming / Entertainment (gamers, streamers, content creators)
+    if (/\b(gamer|gaming|streamer|content\s+creator|youtube|twitch|entertainment)\b/.test(demographics)) {
+      scores.spatial += 0.06;            // Immersion valued
+      scores.ai_vectorial += 0.04;       // AI content generation
+      scores.traditional_screen += 0.02; // Screens for streaming
+    }
+    
+    // ============ ACCESSIBILITY ADJUSTMENTS ============
+    
+    // Visual impairment (blind, low vision, visually impaired)
+    if (/\b(blind|visual(ly)?\s+impair|low\s+vision|sight\s+loss|screen\s+reader)\b/.test(demographics)) {
+      scores.voice += 0.12;              // CRITICAL for accessibility
+      scores.traditional_screen -= 0.10; // Screens not viable
+      scores.spatial -= 0.10;            // VR requires vision
+      scores.invisible += 0.03;          // Audio feedback possible
+    }
+    
+    // Motor impairment (mobility issues, motor impairment, wheelchair)
+    if (/\b(motor\s+impair|mobility|wheelchair|tremor|dexterity|hand\s+control)\b/.test(demographics)) {
+      scores.voice += 0.08;              // Hands-free is essential
+      scores.invisible += 0.05;          // Reduce physical interaction
+      scores.traditional_screen -= 0.05; // Touch/mouse difficult
+      scores.spatial -= 0.08;            // VR controllers challenging
+    }
+    
+    // Hearing impairment (deaf, hard of hearing)
+    if (/\b(deaf|hearing\s+impair|hard\s+of\s+hearing)\b/.test(demographics)) {
+      scores.voice -= 0.10;              // Voice interfaces not viable
+      scores.traditional_screen += 0.08; // Visual feedback essential
+      scores.spatial += 0.03;            // Visual VR experiences work
+    }
+  }
+
+  // ========================================
+  // STEP 3: TASK COMPLEXITY (12% weight)
   // Complex tasks need visual feedback
   // ========================================
   if (answers.taskComplexity === 'Simple') {
     // Simple tasks → automate or voice
-    scores.invisible += 0.15;
-    scores.voice += 0.10;
+    scores.invisible += 0.12;
+    scores.voice += 0.08;
   } else if (answers.taskComplexity === 'Complex') {
     // Complex tasks → need visual UI for judgment
-    scores.traditional_screen += 0.15;
-    scores.ai_vectorial += 0.10;
+    scores.traditional_screen += 0.12;
+    scores.ai_vectorial += 0.08;
   } else if (answers.taskComplexity === 'Medium') {
     // Medium → balanced approach
-    scores.traditional_screen += 0.08;
-    scores.ai_vectorial += 0.07;
+    scores.traditional_screen += 0.06;
+    scores.ai_vectorial += 0.06;
   }
 
   // ========================================
-  // STEP 3: FREQUENCY (10% weight)
+  // STEP 4: FREQUENCY (10% weight)
   // High frequency → optimize for speed
   // ========================================
   if (answers.frequency === 'Multiple times daily') {
@@ -136,7 +270,7 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 4: PREDICTABILITY (10% weight)
+  // STEP 5: PREDICTABILITY (10% weight)
   // Predictable tasks → automate safely
   // ========================================
   if (answers.predictability === 'Always identical') {
@@ -153,7 +287,7 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 5: CONTEXT OF USE (10% weight)
+  // STEP 6: CONTEXT OF USE (10% weight)
   // Physical context determines modality
   // ========================================
   if (answers.contextOfUse === 'Desktop') {
@@ -174,7 +308,7 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 6: INFORMATION TYPE (10% weight)
+  // STEP 7: INFORMATION TYPE (10% weight)
   // Data type determines presentation
   // ========================================
   if (answers.informationType === 'Structured data') {
@@ -193,7 +327,7 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 7: EXPLORATION MODE (5% weight)
+  // STEP 8: EXPLORATION MODE (5% weight)
   // Browse vs targeted retrieval
   // ========================================
   if (answers.explorationMode === 'Explore options') {
@@ -208,7 +342,7 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 8: ERROR CONSEQUENCES (5% weight)
+  // STEP 9: ERROR CONSEQUENCES (5% weight)
   // High stakes → need confirmation
   // ========================================
   if (answers.errorConsequence === 'Serious') {
@@ -222,7 +356,7 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 9: CONTROL PREFERENCE (3% weight)
+  // STEP 10: CONTROL PREFERENCE (3% weight)
   // User's comfort with automation
   // ========================================
   if (answers.controlPreference === 'Full control') {
@@ -237,7 +371,7 @@ export function calculateScores(answers: AssessmentAnswers): ParadigmPercentages
   }
 
   // ========================================
-  // STEP 10: GEOGRAPHY (2% weight)
+  // STEP 11: GEOGRAPHY (2% weight)
   // Regulatory considerations
   // ========================================
   if (answers.geography === 'Primarily Europe') {
@@ -309,6 +443,44 @@ export function getReasoningBullets(answers: AssessmentAnswers, recommendation: 
   if (answers.valuesRanking.length > 0) {
     const topValue = answers.valuesRanking[0];
     bullets.push(`**${topValue}** is your top priority, which strongly influences the recommendation`);
+  }
+
+  // DEMOGRAPHICS-BASED REASONING
+  if (answers.userDemographics) {
+    const demographics = answers.userDemographics.toLowerCase();
+    
+    // Age-based reasoning
+    if (/\b(elderly|senior|60\+|65\+|70\+|80\+|retired|retirement)\b/.test(demographics)) {
+      bullets.push('**Elderly users** benefit from familiar voice interfaces; VR/AR has high rejection rates');
+    } else if (/\b(young|teen|18[-–]25|gen\s*z|millennial)\b/.test(demographics)) {
+      bullets.push('**Younger users** are early adopters comfortable with AR/VR and AI interfaces');
+    }
+    
+    // Tech literacy reasoning
+    if (/\b(non[-\s]?tech|beginner|novice|limited\s+tech|low\s+literacy)\b/.test(demographics)) {
+      bullets.push('**Low tech literacy** requires explicit visual guidance; automation may confuse users');
+    } else if (/\b(tech[-\s]?savvy|developer|engineer|expert|advanced)\b/.test(demographics)) {
+      bullets.push('**Tech-savvy users** are comfortable with AI tools and willing to adopt new paradigms');
+    }
+    
+    // Accessibility reasoning
+    if (/\b(blind|visual(ly)?\s+impair|low\s+vision)\b/.test(demographics)) {
+      bullets.push('**Visual impairment** makes voice interfaces critical; screen-based paradigms are not viable');
+    }
+    if (/\b(motor\s+impair|mobility|wheelchair|tremor)\b/.test(demographics)) {
+      bullets.push('**Motor impairment** benefits from hands-free voice and automation interfaces');
+    }
+    if (/\b(deaf|hearing\s+impair|hard\s+of\s+hearing)\b/.test(demographics)) {
+      bullets.push('**Hearing impairment** requires visual feedback; voice interfaces are not suitable');
+    }
+    
+    // Profession reasoning
+    if (/\b(healthcare|medical|doctor|nurse|hospital)\b/.test(demographics)) {
+      bullets.push('**Healthcare context** requires precision and explicit control for patient safety');
+    }
+    if (/\b(factory|warehouse|construction|field\s+work|manual\s+labor)\b/.test(demographics)) {
+      bullets.push('**Manual work context** with hands occupied makes voice and automation essential');
+    }
   }
 
   // TASK COMPLEXITY REASONING
