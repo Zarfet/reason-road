@@ -1,13 +1,13 @@
 /**
- * NEXUS - Shared Results Page (Public)
+ * NEXUS - Shared Results Page (Public, Bento Grid Layout)
  * 
  * Purpose: Display results of a shared assessment without authentication
  * 
  * Features:
  * - Load assessment by share_token from URL params
- * - Display paradigm recommendation with scores
- * - Show reasoning bullets and red flags
- * - Two-column layout with alternatives
+ * - Fixed hero section with paradigm breakdown
+ * - Tabbed content area with 4 tabs (no Actions for shared)
+ * - Bento grid layout within each tab
  * - No edit capabilities (view only)
  * 
  * Security:
@@ -20,6 +20,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Target, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   type AssessmentAnswers,
@@ -30,10 +31,10 @@ import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/li
 // Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
 import { ResultsHero } from '@/components/results/ResultsHero';
-import { ReasoningPanel } from '@/components/results/ReasoningPanel';
-import { AlternativesPanel } from '@/components/results/AlternativesPanel';
-import { ResearchPanel } from '@/components/results/ResearchPanel';
-import { CaseStudiesPanel } from '@/components/results/CaseStudiesPanel';
+import { OverviewTab } from '@/components/results/tabs/OverviewTab';
+import { AnalysisTab } from '@/components/results/tabs/AnalysisTab';
+import { ImplementationTab } from '@/components/results/tabs/ImplementationTab';
+import { ResearchTab } from '@/components/results/tabs/ResearchTab';
 
 interface StoredAssessment {
   id: string;
@@ -163,41 +164,68 @@ export default function SharedResults() {
         <ResultsHero
           primaryParadigm={recommendation.primary.paradigm}
           secondaryParadigm={recommendation.secondary.paradigm}
+          tertiaryParadigm={recommendation.tertiary.paradigm}
+          primaryPct={recommendation.primary.pct}
           secondaryPct={recommendation.secondary.pct}
+          tertiaryPct={recommendation.tertiary.pct}
           projectName={answers.projectName}
           userDemographics={answers.userDemographics}
           confidenceLevel={confidenceLevel}
         />
       </div>
 
-      {/* Main Content - Two Column Layout */}
+      {/* Tabbed Content Area */}
       <main className="nexus-container py-8 pb-20">
         <motion.div
-          className="grid grid-cols-1 lg:grid-cols-5 gap-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
-          {/* Left Column - Why This Recommendation + Research + Case Studies */}
-          <div className="lg:col-span-3 space-y-6">
-            <ReasoningPanel bullets={reasoningBullets} redFlags={redFlags} />
-            <ResearchPanel 
-              paradigm={recommendation.primary.paradigm}
-              userDemographics={answers.userDemographics}
-            />
-            <CaseStudiesPanel
-              paradigm={recommendation.primary.paradigm}
-              userDemographics={answers.userDemographics}
-            />
-          </div>
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50">
+              <TabsTrigger value="overview" className="flex-1 sm:flex-none">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="analysis" className="flex-1 sm:flex-none">
+                Analysis
+              </TabsTrigger>
+              <TabsTrigger value="implementation" className="flex-1 sm:flex-none">
+                Implementation
+              </TabsTrigger>
+              <TabsTrigger value="research" className="flex-1 sm:flex-none">
+                Research
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Right Column - Alternatives */}
-          <div className="lg:col-span-2">
-            <AlternativesPanel 
-              allScores={recommendation.allScores}
-              primaryParadigm={recommendation.primary.paradigm}
-            />
-          </div>
+            <TabsContent value="overview">
+              <OverviewTab
+                recommendation={recommendation}
+                reasoningBullets={reasoningBullets}
+                redFlags={redFlags}
+              />
+            </TabsContent>
+
+            <TabsContent value="analysis">
+              <AnalysisTab
+                recommendation={recommendation}
+                redFlags={redFlags}
+                answers={answers}
+              />
+            </TabsContent>
+
+            <TabsContent value="implementation">
+              <ImplementationTab
+                recommendation={recommendation}
+              />
+            </TabsContent>
+
+            <TabsContent value="research">
+              <ResearchTab
+                paradigm={recommendation.primary.paradigm}
+                userDemographics={answers.userDemographics}
+              />
+            </TabsContent>
+          </Tabs>
         </motion.div>
 
         {/* CTA */}
