@@ -170,6 +170,7 @@ export default function Results() {
               <AnalysisTab
                 recommendation={recommendation}
                 redFlags={redFlags}
+                answers={answers}
               />
             </TabsContent>
 
