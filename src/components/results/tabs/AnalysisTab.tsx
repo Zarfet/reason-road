@@ -1,33 +1,38 @@
 /**
  * Analysis Tab - Detailed analysis content
  * 
- * Placeholder for future content:
- * - Arguments For/Against
+ * Contents:
+ * - Arguments For/Against (placeholder)
  * - Red Flags
- * - Regulatory Analysis
- * - Sustainability Report
+ * - Regulatory Analysis (conditional on geography)
+ * - Sustainability Report (placeholder)
  */
 
 import { motion } from 'framer-motion';
 import { 
   Scale, 
   AlertTriangle, 
-  Shield, 
   Leaf,
   Construction,
   ExternalLink
 } from 'lucide-react';
 import { BentoGrid, BentoBox, BentoHeader } from '../bento/BentoGrid';
 import { Badge } from '@/components/ui/badge';
-import type { RecommendationResult } from '@/types/assessment';
+import { RegulatoryCard } from '../RegulatoryCard';
+import { generateRegulatoryAnalysis } from '@/lib/regulatoryAnalysis';
+import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 import type { RedFlag } from '@/lib/scoring';
 
 interface AnalysisTabProps {
   recommendation: RecommendationResult;
   redFlags: RedFlag[];
+  answers: AssessmentAnswers;
 }
 
-export function AnalysisTab({ recommendation, redFlags }: AnalysisTabProps) {
+export function AnalysisTab({ recommendation, redFlags, answers }: AnalysisTabProps) {
+  // Generate regulatory analysis based on geography
+  const regulatoryAnalysis = generateRegulatoryAnalysis(answers, recommendation);
+  
   return (
     <BentoGrid className="mt-6">
       {/* Arguments For/Against - LARGE */}
@@ -85,24 +90,10 @@ export function AnalysisTab({ recommendation, redFlags }: AnalysisTabProps) {
         )}
       </BentoBox>
 
-      {/* Regulatory Considerations - MEDIUM */}
-      <BentoBox size="medium">
-        <BentoHeader 
-          title="Regulatory Considerations" 
-          subtitle="Compliance requirements for your region"
-          icon={<Shield className="h-5 w-5 text-accent" />}
-        />
-        
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <Construction className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">
-              Regulatory analysis coming soon
-            </p>
-            <Badge variant="secondary" className="mt-2">Coming in Prompt 4</Badge>
-          </div>
-        </div>
-      </BentoBox>
+      {/* Regulatory Impact Analysis - Conditional */}
+      {regulatoryAnalysis && (
+        <RegulatoryCard analysis={regulatoryAnalysis} />
+      )}
 
       {/* Sustainability Report - MEDIUM */}
       <BentoBox size="medium">
