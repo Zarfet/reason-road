@@ -13,10 +13,10 @@ import {
   AlertTriangle, 
   ExternalLink
 } from 'lucide-react';
-import { BentoGrid } from '../bento/BentoGrid';
 import { RegulatoryCard } from '../RegulatoryCard';
 import { SustainabilityCard } from '../SustainabilityCard';
 import { ArgumentsSection } from '../ArgumentsSection';
+import { RedFlagsCard } from '../RedFlagsCard';
 import { generateRegulatoryAnalysis } from '@/lib/regulatoryAnalysis';
 import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 import type { RedFlag } from '@/lib/scoring';
@@ -33,6 +33,9 @@ export function AnalysisTab({ recommendation, redFlags, answers }: AnalysisTabPr
   
   return (
     <div className="space-y-8">
+      {/* Red Flags - Shows only if flags detected */}
+      <RedFlagsCard recommendation={recommendation} answers={answers} />
+      
       {/* Arguments For/Against */}
       <ArgumentsSection recommendation={recommendation} answers={answers} />
 
