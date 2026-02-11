@@ -42,6 +42,7 @@ const Results = lazy(() => import("./pages/Results"));
 const SavedResults = lazy(() => import("./pages/SavedResults"));
 const SharedResults = lazy(() => import("./pages/SharedResults"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -107,6 +108,16 @@ const App = () => (
                 } 
               />
               
+              {/* Admin route - protected by useAdmin hook internally */}
+              <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Public shared results route */}
               <Route path="/shared/:token" element={<SharedResults />} />
               
