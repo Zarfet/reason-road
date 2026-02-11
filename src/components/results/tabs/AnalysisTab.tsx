@@ -10,16 +10,13 @@
 
 import { motion } from 'framer-motion';
 import { 
-  Scale, 
   AlertTriangle, 
-  Leaf,
-  Construction,
   ExternalLink
 } from 'lucide-react';
-import { BentoGrid, BentoBox, BentoHeader } from '../bento/BentoGrid';
-import { Badge } from '@/components/ui/badge';
+import { BentoGrid } from '../bento/BentoGrid';
 import { RegulatoryCard } from '../RegulatoryCard';
 import { SustainabilityCard } from '../SustainabilityCard';
+import { ArgumentsSection } from '../ArgumentsSection';
 import { generateRegulatoryAnalysis } from '@/lib/regulatoryAnalysis';
 import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 import type { RedFlag } from '@/lib/scoring';
@@ -35,33 +32,16 @@ export function AnalysisTab({ recommendation, redFlags, answers }: AnalysisTabPr
   const regulatoryAnalysis = generateRegulatoryAnalysis(answers, recommendation);
   
   return (
-    <BentoGrid className="mt-6">
-      {/* Arguments For/Against - LARGE */}
-      <BentoBox size="large">
-        <BentoHeader 
-          title="Arguments For & Against" 
-          subtitle="Balanced analysis of the recommended approach"
-          icon={<Scale className="h-5 w-5 text-accent" />}
-        />
-        
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <Construction className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              Detailed pros/cons analysis coming soon
-            </p>
-            <Badge variant="secondary" className="mt-2">Coming in Prompt 6-7</Badge>
-          </div>
-        </div>
-      </BentoBox>
+    <div className="space-y-8">
+      {/* Arguments For/Against */}
+      <ArgumentsSection recommendation={recommendation} answers={answers} />
 
-      {/* Red Flags - SMALL */}
-      <BentoBox size="small">
-        <BentoHeader 
-          title="Red Flags" 
-          subtitle="Potential concerns to address"
-          icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
-        />
+      {/* Red Flags Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-destructive" />
+          <h3 className="text-lg font-semibold">Red Flags</h3>
+        </div>
         
         {redFlags.length > 0 ? (
           <ul className="space-y-3">
@@ -71,7 +51,7 @@ export function AnalysisTab({ recommendation, redFlags, answers }: AnalysisTabPr
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex flex-col gap-1 text-sm p-2 rounded-lg bg-destructive/5 border border-destructive/20"
+                className="flex flex-col gap-1 text-sm p-3 rounded-lg bg-destructive/5 border border-destructive/20"
               >
                 <div className="flex items-start gap-2 text-muted-foreground">
                   <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
@@ -89,7 +69,7 @@ export function AnalysisTab({ recommendation, redFlags, answers }: AnalysisTabPr
         ) : (
           <p className="text-sm text-muted-foreground">No significant red flags identified.</p>
         )}
-      </BentoBox>
+      </div>
 
       {/* Regulatory Impact Analysis - Conditional */}
       {regulatoryAnalysis && (
@@ -98,6 +78,6 @@ export function AnalysisTab({ recommendation, redFlags, answers }: AnalysisTabPr
 
       {/* Sustainability Report - Conditional */}
       <SustainabilityCard recommendation={recommendation} answers={answers} />
-    </BentoGrid>
+    </div>
   );
 }
