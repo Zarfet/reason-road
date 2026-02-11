@@ -216,8 +216,10 @@ export default function SavedResults() {
             <TabsContent value="overview">
               <OverviewTab
                 recommendation={recommendation}
+                answers={answers}
                 reasoningBullets={reasoningBullets}
                 redFlags={redFlags}
+                confidenceLevel={confidenceLevel}
               />
             </TabsContent>
 

@@ -200,8 +200,10 @@ export default function SharedResults() {
             <TabsContent value="overview">
               <OverviewTab
                 recommendation={recommendation}
+                answers={answers}
                 reasoningBullets={reasoningBullets}
                 redFlags={redFlags}
+                confidenceLevel={confidenceLevel}
               />
             </TabsContent>
 
