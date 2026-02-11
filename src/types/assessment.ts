@@ -202,7 +202,8 @@ export type WizardStep =
   | 'exploration'
   | 'errors'
   | 'control'
-  | 'geography';
+  | 'geography'
+  | 'review';
 
 /**
  * Ordered array of wizard steps
@@ -219,7 +220,8 @@ export const WIZARD_STEPS: WizardStep[] = [
   'exploration',
   'errors',
   'control',
-  'geography'
+  'geography',
+  'review'
 ];
 
 // ============================================

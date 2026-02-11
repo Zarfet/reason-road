@@ -34,10 +34,11 @@
  * Dependencies: scoring.ts, assessment types
  */
 
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { AssessmentAnswers, WizardStep, RecommendationResult } from '@/types/assessment';
 import { WIZARD_STEPS, DESIGN_VALUES, validateDemographics } from '@/types/assessment';
 import { calculateScores, generateRecommendation } from '@/lib/scoring';
+import { detectContradictionsForStep } from '@/lib/contradictionDetector';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -116,39 +117,59 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
    * Check if current step can proceed
    * Each step has specific validation requirements
    */
-  const canProceed = (() => {
-    switch (currentStepName) {
-      case 'context':
-        // Validate demographics (mandatory)
-        const demographicsError = validateDemographics(answers.userDemographics);
-        if (demographicsError) {
+  const canProceed = useMemo(() => {
+    // Check step-specific validation
+    const stepValid = (() => {
+      switch (currentStepName) {
+        case 'context':
+          // Validate demographics (mandatory)
+          const demographicsError = validateDemographics(answers.userDemographics);
+          if (demographicsError) {
+            return false;
+          }
+          return true;
+        case 'values':
+          return answers.valuesRanking.length === 5;
+        case 'complexity':
+          return answers.taskComplexity !== null;
+        case 'frequency':
+          return answers.frequency !== null;
+        case 'predictability':
+          return answers.predictability !== null;
+        case 'context-of-use':
+          return answers.contextOfUse !== null;
+        case 'information-type':
+          return answers.informationType !== null;
+        case 'exploration':
+          return answers.explorationMode !== null;
+        case 'errors':
+          return answers.errorConsequence !== null;
+        case 'control':
+          return answers.controlPreference !== null;
+        case 'geography':
+          return answers.geography !== null;
+        case 'review':
+          return true; // Review step allows proceeding with warnings
+        default:
           return false;
-        }
-        return true;
-      case 'values':
-        return answers.valuesRanking.length === 5;
-      case 'complexity':
-        return answers.taskComplexity !== null;
-      case 'frequency':
-        return answers.frequency !== null;
-      case 'predictability':
-        return answers.predictability !== null;
-      case 'context-of-use':
-        return answers.contextOfUse !== null;
-      case 'information-type':
-        return answers.informationType !== null;
-      case 'exploration':
-        return answers.explorationMode !== null;
-      case 'errors':
-        return answers.errorConsequence !== null;
-      case 'control':
-        return answers.controlPreference !== null;
-      case 'geography':
-        return answers.geography !== null;
-      default:
-        return false;
+      }
+    })();
+
+    if (!stepValid) {
+      return false;
     }
-  })();
+
+    // Check for blocking contradictions (only on steps 3-10, not on review)
+    if (currentStepName !== 'review' && currentStep >= 2) {
+      const contradictions = detectContradictionsForStep(currentStep, answers);
+      const hasBlockingErrors = contradictions.some(c => c.severity === 'error');
+      if (hasBlockingErrors) {
+        return false;
+      }
+    }
+
+    return true;
+  }, [currentStep, currentStepName, answers]);
 
   /**
    * Navigate to next step (if not at end)
