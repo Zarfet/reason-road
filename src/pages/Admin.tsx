@@ -3,7 +3,7 @@
  * 
  * Analytics dashboard for thesis data collection.
  * Protected by user_roles table (admin role required).
- * Features: stats, assessment table, CSV export.
+ * Features: stats, assessment table with search/filters, CSV export.
  */
 
 import { useEffect, useState, useMemo } from 'react';
@@ -13,16 +13,13 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AssessmentTable } from '@/components/admin/AssessmentTable';
 import { Navbar } from '@/components/layout/Navbar';
 import {
   Download,
   RefreshCw,
   Users,
   CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Clock,
   BarChart3,
   FileText,
 } from 'lucide-react';
@@ -240,7 +237,7 @@ export default function Admin() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" /> Avg Time
+                <Users className="h-4 w-4" /> Avg Time
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -291,77 +288,7 @@ export default function Admin() {
             <CardTitle className="text-lg">All Assessments ({stats.total})</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Demographics</TableHead>
-                  <TableHead>Primary Paradigm</TableHead>
-                  <TableHead>Completed</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>PDF</TableHead>
-                  <TableHead>Rating</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {assessments.map((a) => {
-                  const r = (a.responses || {}) as Record<string, unknown>;
-                  const pr = (a.paradigm_results || {}) as Record<string, unknown>;
-                  const primary = pr?.primary as { paradigm?: string; pct?: number } | undefined;
-                  const demographics = String(r.userDemographics || 'N/A');
-
-                  return (
-                    <TableRow key={a.id}>
-                      <TableCell className="text-sm">
-                        {new Date(a.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-sm" title={demographics}>
-                        {demographics}
-                      </TableCell>
-                      <TableCell>
-                        {primary?.paradigm ? (
-                          <Badge variant="outline">
-                            {PARADIGM_LABELS[primary.paradigm as keyof ParadigmScores] || primary.paradigm}{' '}
-                            ({Math.round(primary.pct || 0)}%)
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {a.is_completed ? (
-                          <CheckCircle className="h-4 w-4 text-accent" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-destructive" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {a.time_to_complete_seconds
-                          ? `${Math.floor(a.time_to_complete_seconds / 60)}m`
-                          : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {a.pdf_downloaded ? (
-                          <CheckCircle className="h-4 w-4 text-accent" />
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {a.agreement_rating ? `${a.agreement_rating}/5` : '—'}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-                {assessments.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                      No assessments yet. Data will appear as users complete assessments.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <AssessmentTable assessments={assessments} />
           </CardContent>
         </Card>
       </main>
