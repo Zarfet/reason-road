@@ -140,29 +140,36 @@ export default function Results() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50">
+            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50 sticky top-[65px] z-30 backdrop-blur-sm">
               <TabsTrigger value="overview" className="flex-1 sm:flex-none">
-                Overview
+                <span className="sm:hidden">📊</span>
+                <span className="hidden sm:inline">Overview</span>
               </TabsTrigger>
               <TabsTrigger value="analysis" className="flex-1 sm:flex-none">
-                Analysis
+                <span className="sm:hidden">📈</span>
+                <span className="hidden sm:inline">Analysis</span>
               </TabsTrigger>
               <TabsTrigger value="implementation" className="flex-1 sm:flex-none">
-                Implementation
+                <span className="sm:hidden">⚙️</span>
+                <span className="hidden sm:inline">Implementation</span>
               </TabsTrigger>
               <TabsTrigger value="research" className="flex-1 sm:flex-none">
-                Research
+                <span className="sm:hidden">📚</span>
+                <span className="hidden sm:inline">Research</span>
               </TabsTrigger>
               <TabsTrigger value="actions" className="flex-1 sm:flex-none">
-                Actions
+                <span className="sm:hidden">🎯</span>
+                <span className="hidden sm:inline">Actions</span>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
               <OverviewTab
                 recommendation={recommendation}
+                answers={answers}
                 reasoningBullets={reasoningBullets}
                 redFlags={redFlags}
+                confidenceLevel={confidenceLevel}
               />
             </TabsContent>
 
