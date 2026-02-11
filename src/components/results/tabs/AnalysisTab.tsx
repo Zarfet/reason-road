@@ -19,6 +19,7 @@ import {
 import { BentoGrid, BentoBox, BentoHeader } from '../bento/BentoGrid';
 import { Badge } from '@/components/ui/badge';
 import { RegulatoryCard } from '../RegulatoryCard';
+import { SustainabilityCard } from '../SustainabilityCard';
 import { generateRegulatoryAnalysis } from '@/lib/regulatoryAnalysis';
 import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 import type { RedFlag } from '@/lib/scoring';
@@ -95,24 +96,8 @@ export function AnalysisTab({ recommendation, redFlags, answers }: AnalysisTabPr
         <RegulatoryCard analysis={regulatoryAnalysis} />
       )}
 
-      {/* Sustainability Report - MEDIUM */}
-      <BentoBox size="medium">
-        <BentoHeader 
-          title="Sustainability Report" 
-          subtitle="Environmental impact considerations"
-          icon={<Leaf className="h-5 w-5 text-accent" />}
-        />
-        
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <Construction className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">
-              Sustainability metrics coming soon
-            </p>
-            <Badge variant="secondary" className="mt-2">Coming in Prompt 5</Badge>
-          </div>
-        </div>
-      </BentoBox>
+      {/* Sustainability Report - Conditional */}
+      <SustainabilityCard recommendation={recommendation} answers={answers} />
     </BentoGrid>
   );
 }
