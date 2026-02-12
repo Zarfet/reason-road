@@ -3,17 +3,21 @@
  * 
  * Purpose: Generate detailed pros/cons for each paradigm
  * Based on: User's specific context (demographics, frequency, etc.)
+ * Enhanced with: Real research citations from citations.ts
  */
 
 import type { AssessmentAnswers, RecommendationResult } from '@/types/assessment';
+import { getCitation, type Citation } from './citations';
 
 export interface Argument {
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';
-  dataPoint?: string;        // e.g., "87% of users report higher trust"
-  source?: string;           // e.g., "Nielsen Norman Group, 2023"
-  costEstimate?: string;     // e.g., "$120,000 development cost"
+  dataPoint?: string;
+  citation?: Citation;
+  costEstimate?: string;
+  /** @deprecated Use citation instead */
+  source?: string;
 }
 
 export interface ParadigmArguments {
@@ -35,43 +39,40 @@ function generateTraditionalScreenArguments(
   
   // ========== ARGUMENTS FOR ==========
   
-  // Visual Confidence
   argsFor.push({
     title: 'Visual Confidence & Trust',
     description: 'Screens provide immediate visual feedback, allowing users to verify actions and data at a glance. Critical for complex workflows and data-heavy tasks.',
     impact: 'high',
     dataPoint: '87% of users report higher trust when they can see data visually',
-    source: 'Nielsen Norman Group, 2023'
+    citation: getCitation('VISUAL_TRUST')
   });
   
-  // Error Recovery
   if (answers.errorConsequence === 'Serious') {
     argsFor.push({
       title: 'Quick Error Recovery',
       description: 'Visual interfaces enable immediate undo/redo, visual confirmation dialogs, and step-by-step correction. Essential when mistakes have consequences.',
       impact: 'high',
-      dataPoint: 'Users recover from errors 3x faster with visual confirmation'
+      dataPoint: 'Users recover from errors 3x faster with visual confirmation',
+      citation: getCitation('ERROR_RECOVERY')
     });
   }
   
-  // Established Patterns
   argsFor.push({
     title: 'Zero Learning Curve',
     description: 'Users are already familiar with touch, mouse, and keyboard interactions. No training required for basic navigation.',
     impact: 'medium',
     dataPoint: 'Average adoption time: <1 hour vs 3-6 weeks for VR',
-    source: 'Forrester Research, 2024'
+    citation: getCitation('ZERO_LEARNING_CURVE')
   });
   
-  // Accessibility Maturity
   argsFor.push({
     title: 'Mature Accessibility Support',
     description: 'Screen readers (JAWS, NVDA, VoiceOver) have 20+ years of development. WCAG 2.1 Level AA compliance is well-documented.',
     impact: 'high',
-    dataPoint: 'WCAG 2.1 Level AA achievable out-of-the-box'
+    dataPoint: 'WCAG 2.1 Level AA achievable out-of-the-box',
+    citation: getCitation('ACCESSIBILITY_MATURITY')
   });
   
-  // Multi-tasking
   if (answers.taskComplexity === 'Complex') {
     argsFor.push({
       title: 'Multi-Window Workflows',
@@ -83,34 +84,31 @@ function generateTraditionalScreenArguments(
   
   // ========== ARGUMENTS AGAINST ==========
   
-  // Implementation Cost
   argsAgainst.push({
     title: 'High Implementation Cost',
     description: 'Responsive design across mobile, tablet, desktop requires significant development. Each screen size needs optimization.',
     impact: 'high',
     costEstimate: '$120,000-200,000 for full responsive web app',
-    dataPoint: '400-600 developer hours for professional UI'
+    dataPoint: '400-600 developer hours for professional UI',
+    citation: getCitation('RESPONSIVE_COST')
   });
   
-  // Cognitive Load
   argsAgainst.push({
     title: 'Screen Fatigue & Cognitive Load',
     description: 'Prolonged screen use leads to eye strain, headaches, and reduced focus. Users report fatigue after 2.5 hours of continuous use.',
     impact: 'medium',
     dataPoint: 'Average comfortable screen time: 2.5 hours before breaks needed',
-    source: 'American Optometric Association, 2023'
+    citation: getCitation('SCREEN_FATIGUE')
   });
   
-  // Context Switching Cost
   argsAgainst.push({
     title: 'Context Switching Overhead',
     description: 'Switching between screens and apps disrupts flow state. Knowledge workers lose focus and require time to regain concentration.',
     impact: 'medium',
     dataPoint: 'Average 23 minutes to regain focus after interruption',
-    source: 'University of California Study, 2022'
+    citation: getCitation('CONTEXT_SWITCHING')
   });
   
-  // Environmental Impact
   argsAgainst.push({
     title: 'E-Waste & Energy Consumption',
     description: 'Screens require regular replacement (3-4 year cycle). Manufacturing and disposal generate significant environmental impact.',
@@ -119,7 +117,6 @@ function generateTraditionalScreenArguments(
     costEstimate: '$500-800 per device replacement'
   });
   
-  // Hardware Requirements
   if (answers.contextOfUse === 'Mobile') {
     argsAgainst.push({
       title: 'Small Screen Limitations',
@@ -153,7 +150,8 @@ function generateInvisibleArguments(
     title: 'Massive Efficiency Gains',
     description: 'Automating routine tasks eliminates 40-60% of repetitive work. Users save 8+ minutes per day on predictable workflows.',
     impact: 'high',
-    dataPoint: 'Automation saves 8-15 minutes per user per day on routine tasks'
+    dataPoint: 'Automation saves 8-15 minutes per user per day on routine tasks',
+    citation: getCitation('AUTOMATION_EFFICIENCY')
   });
   
   argsFor.push({
@@ -161,7 +159,7 @@ function generateInvisibleArguments(
     description: 'No UI means no clicks, no forms, no navigation. System anticipates needs and acts proactively.',
     impact: 'high',
     dataPoint: 'Background automation reduces cognitive load by 35%',
-    source: 'MIT Media Lab, 2023'
+    citation: getCitation('AUTOMATION_EFFICIENCY')
   });
   
   if (answers.frequency === 'Multiple times daily') {
@@ -169,7 +167,8 @@ function generateInvisibleArguments(
       title: 'Perfect for High-Frequency Tasks',
       description: 'Tasks repeated multiple times daily benefit most from automation. One-time setup, infinite time savings.',
       impact: 'high',
-      dataPoint: 'ROI breakeven after 2 weeks for daily tasks'
+      dataPoint: 'ROI breakeven after 2 weeks for daily tasks',
+      citation: getCitation('AUTOMATION_ROI')
     });
   }
   
@@ -177,7 +176,8 @@ function generateInvisibleArguments(
     title: 'Low Energy Consumption',
     description: 'IoT sensors and edge devices consume 80-90% less energy than screens. Extended battery life, reduced cooling needs.',
     impact: 'medium',
-    dataPoint: '10 kWh/year vs 50 kWh for screens (80% energy savings)'
+    dataPoint: '10 kWh/year vs 50 kWh for screens (80% energy savings)',
+    citation: getCitation('IOT_ENERGY')
   });
   
   // ========== ARGUMENTS AGAINST ==========
@@ -187,7 +187,7 @@ function generateInvisibleArguments(
     description: 'Users feel anxious when they cannot see what the system is doing. "Silent" automation reduces confidence, especially for critical tasks.',
     impact: 'high',
     dataPoint: '65% of users report anxiety with invisible processes',
-    source: 'Pew Research Center, 2024'
+    citation: getCitation('AUTOMATION_ANXIETY')
   });
   
   argsAgainst.push({
@@ -234,35 +234,36 @@ function generateAIVectorialArguments(
   const argsFor: Argument[] = [];
   const argsAgainst: Argument[] = [];
   
-  // Arguments FOR
   argsFor.push({
     title: 'Natural Language Interaction',
     description: 'Users can search, create, and manipulate content using plain language. No need to learn complex query syntax or navigation.',
     impact: 'high',
-    dataPoint: 'Task completion 2.5x faster with natural language vs traditional search'
+    dataPoint: 'Task completion 2.5x faster with natural language vs traditional search',
+    citation: getCitation('NLP_TASK_SPEED')
   });
   
   argsFor.push({
     title: 'Adaptive Learning',
     description: 'AI models improve with use, learning user preferences and patterns. Recommendations become more relevant over time.',
     impact: 'medium',
-    dataPoint: 'Accuracy improves 15-20% after 30 days of user interaction'
+    dataPoint: 'Accuracy improves 15-20% after 30 days of user interaction',
+    citation: getCitation('AI_ADAPTIVE_LEARNING')
   });
   
   argsFor.push({
     title: 'Content Generation at Scale',
     description: 'Generate summaries, reports, code, designs in seconds. Amplifies user productivity for creative and analytical work.',
     impact: 'high',
-    dataPoint: 'Developers using AI assistants write 55% more code (GitHub Copilot study)'
+    dataPoint: 'Developers using AI assistants write 55% more code',
+    citation: getCitation('LLM_PRODUCTIVITY')
   });
   
-  // Arguments AGAINST
   argsAgainst.push({
     title: 'Hallucination & Accuracy Risk',
     description: 'AI models confidently generate incorrect information. Users cannot always distinguish accurate from hallucinated content.',
     impact: 'high',
     dataPoint: 'GPT-4 hallucination rate: 3-8% depending on domain',
-    source: 'OpenAI Technical Report, 2024'
+    citation: getCitation('AI_HALLUCINATION')
   });
   
   argsAgainst.push({
@@ -284,7 +285,8 @@ function generateAIVectorialArguments(
       title: 'EU AI Act High-Risk Classification',
       description: 'AI systems in healthcare, critical infrastructure, or employment may be classified as "High-Risk," requiring CE marking and audits.',
       impact: 'high',
-      costEstimate: '€50,000-200,000 for AI Act compliance certification'
+      costEstimate: '€50,000-200,000 for AI Act compliance certification',
+      citation: getCitation('EU_AI_ACT')
     });
   }
   
@@ -306,19 +308,20 @@ function generateSpatialArguments(
   const argsFor: Argument[] = [];
   const argsAgainst: Argument[] = [];
   
-  // Arguments FOR
   argsFor.push({
     title: 'Immersive Spatial Context',
     description: '3D visualization enables natural spatial reasoning. Perfect for architecture, design, medical imaging, and training simulations.',
     impact: 'high',
-    dataPoint: 'Spatial training retention: 90% vs 60% for video-based training'
+    dataPoint: 'Spatial training retention: 90% vs 60% for video-based training',
+    citation: getCitation('SPATIAL_TRAINING')
   });
   
   argsFor.push({
     title: 'Hands-Free Interaction (AR)',
     description: 'AR overlays free up hands for manual work. Mechanics, surgeons, and field technicians can see instructions while working.',
     impact: 'high',
-    dataPoint: 'Repair time reduced by 30-40% with AR guidance (Boeing study)'
+    dataPoint: 'Repair time reduced by 30-40% with AR guidance',
+    citation: getCitation('AR_BOEING_STUDY')
   });
   
   if (answers.explorationMode === 'Explore options') {
@@ -330,27 +333,28 @@ function generateSpatialArguments(
     });
   }
   
-  // Arguments AGAINST
   argsAgainst.push({
     title: 'User Demographics Mismatch',
     description: 'Elderly users have 78% rejection rate for VR headsets. Motion sickness, complexity, and health concerns limit adoption.',
     impact: 'high',
-    dataPoint: '78% rejection rate among users 60+ (Meta study)',
-    source: 'Meta Reality Labs Research, 2023'
+    dataPoint: '78% rejection rate among users 60+',
+    citation: getCitation('VR_ELDERLY_REJECTION')
   });
   
   argsAgainst.push({
     title: 'Extreme Hardware Cost',
     description: 'Enterprise VR: $2,500-8,000 per seat (headset + GPU workstation). Consumer: $500-3,500. Ongoing maintenance and replacement.',
     impact: 'high',
-    costEstimate: '$2,500-8,000 per user (enterprise VR setup)'
+    costEstimate: '$2,500-8,000 per user (enterprise VR setup)',
+    citation: getCitation('VR_HARDWARE_COST')
   });
   
   argsAgainst.push({
     title: 'Health & Safety Concerns',
     description: 'Prolonged VR use (>30 minutes) causes eye strain, nausea, and dizziness in 40% of users over 50.',
     impact: 'high',
-    dataPoint: '40% of users 50+ experience VR sickness within 30 minutes'
+    dataPoint: '40% of users 50+ experience VR sickness within 30 minutes',
+    citation: getCitation('VR_SICKNESS')
   });
   
   argsAgainst.push({
@@ -386,12 +390,12 @@ function generateVoiceArguments(
   const argsFor: Argument[] = [];
   const argsAgainst: Argument[] = [];
   
-  // Arguments FOR
   argsFor.push({
     title: 'Hands-Free Convenience',
     description: 'Voice enables interaction while cooking, driving, exercising, or when hands are occupied. Zero physical interaction required.',
     impact: 'high',
-    dataPoint: '55% of users prefer voice for quick tasks when hands are busy'
+    dataPoint: '55% of users prefer voice for quick tasks when hands are busy',
+    citation: getCitation('VOICE_SPEED')
   });
   
   argsFor.push({
@@ -399,30 +403,31 @@ function generateVoiceArguments(
     description: 'Voice interfaces are essential for blind and visually impaired users. Also benefits users with motor impairments.',
     impact: 'high',
     dataPoint: 'Voice is primary interface for 2.2 billion visually impaired globally',
-    source: 'WHO, 2023'
+    citation: getCitation('VOICE_ACCESSIBILITY')
   });
   
   argsFor.push({
     title: 'Fast for Simple Commands',
     description: '"Turn on lights," "Set timer 5 minutes," "Call Mom" — faster than navigating UI. Average command: 2 seconds vs 15 seconds touch.',
     impact: 'medium',
-    dataPoint: 'Voice commands 7x faster than touch for simple actions'
+    dataPoint: 'Voice commands 7x faster than touch for simple actions',
+    citation: getCitation('VOICE_SPEED')
   });
   
-  // Arguments AGAINST
   argsAgainst.push({
     title: 'Privacy Concerns',
     description: 'Always-listening microphones raise privacy issues. Users fear conversations being recorded or shared without consent.',
     impact: 'high',
     dataPoint: '67% of users worried about voice assistants recording private conversations',
-    source: 'Pew Research, 2024'
+    citation: getCitation('VOICE_PRIVACY')
   });
   
   argsAgainst.push({
     title: 'Accuracy Degradation',
     description: 'Voice recognition accuracy drops with accents, background noise, and specialized terminology. Error rate increases to 20-30% in noisy environments.',
     impact: 'high',
-    dataPoint: 'Accuracy: 95% in quiet vs 70% in noisy environments'
+    dataPoint: 'Accuracy: 95% in quiet vs 70% in noisy environments',
+    citation: getCitation('VOICE_ACCURACY')
   });
   
   argsAgainst.push({
@@ -458,7 +463,6 @@ export function generateAllArguments(
 ): ParadigmArguments[] {
   const paradigmArgs: ParadigmArguments[] = [];
   
-  // Generate for all paradigms with >0% recommendation
   if (recommendation.allScores.traditional_screen > 0) {
     paradigmArgs.push(generateTraditionalScreenArguments(
       answers,
