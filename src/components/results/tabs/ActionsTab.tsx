@@ -11,11 +11,13 @@ import {
   FileText,
   Link2,
   User,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
 import { BentoGrid, BentoBox, BentoHeader } from '../bento/BentoGrid';
 import { Button } from '@/components/ui/button';
 import { ShareButton } from '../ShareButton';
+import { RatingCard } from '../RatingCard';
 
 interface ActionsTabProps {
   onDownloadPDF: () => void;
@@ -77,6 +79,28 @@ export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: Ac
               <Share2 className="h-4 w-4" />
               Saving assessment...
             </Button>
+          )}
+        </motion.div>
+      </BentoBox>
+
+      {/* Rate This Assessment - MEDIUM */}
+      <BentoBox size="medium">
+        <BentoHeader 
+          title="Rate This Assessment" 
+          subtitle="Help improve NEXUS"
+          icon={<MessageSquare className="h-5 w-5 text-accent" />}
+        />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mt-4"
+        >
+          {savedAssessmentId ? (
+            <RatingCard assessmentId={savedAssessmentId} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Saving assessment...</p>
           )}
         </motion.div>
       </BentoBox>
