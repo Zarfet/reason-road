@@ -1,5 +1,5 @@
 /**
- * Implementation Tab - Cost estimates, timeline, and tech stack
+ * Impact Tab - Cost estimates, timeline, and tech stack
  */
 
 import { motion } from 'framer-motion';
@@ -17,7 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import type { RecommendationResult, ParadigmScores } from '@/types/assessment';
 import { PARADIGM_LABELS } from '@/types/assessment';
 
-interface ImplementationTabProps {
+interface ImpactTabProps {
   recommendation: RecommendationResult;
 }
 
@@ -39,7 +39,7 @@ const paradigmTimelines: Record<keyof ParadigmScores, string> = {
   voice: '3-6 months',
 };
 
-export function ImplementationTab({ recommendation }: ImplementationTabProps) {
+export function ImpactTab({ recommendation }: ImpactTabProps) {
   const primaryParadigm = recommendation.primary.paradigm;
   const costs = paradigmCosts[primaryParadigm];
   const timeline = paradigmTimelines[primaryParadigm];

@@ -149,9 +149,9 @@ export default function Results() {
                 <span className="sm:hidden">📈</span>
                 <span className="hidden sm:inline">Analysis</span>
               </TabsTrigger>
-              <TabsTrigger value="implementation" className="flex-1 sm:flex-none">
-                <span className="sm:hidden">⚙️</span>
-                <span className="hidden sm:inline">Implementation</span>
+            <TabsTrigger value="implementation" className="flex-1 sm:flex-none">
+                <span className="sm:hidden">📊</span>
+                <span className="hidden sm:inline">Impact</span>
               </TabsTrigger>
               <TabsTrigger value="research" className="flex-1 sm:flex-none">
                 <span className="sm:hidden">📚</span>
@@ -182,7 +182,7 @@ export default function Results() {
             </TabsContent>
 
             <TabsContent value="implementation">
-              <ImplementationTab
+              <ImpactTab
                 recommendation={recommendation}
               />
             </TabsContent>
