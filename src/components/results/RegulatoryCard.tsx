@@ -3,6 +3,7 @@
  * 
  * Displays GDPR, EU AI Act, and data sovereignty requirements
  * Conditionally renders based on geography selection
+ * Includes legal citations with EUR-Lex links
  */
 
 import { motion } from 'framer-motion';
@@ -14,7 +15,8 @@ import {
   Euro,
   Clock,
   FileText,
-  ChevronDown
+  ChevronDown,
+  ExternalLink
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -24,6 +26,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { BentoBox, BentoHeader } from './bento/BentoGrid';
+import { Button } from '@/components/ui/button';
 import type { RegulatoryAnalysis, RegulatoryRequirement } from '@/lib/regulatoryAnalysis';
 import { getParadigmDisplayName } from '@/lib/regulatoryAnalysis';
 import { cn } from '@/lib/utils';
@@ -168,6 +171,40 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
                   <p className="text-sm text-muted-foreground">{req.description}</p>
                 </div>
                 
+                {/* Legal Citation */}
+                <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground text-sm">
+                          {req.citation.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {req.citation.authors || req.citation.source} • {req.citation.year}
+                        </p>
+                        {req.citation.section && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {req.citation.section}
+                          </p>
+                        )}
+                      </div>
+                      {req.citation.url && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(req.citation.url, '_blank')}
+                          className="text-accent hover:bg-accent/10"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground italic mt-2">
+                      "{req.citation.keyRequirement}"
+                    </p>
+                  </div>
+                </div>
+                
                 {/* Applies to */}
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -202,7 +239,11 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
                   <ul className="space-y-1.5">
                     {req.mitigationSteps.map((step, stepIdx) => (
                       <li key={stepIdx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                        {step.startsWith('REQUIRED:') ? (
+                          <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                        )}
                         <span>{step}</span>
                       </li>
                     ))}

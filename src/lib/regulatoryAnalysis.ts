@@ -1,19 +1,22 @@
 /**
- * NEXUS - Regulatory Analysis Generator
+ * NEXUS - Regulatory Analysis Generator with Legal Citations
  * 
- * Purpose: Generate compliance requirements based on geography and paradigm selection
+ * Purpose: Generate compliance requirements with proper EUR-Lex citations
  * 
  * Key Regulations:
- * - GDPR (EU General Data Protection Regulation)
- * - EU AI Act (High-Risk AI Systems)
- * - ePrivacy Directive
- * - Schrems II (Data Sovereignty)
- * - Digital Services Act (DSA)
+ * - GDPR (EU) 2016/679 with EUR-Lex links
+ * - EU AI Act (EU) 2024/1689
+ * - ePrivacy Directive 2002/58/EC
+ * - Schrems II (CJEU C-311/18)
+ * - DPIA Guidance (EDPB)
  */
 
+import { getCitation } from './regulatoryCitations';
 import type { AssessmentAnswers, RecommendationResult, ParadigmScores } from '@/types/assessment';
+import type { LegalCitation } from './regulatoryCitations';
 
 export interface RegulatoryRequirement {
+  id: string;
   regulation: string;              // e.g., "GDPR Article 22"
   title: string;                   // e.g., "Right to Explanation"
   description: string;             // What it requires
@@ -23,6 +26,7 @@ export interface RegulatoryRequirement {
   estimatedCost: string;           // e.g., "€30,000-50,000"
   timelineImpact: string;          // e.g., "+3 months"
   mitigationSteps: string[];       // How to comply
+  citation: LegalCitation;         // Legal source with EUR-Lex link
 }
 
 export interface RegulatoryAnalysis {
@@ -50,159 +54,268 @@ export function generateRegulatoryAnalysis(
   }
   
   const requirements: RegulatoryRequirement[] = [];
-  const paradigms: (keyof ParadigmScores)[] = [
-    recommendation.primary.paradigm,
-    recommendation.secondary?.paradigm,
-    recommendation.tertiary?.paradigm
-  ].filter((p): p is keyof ParadigmScores => Boolean(p));
+  const percentages = recommendation.allScores;
   
   // ============================================
-  // GDPR REQUIREMENTS
+  // GDPR ARTICLE 22 - Automated Decisions
   // ============================================
   
-  // GDPR Article 22 - Right to Explanation (for automated decisions)
-  if (paradigms.includes('invisible') || paradigms.includes('ai_vectorial')) {
+  if ((percentages as any).invisible > 0 || (percentages as any).ai_vectorial > 0) {
+    const citation = getCitation('GDPR_ARTICLE_22');
+    
     requirements.push({
-      regulation: 'GDPR Article 22',
-      title: 'Right to Explanation for Automated Decisions',
-      description: 'Users have the right to obtain an explanation of automated decisions that significantly affect them. System must provide "Why did this happen?" mechanism.',
+      id: 'gdpr-article-22',
+      regulation: citation.regulation,
+      title: citation.title,
+      description: 'Systems that make automated decisions affecting users must provide explanation mechanisms and allow human intervention. Critical for invisible automation and AI systems.',
       applicableParadigms: ['invisible', 'ai_vectorial'],
-      impactLevel: 'high',
-      developmentOverhead: '+15-20%',
+      impactLevel: (percentages as any).invisible > 30 || (percentages as any).ai_vectorial > 30 ? 'high' : 'medium',
+      developmentOverhead: '+15-20% development time',
       estimatedCost: '€25,000-40,000',
       timelineImpact: '+2-3 months',
       mitigationSteps: [
-        'Implement audit logging for all automated decisions',
-        'Build "Explain this action" UI component',
-        'Store decision rationale in database',
-        'Provide human-readable explanations',
-        'Add option to override automated decisions'
-      ]
+        'REQUIRED: Implement audit logging for all automated decisions',
+        'REQUIRED: Add "Why did this happen?" explanation UI for users',
+        'REQUIRED: Provide manual override mechanism for critical actions',
+        'Document decision-making logic in technical documentation',
+        'Conduct regular algorithmic impact assessments'
+      ],
+      citation
     });
   }
   
-  // GDPR Article 6 - Legal Basis for Processing
-  requirements.push({
-    regulation: 'GDPR Article 6',
-    title: 'Lawful Basis for Data Processing',
-    description: 'Explicit consent required before collecting or processing personal data.',
-    applicableParadigms: ['all'],
-    impactLevel: 'medium',
-    developmentOverhead: '+5-8%',
-    estimatedCost: '€10,000-15,000',
-    timelineImpact: '+1 month',
-    mitigationSteps: [
-      'Design consent flow UI (cannot use pre-checked boxes)',
-      'Implement granular consent options',
-      'Store consent records with timestamps',
-      'Provide easy withdrawal mechanism',
-      'Cookie banner with reject/accept options'
-    ]
-  });
+  // ============================================
+  // GDPR ARTICLE 6 - Legal Basis for Processing
+  // ============================================
   
-  // GDPR Article 17 - Right to be Forgotten
+  const citation6 = getCitation('GDPR_ARTICLE_6');
   requirements.push({
-    regulation: 'GDPR Article 17',
-    title: 'Right to Erasure ("Right to be Forgotten")',
-    description: 'Users can request deletion of all their personal data. System must delete within 30 days.',
-    applicableParadigms: ['all'],
+    id: 'gdpr-article-6',
+    regulation: citation6.regulation,
+    title: citation6.title,
+    description: 'All data processing requires a valid legal basis. Most common: user consent or contract fulfillment. Affects all paradigms that collect user data.',
+    applicableParadigms: ['traditional_screen', 'invisible', 'ai_vectorial', 'voice', 'spatial'],
     impactLevel: 'medium',
-    developmentOverhead: '+8-12%',
-    estimatedCost: '€15,000-25,000',
+    developmentOverhead: '+5-10% development time',
+    estimatedCost: '€10,000-15,000',
     timelineImpact: '+1-2 months',
     mitigationSteps: [
-      'Implement data deletion workflows',
-      'Cascade deletes across all systems',
-      'Handle backups and archives',
-      'Generate deletion confirmation certificates',
-      'Update privacy policy with 30-day SLA'
-    ]
+      'Implement granular consent flow with clear opt-in checkboxes',
+      'Provide easy consent withdrawal mechanism',
+      'Document legal basis for each data processing activity',
+      'Maintain Records of Processing Activities (ROPA)',
+      'Conduct Data Protection Impact Assessment (DPIA) if high-risk'
+    ],
+    citation: citation6
   });
   
   // ============================================
-  // EU AI ACT REQUIREMENTS
+  // GDPR ARTICLE 17 - Right to be Forgotten
   // ============================================
   
-  // High-Risk AI Systems (if AI/Invisible paradigms with critical context)
-  const demographics = answers.userDemographics?.toLowerCase() || '';
-  const isCriticalContext = 
-    answers.errorConsequence === 'Serious' ||
-    demographics.includes('healthcare') ||
-    demographics.includes('medical') ||
-    demographics.includes('financial') ||
-    demographics.includes('doctor') ||
-    demographics.includes('nurse') ||
-    demographics.includes('hospital');
+  const citation17 = getCitation('GDPR_ARTICLE_17');
+  requirements.push({
+    id: 'gdpr-article-17',
+    regulation: citation17.regulation,
+    title: citation17.title,
+    description: 'Users can request deletion of their personal data. System must support full data erasure workflows within 30 days.',
+    applicableParadigms: ['traditional_screen', 'invisible', 'ai_vectorial', 'voice', 'spatial'],
+    impactLevel: 'medium',
+    developmentOverhead: '+10-15% development time',
+    estimatedCost: '€15,000-25,000',
+    timelineImpact: '+2 months',
+    mitigationSteps: [
+      'Build data deletion workflows with cascade deletes',
+      'Implement 30-day SLA for deletion requests',
+      'Create deletion confirmation UI for users',
+      'Maintain deletion audit logs for compliance',
+      'Document legal exceptions (e.g., tax retention requirements)'
+    ],
+    citation: citation17
+  });
   
-  if ((paradigms.includes('ai_vectorial') || paradigms.includes('invisible')) && isCriticalContext) {
+  // ============================================
+  // GDPR ARTICLE 32 - Security
+  // ============================================
+  
+  if ((percentages as any).ai_vectorial > 0 || (percentages as any).invisible > 0) {
+    const citation32 = getCitation('GDPR_ARTICLE_32');
+    
     requirements.push({
-      regulation: 'EU AI Act',
+      id: 'gdpr-article-32',
+      regulation: citation32.regulation,
+      title: citation32.title,
+      description: 'Technical and organizational security measures required for all personal data processing.',
+      applicableParadigms: ['ai_vectorial', 'invisible', 'voice'],
+      impactLevel: 'medium',
+      developmentOverhead: '+10-15% development time',
+      estimatedCost: '€20,000-35,000',
+      timelineImpact: '+1-2 months',
+      mitigationSteps: [
+        'Implement end-to-end encryption for data in transit and at rest',
+        'Pseudonymize personal data where possible',
+        'Establish access controls and authentication',
+        'Conduct regular security audits and penetration testing',
+        'Maintain incident response and data breach notification procedures'
+      ],
+      citation: citation32
+    });
+  }
+  
+  // ============================================
+  // EU AI ACT - High-Risk Systems
+  // ============================================
+  
+  const isHealthcare = answers.userDemographics?.toLowerCase().includes('healthcare') ||
+                      answers.userDemographics?.toLowerCase().includes('medical') ||
+                      answers.userDemographics?.toLowerCase().includes('health');
+  
+  const isEmployment = answers.userDemographics?.toLowerCase().includes('employment') ||
+                      answers.userDemographics?.toLowerCase().includes('recruitment') ||
+                      answers.userDemographics?.toLowerCase().includes('hiring');
+  
+  const isHighRiskContext = isHealthcare || isEmployment || answers.errorConsequence === 'Serious';
+  
+  if (((percentages as any).ai_vectorial > 15 || (percentages as any).invisible > 20) && isHighRiskContext) {
+    const citationAI6 = getCitation('AI_ACT_ARTICLE_6');
+    
+    requirements.push({
+      id: 'ai-act-high-risk',
+      regulation: citationAI6.regulation,
       title: 'High-Risk AI System Classification',
-      description: 'AI systems used in healthcare, critical infrastructure, or with serious error consequences are "High-Risk" and require conformity assessment, CE marking, and human oversight.',
+      description: 'AI systems in healthcare, employment, or critical contexts are classified as high-risk under EU AI Act. Requires conformity assessment, documentation, and EU AI Database registration.',
       applicableParadigms: ['ai_vectorial', 'invisible'],
       impactLevel: 'critical',
-      developmentOverhead: '+30-40%',
+      developmentOverhead: '+30-50% development time',
       estimatedCost: '€50,000-200,000',
       timelineImpact: '+6-12 months',
       mitigationSteps: [
-        'Conduct AI risk assessment',
-        'Implement human-in-the-loop checkpoints',
-        'Document training data and model decisions',
-        'Perform bias testing across demographics',
-        'Obtain CE marking certification',
-        'Create technical documentation package',
-        'Register in EU AI Database',
-        'Quarterly audits and reporting'
-      ]
+        'REQUIRED: Conduct AI risk assessment per Article 9 (bias, discrimination, safety)',
+        'REQUIRED: Implement human-in-the-loop oversight for critical decisions',
+        'REQUIRED: Conduct bias testing across protected characteristics (gender, race, age, etc.)',
+        'REQUIRED: Prepare comprehensive technical documentation',
+        'REQUIRED: Obtain CE mark after conformity assessment',
+        'REQUIRED: Register system in EU AI Database before launch',
+        'Budget for quarterly compliance audits',
+        'Engage legal counsel specializing in EU AI Act compliance',
+        'Implement continuous monitoring for fairness drift'
+      ],
+      citation: citationAI6
     });
   }
   
   // ============================================
-  // DATA SOVEREIGNTY (Schrems II)
+  // EU AI ACT ARTICLE 13 - Transparency
   // ============================================
   
-  if (paradigms.includes('ai_vectorial') || paradigms.includes('voice')) {
+  if ((percentages as any).ai_vectorial > 10) {
+    const citationAI13 = getCitation('AI_ACT_ARTICLE_13');
+    
     requirements.push({
-      regulation: 'Schrems II Compliance',
-      title: 'Data Sovereignty - EU Data Residency',
-      description: 'Personal data of EU citizens cannot be transferred to US cloud providers without Standard Contractual Clauses (SCCs). Voice/AI processing must occur in EU data centers or on-device.',
+      id: 'ai-act-transparency',
+      regulation: citationAI13.regulation,
+      title: citationAI13.title,
+      description: 'Users must be clearly informed when interacting with AI systems. Requires visible AI disclosure and explanation of system functioning.',
+      applicableParadigms: ['ai_vectorial'],
+      impactLevel: 'medium',
+      developmentOverhead: '+10% development time',
+      estimatedCost: '€15,000-25,000',
+      timelineImpact: '+1-2 months',
+      mitigationSteps: [
+        'Add visible "Powered by AI" badge on AI-generated content',
+        'Provide "How does this AI work?" explainer page',
+        'Show confidence scores on AI-generated outputs',
+        'Clearly distinguish AI-generated vs human-generated content',
+        'Offer opt-out mechanism for AI features where technically feasible'
+      ],
+      citation: citationAI13
+    });
+  }
+  
+  // ============================================
+  // SCHREMS II - Data Sovereignty
+  // ============================================
+  
+  if ((percentages as any).ai_vectorial > 0 || (percentages as any).voice > 0) {
+    const citationSchrems = getCitation('SCHREMS_II');
+    
+    requirements.push({
+      id: 'schrems-ii-data-transfer',
+      regulation: citationSchrems.regulation,
+      title: 'Data Transfer Restrictions (Schrems II)',
+      description: 'Transferring personal data to US-based cloud providers requires supplementary measures beyond Standard Contractual Clauses (SCCs).',
       applicableParadigms: ['ai_vectorial', 'voice'],
       impactLevel: 'high',
-      developmentOverhead: '+20-25%',
+      developmentOverhead: '+20-25% infrastructure planning',
       estimatedCost: '€40,000-70,000',
       timelineImpact: '+3-4 months',
       mitigationSteps: [
-        'Use EU-hosted cloud providers (AWS eu-central-1, Azure West Europe)',
-        'Implement edge processing for voice (on-device when possible)',
-        'Sign Standard Contractual Clauses (SCCs) with vendors',
-        'Data Processing Agreements (DPAs) with all sub-processors',
-        'Prohibit automatic transfer to non-EU regions',
-        'Implement data localization architecture'
-      ]
+        'REQUIRED: Use only EU-based data centers (AWS eu-west-1, Azure West Europe, etc.)',
+        'Alternative: Process data on-device/edge (no cloud data transfer)',
+        'REQUIRED: Sign Standard Contractual Clauses (SCCs) with all processors',
+        'Conduct Transfer Impact Assessment (TIA) to identify US surveillance laws',
+        'Implement supplementary measures: encryption, pseudonymization, data minimization',
+        'Avoid US-headquartered cloud providers where feasible',
+        'Document data flow and residency in DPA/contract terms'
+      ],
+      citation: citationSchrems
     });
   }
   
   // ============================================
-  // ePrivacy Directive (Cookie Law)
+  // ePRIVACY DIRECTIVE - Cookies
   // ============================================
   
-  if (paradigms.includes('traditional_screen')) {
+  if ((percentages as any).traditional_screen > 50) {
+    const citationEPrivacy = getCitation('EPRIVACY_DIRECTIVE');
+    
     requirements.push({
-      regulation: 'ePrivacy Directive',
-      title: 'Cookie Consent & Tracking',
-      description: 'Cannot use non-essential cookies without explicit opt-in consent. No pre-checked boxes or "implied consent".',
+      id: 'eprivacy-cookies',
+      regulation: citationEPrivacy.regulation,
+      title: citationEPrivacy.title,
+      description: 'Websites must obtain explicit consent before storing cookies (except strictly necessary ones). Requires GDPR-compliant cookie banner.',
       applicableParadigms: ['traditional_screen'],
       impactLevel: 'low',
-      developmentOverhead: '+3-5%',
+      developmentOverhead: '+2-5% development time',
       estimatedCost: '€5,000-10,000',
       timelineImpact: '+2 weeks',
       mitigationSteps: [
-        'Implement compliant cookie banner',
-        'Separate essential vs non-essential cookies',
-        'Provide granular cookie categories',
-        'Store consent preferences',
-        'Function without non-essential cookies if rejected'
-      ]
+        'Implement GDPR-compliant cookie banner with granular choices',
+        'Default all non-essential cookies to OFF',
+        'Provide detailed cookie settings page',
+        'Audit all third-party scripts for tracking',
+        'Update privacy policy with complete cookie inventory'
+      ],
+      citation: citationEPrivacy
+    });
+  }
+  
+  // ============================================
+  // DPIA - High-Risk Processing
+  // ============================================
+  
+  if ((percentages as any).ai_vectorial > 20 || (percentages as any).invisible > 25 || isHighRiskContext) {
+    const citationDPIA = getCitation('DPIA_GUIDANCE');
+    
+    requirements.push({
+      id: 'gdpr-dpia',
+      regulation: citationDPIA.regulation,
+      title: 'Data Protection Impact Assessment (DPIA)',
+      description: 'Mandatory DPIA required for high-risk processing including AI systems, automated decision-making, and large-scale processing.',
+      applicableParadigms: ['ai_vectorial', 'invisible'],
+      impactLevel: 'medium',
+      developmentOverhead: '+5-10% project time',
+      estimatedCost: '€10,000-20,000',
+      timelineImpact: '+2-3 weeks',
+      mitigationSteps: [
+        'Conduct systematic assessment of data processing risks',
+        'Document processing purposes, necessity, and legitimacy',
+        'Identify potential impacts on user rights and freedoms',
+        'Describe mitigation measures and safeguards',
+        'Consult with Data Protection Authority if high risk identified',
+        'Review and update DPIA before system deployment and at least annually'
+      ],
+      citation: citationDPIA
     });
   }
   
@@ -210,59 +323,46 @@ export function generateRegulatoryAnalysis(
   // CALCULATE TOTALS
   // ============================================
   
-  const totalCostMin = requirements.reduce((sum, req) => {
-    const match = req.estimatedCost.match(/[\d,]+/);
-    const cost = parseInt(match?.[0]?.replace(',', '') || '0');
-    return sum + cost;
-  }, 0);
+  const costs = requirements.map(r => {
+    const match = r.estimatedCost.match(/€([\d,]+)/);
+    return match ? parseInt(match[1].replace(/,/g, '')) : 0;
+  });
   
-  const totalTimelineMonths = requirements.reduce((max, req) => {
-    const match = req.timelineImpact.match(/\d+/);
-    const months = parseInt(match?.[0] || '0');
-    return Math.max(max, months);
-  }, 0);
+  const minCost = costs.reduce((sum, cost) => sum + cost, 0);
+  const maxCost = Math.round(minCost * 1.5);
   
-  const overallRiskLevel: RegulatoryAnalysis['overallRiskLevel'] = 
-    requirements.some(r => r.impactLevel === 'critical') ? 'critical' :
-    requirements.some(r => r.impactLevel === 'high') ? 'high' :
-    requirements.some(r => r.impactLevel === 'medium') ? 'medium' : 'low';
+  const criticalCount = requirements.filter(r => r.impactLevel === 'critical').length;
+  const highCount = requirements.filter(r => r.impactLevel === 'high').length;
   
-  // ============================================
-  // GENERATE RECOMMENDATIONS
-  // ============================================
+  const overallRiskLevel: 'low' | 'medium' | 'high' | 'critical' = 
+    criticalCount > 0 ? 'critical' :
+    highCount > 2 ? 'high' :
+    highCount > 0 ? 'medium' : 'low';
   
-  const recommendations: string[] = [];
+  // Timeline (longest sequential path)
+  const timelines = requirements.map(r => {
+    const match = r.timelineImpact.match(/\+(\d+)/);
+    return match ? parseInt(match[1]) : 0;
+  });
+  const maxTimeline = Math.max(...timelines);
   
-  if (overallRiskLevel === 'critical' || overallRiskLevel === 'high') {
-    recommendations.push('⚠️ Budget €50,000-100,000 minimum for legal compliance consulting');
-    recommendations.push('📅 Add 6-12 months to project timeline for certification');
-    recommendations.push('👨‍⚖️ Engage EU-based legal counsel specializing in GDPR + AI Act');
-  }
-  
-  if (paradigms.includes('ai_vectorial') || paradigms.includes('invisible')) {
-    recommendations.push('🤖 Implement "Explain AI Decision" feature from Day 1 (not retrofit)');
-    recommendations.push('📊 Log all AI decisions with timestamps and rationale');
-  }
-  
-  if (paradigms.includes('voice')) {
-    recommendations.push('🎤 Process voice data on-device when possible (avoid cloud transfer)');
-    recommendations.push('🇪🇺 If cloud needed, use AWS eu-central-1 or Azure West Europe only');
-  }
-  
-  recommendations.push('📄 Appoint a Data Protection Officer (DPO) if >250 employees');
-  recommendations.push('🔒 Conduct annual GDPR compliance audits');
-  recommendations.push('📋 Maintain GDPR Records of Processing Activities (ROPA)');
-  
-  // ============================================
-  // RETURN ANALYSIS
-  // ============================================
+  const recommendations = [
+    'Budget regulatory compliance costs from project start',
+    'Engage Data Protection Officer (DPO) or external DPA in design phase',
+    'Conduct legal review of platform before production launch',
+    criticalCount > 0 ? '🚨 CRITICAL: High-risk AI classification requires specialized legal counsel and CE marking' : null,
+    'Plan for quarterly compliance audits and regulatory updates',
+    'Maintain comprehensive documentation for regulatory inspections and audits',
+    'Document all data processing activities in Records of Processing Activities (ROPA)',
+    'Test bias and fairness of automated systems regularly'
+  ].filter(Boolean) as string[];
   
   return {
-    region: geography,
+    region: geography === 'Primarily Europe' ? 'European Union' : 'Global (EU standards apply)',
     applicable: true,
     requirements,
-    totalEstimatedCost: `€${Math.floor(totalCostMin / 1000)}K-€${Math.floor(totalCostMin / 1000 * 1.5)}K`,
-    totalTimelineImpact: `+${totalTimelineMonths} months`,
+    totalEstimatedCost: `€${minCost.toLocaleString()}-${maxCost.toLocaleString()}`,
+    totalTimelineImpact: `+${maxTimeline} months`,
     overallRiskLevel,
     recommendations
   };
