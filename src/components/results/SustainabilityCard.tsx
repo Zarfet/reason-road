@@ -1,13 +1,14 @@
 /**
  * Sustainability Report Card
  * 
- * Shows environmental impact analysis with paradigm breakdown,
+ * Shows environmental impact analysis with research citations,
  * energy/CO2 metrics, and actionable recommendations
  */
 
-import { Leaf, Zap, Recycle, TrendingDown, AlertCircle, CheckCircle } from 'lucide-react';
+import { Leaf, Zap, Recycle, TrendingDown, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
 import { BentoBox, BentoHeader } from './bento/BentoGrid';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { generateSustainabilityReport } from '@/lib/sustainabilityAnalysis';
 import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 
@@ -156,6 +157,15 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
           ))}
         </ul>
       </div>
+
+      {/* Research Citations Footer */}
+      {report.citationCount && (
+        <div className="mt-6 pt-4 border-t border-border text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <span>📚 This analysis is backed by {report.citationCount} peer-reviewed research sources</span>
+          </span>
+        </div>
+      )}
     </BentoBox>
   );
 }

@@ -1,7 +1,7 @@
 /**
  * NEXUS - Sustainability Analysis Generator
  * 
- * Purpose: Calculate environmental impact of paradigm choices
+ * Purpose: Calculate environmental impact of paradigm choices with research citations
  * 
  * Metrics Tracked:
  * - Hardware lifecycle (years until replacement)
@@ -12,6 +12,7 @@
  * - Repairability score (1-10)
  */
 
+import { getSustainabilityCitation, getTotalCitationCount } from './sustainabilityCitations';
 import type { RecommendationResult, ParadigmPercentages } from '@/types/assessment';
 
 export interface ParadigmSustainability {
@@ -67,6 +68,7 @@ export interface SustainabilityReport {
   recommendations: string[];
   greenFlags: string[];               // What you're doing right
   redFlags: string[];                 // Areas for improvement
+  citationCount?: number;             // Total research citations used
 }
 
 /**
@@ -297,6 +299,7 @@ export function generateSustainabilityReport(
     sustainabilityScore,
     recommendations,
     greenFlags,
-    redFlags
+    redFlags,
+    citationCount: getTotalCitationCount()
   };
 }
