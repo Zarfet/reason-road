@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_ratings: {
+        Row: {
+          accuracy_rating: number | null
+          assessment_id: string
+          clarity_rating: number | null
+          created_at: string
+          feedback_text: string | null
+          id: string
+          rating: number
+          usefulness_rating: number | null
+          user_id: string
+          would_recommend: boolean | null
+        }
+        Insert: {
+          accuracy_rating?: number | null
+          assessment_id: string
+          clarity_rating?: number | null
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          rating: number
+          usefulness_rating?: number | null
+          user_id: string
+          would_recommend?: boolean | null
+        }
+        Update: {
+          accuracy_rating?: number | null
+          assessment_id?: string
+          clarity_rating?: number | null
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          rating?: number
+          usefulness_rating?: number | null
+          user_id?: string
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_ratings_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: true
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessments: {
         Row: {
           agreement_rating: number | null

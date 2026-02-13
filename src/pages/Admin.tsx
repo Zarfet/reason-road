@@ -22,6 +22,7 @@ import {
   CheckCircle,
   BarChart3,
   FileText,
+  Star,
 } from 'lucide-react';
 import { PARADIGM_LABELS, type ParadigmScores } from '@/types/assessment';
 
@@ -42,6 +43,7 @@ export default function Admin() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [assessments, setAssessments] = useState<AssessmentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ratingStats, setRatingStats] = useState<{ avg: number; count: number }>({ avg: 0, count: 0 });
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -55,13 +57,17 @@ export default function Admin() {
 
   async function loadData() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('assessments')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [assessRes, ratingsRes] = await Promise.all([
+      supabase.from('assessments').select('*').order('created_at', { ascending: false }),
+      supabase.from('assessment_ratings').select('rating'),
+    ]);
 
-    if (!error && data) {
-      setAssessments(data as unknown as AssessmentRow[]);
+    if (!assessRes.error && assessRes.data) {
+      setAssessments(assessRes.data as unknown as AssessmentRow[]);
+    }
+    if (!ratingsRes.error && ratingsRes.data && ratingsRes.data.length > 0) {
+      const avg = ratingsRes.data.reduce((s, r) => s + r.rating, 0) / ratingsRes.data.length;
+      setRatingStats({ avg: Math.round(avg * 10) / 10, count: ratingsRes.data.length });
     }
     setLoading(false);
   }
@@ -250,11 +256,16 @@ export default function Admin() {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription className="flex items-center gap-1.5">
-                <Download className="h-4 w-4" /> PDF Downloads
+                <Star className="h-4 w-4" /> Avg Rating
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-foreground">{stats.pdfCount}</p>
+              <p className="text-3xl font-bold text-foreground">
+                {ratingStats.count > 0 ? `${ratingStats.avg} ⭐` : 'N/A'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {ratingStats.count > 0 ? `Based on ${ratingStats.count} ratings` : 'No ratings yet'}
+              </p>
             </CardContent>
           </Card>
         </div>
