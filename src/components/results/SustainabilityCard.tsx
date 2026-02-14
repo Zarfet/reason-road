@@ -30,15 +30,9 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
         icon={<Leaf className="h-5 w-5 text-green-600" />}
       />
       
-      {/* Sustainability Score */}
+      {/* Energy and CO₂ Metrics */}
       <div className="mb-6 flex items-center justify-center gap-4 p-6 rounded-lg bg-muted/50">
-        <div className="text-center">
-          <div className={`text-5xl font-bold stat-highlight`}>
-            {report.sustainabilityScore}
-          </div>
-          <div className="text-sm text-muted-foreground">/100 Sustainability Score</div>
-        </div>
-        <div className="border-l border-border pl-6">
+        <div className="border-r border-border pr-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-accent" />
@@ -159,13 +153,20 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
       </div>
 
       {/* Research Citations Footer */}
-      {report.citationCount && (
-        <div className="mt-6 pt-4 border-t border-border text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <span>📚 This analysis is backed by {report.citationCount} peer-reviewed research sources</span>
-          </span>
-        </div>
-      )}
+       {report.citationCount && (
+         <div className="mt-6 pt-4 border-t border-border text-xs text-muted-foreground">
+           <span className="inline-flex items-center gap-1">
+             <span>📚 This analysis is backed by {report.citationCount} peer-reviewed research sources</span>
+           </span>
+         </div>
+       )}
+
+       {/* Disclaimer */}
+       <div className="mt-4 p-4 rounded-lg bg-accent/10 border border-accent/30">
+         <p className="text-xs text-muted-foreground italic leading-relaxed">
+           {report.disclaimer}
+         </p>
+       </div>
     </BentoBox>
   );
 }
