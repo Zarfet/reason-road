@@ -302,7 +302,7 @@ function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
           <div className="mb-2">
             <p className="text-xs font-medium text-muted-foreground mb-1">Key Factors:</p>
             <ul className="text-xs text-foreground/70 list-disc list-inside">
-              {study.keyFactors.map((factor, i) => (
+              {(study.keyFactors || []).map((factor, i) => (
                 <li key={i}>{factor}</li>
               ))}
             </ul>
