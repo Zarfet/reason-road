@@ -102,37 +102,11 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
       </div>
       
       {/* Summary Metrics */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 mb-6">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="p-4 rounded-lg bg-muted/50 border border-border"
-        >
-          <div className="flex items-center gap-2 text-muted-foreground mb-1">
-            <Euro className="h-4 w-4" />
-            <span className="text-xs font-medium">Estimated Cost</span>
-          </div>
-          <p className="text-lg font-bold text-foreground">{analysis.totalEstimatedCost}</p>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="p-4 rounded-lg bg-muted/50 border border-border"
-        >
-          <div className="flex items-center gap-2 text-muted-foreground mb-1">
-            <Clock className="h-4 w-4" />
-            <span className="text-xs font-medium">Timeline Impact</span>
-          </div>
-          <p className="text-lg font-bold text-foreground">{analysis.totalTimelineImpact}</p>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
           className="p-4 rounded-lg bg-muted/50 border border-border"
         >
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -153,14 +127,9 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
                 {getImpactIcon(req.impactLevel)}
                 
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">{req.title}</p>
-                  <p className="text-xs text-muted-foreground">{req.regulation}</p>
+                   <p className="font-medium text-foreground truncate">{req.title}</p>
+                   <p className="text-xs text-muted-foreground">{req.regulation}</p>
                 </div>
-                
-                {/* Cost Badge */}
-                <Badge variant="outline" className="shrink-0 text-xs">
-                  {req.estimatedCost}
-                </Badge>
               </div>
             </AccordionTrigger>
             
@@ -219,63 +188,36 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
                   </div>
                 </div>
                 
-                {/* Impact Metrics */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-2 rounded bg-muted/20 border border-border/50">
-                    <p className="text-xs text-muted-foreground">Development Overhead</p>
-                    <p className="text-sm font-medium text-foreground">{req.developmentOverhead}</p>
-                  </div>
-                  <div className="p-2 rounded bg-muted/20 border border-border/50">
-                    <p className="text-xs text-muted-foreground">Timeline Impact</p>
-                    <p className="text-sm font-medium text-foreground">{req.timelineImpact}</p>
-                  </div>
-                </div>
-                
                 {/* Mitigation Steps */}
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Required Actions:
-                  </p>
-                  <ul className="space-y-1.5">
-                    {req.mitigationSteps.map((step, stepIdx) => (
-                      <li key={stepIdx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        {step.startsWith('REQUIRED:') ? (
-                          <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                        ) : (
-                          <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-                        )}
-                        <span>{step}</span>
-                      </li>
-                    ))}
-                  </ul>
+                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                     Required Actions:
+                   </p>
+                   <ul className="space-y-1.5">
+                     {req.mitigationSteps.map((step, stepIdx) => (
+                       <li key={stepIdx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                         {step.startsWith('REQUIRED:') ? (
+                           <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                         ) : (
+                           <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                         )}
+                         <span>{step}</span>
+                       </li>
+                     ))}
+                   </ul>
                 </div>
               </div>
             </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
-      
-      {/* Recommendations Section */}
-      <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-        <div className="flex items-center gap-2 mb-3">
-          <Info className="h-4 w-4 text-accent" />
-          <span className="text-sm font-medium text-foreground">Key Recommendations</span>
-        </div>
-        <ul className="space-y-2">
-          {analysis.recommendations.map((rec, idx) => (
-            <motion.li
-              key={idx}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + idx * 0.05 }}
-              className="flex items-start gap-2 text-sm text-muted-foreground"
-            >
-              <span className="text-accent">•</span>
-              <span>{rec}</span>
-            </motion.li>
-          ))}
-        </ul>
-      </div>
-    </BentoBox>
-  );
-}
+       
+       {/* Disclaimer */}
+       <div className="mt-6 pt-4 border-t border-border">
+         <p className="text-xs text-muted-foreground italic leading-relaxed">
+           {analysis.disclaimer}
+         </p>
+       </div>
+     </BentoBox>
+   );
+ }
