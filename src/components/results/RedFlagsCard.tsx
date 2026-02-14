@@ -10,23 +10,16 @@ import { AlertTriangle, AlertOctagon, Info, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { detectRedFlags, type RedFlag } from '@/lib/redFlagsDetector';
-import { useAssessment } from '@/context/AssessmentContext';
 import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 
 interface RedFlagsCardProps {
-  recommendation?: RecommendationResult;
-  answers?: AssessmentAnswers;
+  recommendation: RecommendationResult;
+  answers: AssessmentAnswers;
 }
 
-export function RedFlagsCard({ recommendation: propRecommendation, answers: propAnswers }: RedFlagsCardProps) {
-  const context = useAssessment();
-  const recommendation = propRecommendation || context.recommendation;
-  const answers = propAnswers || context.answers;
-  
-  if (!recommendation || !answers) return null;
-  
+export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
   const report = detectRedFlags(answers, recommendation);
-
+  
   if (!report.hasFlags) return null; // No flags = no card
   
   return (

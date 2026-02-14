@@ -12,22 +12,14 @@ import { Button } from '@/components/ui/button';
 import { generateSustainabilityReport } from '@/lib/sustainabilityAnalysis';
 import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 
-import { useAssessment } from '@/context/AssessmentContext';
-
 interface SustainabilityCardProps {
-  recommendation?: RecommendationResult;
-  answers?: AssessmentAnswers;
+  recommendation: RecommendationResult;
+  answers: AssessmentAnswers;
 }
 
-export function SustainabilityCard({ recommendation: propRecommendation, answers: propAnswers }: SustainabilityCardProps) {
-  const context = useAssessment();
-  const recommendation = propRecommendation || context.recommendation;
-  const answers = propAnswers || context.answers;
-  
-  if (!recommendation || !answers) return null;
-  
+export function SustainabilityCard({ recommendation, answers }: SustainabilityCardProps) {
   const report = generateSustainabilityReport(recommendation, answers.valuesRanking, answers.geography || undefined);
-
+  
   if (!report.applicable) return null;
   
   return (

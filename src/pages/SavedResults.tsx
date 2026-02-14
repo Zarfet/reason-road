@@ -34,7 +34,7 @@ import { StepIndicator } from '@/components/results/StepIndicator';
 import { ResultsHero } from '@/components/results/ResultsHero';
 import { OverviewTab } from '@/components/results/tabs/OverviewTab';
 import { AnalysisTab } from '@/components/results/tabs/AnalysisTab';
-import { ImpactTab } from '@/components/results/tabs/ImpactTab';
+import { ImplementationTab } from '@/components/results/tabs/ImplementationTab';
 import { ResearchTab } from '@/components/results/tabs/ResearchTab';
 import { ActionsTab } from '@/components/results/tabs/ActionsTab';
 
@@ -203,7 +203,7 @@ export default function SavedResults() {
                 Analysis
               </TabsTrigger>
               <TabsTrigger value="implementation" className="flex-1 sm:flex-none">
-                Impact
+                Implementation
               </TabsTrigger>
               <TabsTrigger value="research" className="flex-1 sm:flex-none">
                 Research
@@ -232,7 +232,9 @@ export default function SavedResults() {
             </TabsContent>
 
             <TabsContent value="implementation">
-              <ImpactTab />
+              <ImplementationTab
+                recommendation={recommendation}
+              />
             </TabsContent>
 
             <TabsContent value="research">

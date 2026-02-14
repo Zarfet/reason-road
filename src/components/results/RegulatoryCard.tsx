@@ -27,13 +27,12 @@ import {
 } from '@/components/ui/accordion';
 import { BentoBox, BentoHeader } from './bento/BentoGrid';
 import { Button } from '@/components/ui/button';
-import { useAssessment } from '@/context/AssessmentContext';
-import { generateRegulatoryAnalysis, type RegulatoryAnalysis, type RegulatoryRequirement } from '@/lib/regulatoryAnalysis';
+import type { RegulatoryAnalysis, RegulatoryRequirement } from '@/lib/regulatoryAnalysis';
 import { getParadigmDisplayName } from '@/lib/regulatoryAnalysis';
 import { cn } from '@/lib/utils';
 
 interface RegulatoryCardProps {
-  analysis?: RegulatoryAnalysis;
+  analysis: RegulatoryAnalysis;
 }
 
 function getImpactIcon(level: RegulatoryRequirement['impactLevel']) {
@@ -79,12 +78,7 @@ function getRiskBadgeClassName(level: RegulatoryAnalysis['overallRiskLevel']) {
   }
 }
 
-export function RegulatoryCard({ analysis: propAnalysis }: RegulatoryCardProps) {
-  const { recommendation, answers } = useAssessment();
-  const analysis = propAnalysis || (recommendation && answers ? generateRegulatoryAnalysis(answers, recommendation) : null);
-  
-  if (!analysis) return null;
-
+export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
   return (
     <BentoBox size="wide">
       {/* Header */}
