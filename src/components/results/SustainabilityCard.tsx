@@ -67,7 +67,7 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
               <TrendingDown className="h-4 w-4 text-accent" />
               <div className="text-sm">
                 <span className="font-semibold">{Math.round(report.weightedAnnualCO2)} kg</span>
-                <span className="text-muted-foreground"> CO₂ per user/year</span>
+                <span className="text-muted-foreground"> CO₂/year</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -80,20 +80,20 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
           </div>
         </div>
         <p className="text-xs text-muted-foreground text-center">
-          Weighted average across your paradigm mix. CO₂ calculated using EU grid intensity (
-          <a href="https://www.eea.europa.eu/data-and-maps/daviz/co2-emission-intensity-6" target="_blank" rel="noopener noreferrer" className="text-accent underline">EEA 2023</a>
+          Weighted average across your interface mix. CO₂ calculated using EU grid intensity (
+          <a href="https://www.eea.europa.eu/en/analysis/maps-and-charts/co2-intensity-of-electricity-generation-in-europe" target="_blank" rel="noopener noreferrer" className="text-accent underline">EEA 2023</a>
           : ~0.3 kg CO₂/kWh).
         </p>
       </div>
 
       {/* Paradigm Breakdown */}
       <div className="mb-6">
-        <h4 className="font-semibold text-sm mb-3">Environmental Impact by Paradigm</h4>
+        <h4 className="font-semibold text-sm mb-3">Environmental Impact by Interface Type</h4>
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-2 text-left font-medium">Paradigm</th>
+                <th className="px-4 py-2 text-left font-medium">Interface Type</th>
                 <th className="px-4 py-2 text-center font-medium">Usage</th>
                 <th className="px-4 py-2 text-center font-medium">Energy</th>
                 <th className="px-4 py-2 text-center font-medium">CO₂</th>
@@ -104,7 +104,7 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
               {report.paradigmBreakdown.map((p, idx) => (
                 <tr key={idx} className="border-b border-border hover:bg-muted/50 transition-colors">
                   <td className="px-4 py-3 text-left">
-                    <div className="font-medium capitalize">{p.paradigm.replace('_', '/')}</div>
+                    <div className="font-medium capitalize">{p.paradigm.replace(/_/g, ' ')}</div>
                     <div className="text-xs text-muted-foreground">{p.hardwareExample}</div>
                   </td>
                   <td className="px-4 py-3 text-center">{p.percentage}%</td>
@@ -156,8 +156,25 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
               <li key={idx} className="text-sm text-foreground">{flag}</li>
             ))}
           </ul>
-          <p className="text-xs text-muted-foreground mt-2 italic">
-            Based on weighted energy, CO₂, and lifecycle thresholds derived from IEA and EEA benchmarks.
+          <p className="text-xs text-muted-foreground mt-3">
+            Assessed against energy and lifecycle benchmarks from{' '}
+            <a
+              href="https://eta.lbl.gov/publications/energy-consumption-consumer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline hover:no-underline"
+            >
+              LBNL
+            </a>
+            {' '}and{' '}
+            <a
+              href="https://ewastemonitor.info/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline hover:no-underline"
+            >
+              Global E-waste Monitor
+            </a>.
           </p>
         </div>
       )}
