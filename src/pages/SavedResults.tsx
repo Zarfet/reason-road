@@ -132,8 +132,8 @@ export default function SavedResults() {
       createdAt: assessment.created_at 
     });
     toast({
-      title: "PDF generado",
-      description: "Tu reporte ha sido descargado.",
+      title: "PDF Generated",
+      description: "Your report has been downloaded.",
     });
   };
 

@@ -82,8 +82,8 @@ export default function Results() {
   const handleDownloadPDF = () => {
     generatePDFReport({ answers, recommendation });
     toast({
-      title: "PDF generado",
-      description: "Tu reporte ha sido descargado.",
+      title: "PDF Generated",
+      description: "Your report has been downloaded.",
     });
   };
 
