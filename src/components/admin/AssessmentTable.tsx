@@ -1,5 +1,5 @@
 /**
- * Enhanced Assessment Table with Search, Filters, Sorting
+ * Enhanced Assessment Table with Search, Filters, Sorting, Expandable Rows
  * Used in Admin Dashboard for thesis data analysis
  */
 
@@ -40,6 +40,8 @@ import {
   Globe,
   Leaf,
   X,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 interface AssessmentRow {
@@ -81,10 +83,12 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
+  // Expandable rows
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   // Helper: Get primary paradigm
   const getPrimaryParadigm = (paradigmResults: Record<string, unknown> | null) => {
     if (!paradigmResults) return { name: 'N/A', pct: 0 };
-
     const pr = paradigmResults as { primary?: { paradigm?: string; pct?: number } };
     const primary = pr?.primary;
     if (primary?.paradigm) {
@@ -113,7 +117,6 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
   const processedData = useMemo(() => {
     let filtered = [...assessments];
 
-    // Search filter (demographics)
     if (searchTerm) {
       filtered = filtered.filter((a) => {
         const r = (a.responses || {}) as Record<string, unknown>;
@@ -122,21 +125,15 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
       });
     }
 
-    // Paradigm filter
     if (filterParadigm !== 'all') {
-      filtered = filtered.filter((a) => {
-        const primary = getPrimaryParadigm(a.paradigm_results);
-        return primary.name === filterParadigm;
-      });
+      filtered = filtered.filter((a) => getPrimaryParadigm(a.paradigm_results).name === filterParadigm);
     }
 
-    // Completed filter
     if (filterCompleted !== 'all') {
       const shouldBeCompleted = filterCompleted === 'completed';
       filtered = filtered.filter((a) => a.is_completed === shouldBeCompleted);
     }
 
-    // Geography filter
     if (filterGeography !== 'all') {
       filtered = filtered.filter((a) => {
         const r = (a.responses || {}) as Record<string, unknown>;
@@ -144,79 +141,48 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
       });
     }
 
-    // Sustainability filter
     if (filterSustainability !== null) {
-      filtered = filtered.filter(
-        (a) => hasSustainabilityReport(a) === filterSustainability
-      );
+      filtered = filtered.filter((a) => hasSustainabilityReport(a) === filterSustainability);
     }
 
-    // Regulatory filter
     if (filterRegulatory !== null) {
-      filtered = filtered.filter(
-        (a) => hasRegulatoryImpact(a) === filterRegulatory
-      );
+      filtered = filtered.filter((a) => hasRegulatoryImpact(a) === filterRegulatory);
     }
 
-    // Sorting
     filtered.sort((a, b) => {
-      let aVal: number | string = 0;
-      let bVal: number | string = 0;
+      let aVal: number = 0;
+      let bVal: number = 0;
 
       switch (sortConfig.field) {
         case 'date':
           aVal = new Date(a.created_at).getTime();
           bVal = new Date(b.created_at).getTime();
           break;
-
         case 'completion_time':
           aVal = a.time_to_complete_seconds || 0;
           bVal = b.time_to_complete_seconds || 0;
           break;
-
         case 'primary_paradigm':
           aVal = getPrimaryParadigm(a.paradigm_results).pct;
           bVal = getPrimaryParadigm(b.paradigm_results).pct;
           break;
-
         default:
           return 0;
       }
 
-      const result = typeof aVal === 'number' && typeof bVal === 'number'
-        ? aVal - bVal
-        : String(aVal).localeCompare(String(bVal));
-
+      const result = aVal - bVal;
       return sortConfig.direction === 'asc' ? result : -result;
     });
 
     return filtered;
-  }, [
-    assessments,
-    searchTerm,
-    filterParadigm,
-    filterCompleted,
-    filterGeography,
-    filterSustainability,
-    filterRegulatory,
-    sortConfig,
-  ]);
+  }, [assessments, searchTerm, filterParadigm, filterCompleted, filterGeography, filterSustainability, filterRegulatory, sortConfig]);
 
-  // Paginated data
-  const paginatedData = processedData.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
-
+  const paginatedData = processedData.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.ceil(processedData.length / pageSize);
 
-  // Toggle sort
   const toggleSort = (field: SortField) => {
     if (sortConfig.field === field) {
-      setSortConfig({
-        field,
-        direction: sortConfig.direction === 'asc' ? 'desc' : 'asc',
-      });
+      setSortConfig({ field, direction: sortConfig.direction === 'asc' ? 'desc' : 'asc' });
     } else {
       setSortConfig({ field, direction: 'desc' });
     }
@@ -238,9 +204,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
     }
     return (
       <ArrowUpDown
-        className={`h-4 w-4 transition-transform ${
-          sortConfig.direction === 'desc' ? 'rotate-180' : ''
-        }`}
+        className={`h-4 w-4 transition-transform ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`}
       />
     );
   };
@@ -250,27 +214,19 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
       {/* Search & Filters Bar */}
       <div className="flex flex-col gap-3 p-4 bg-muted/50 rounded-lg border">
         <div className="flex flex-col sm:flex-row gap-2">
-          {/* Search */}
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by demographics..."
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
               className="pl-9"
             />
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {/* Paradigm Filter */}
-          <Select value={filterParadigm} onValueChange={(val) => {
-            setFilterParadigm(val);
-            setPage(1);
-          }}>
+          <Select value={filterParadigm} onValueChange={(val) => { setFilterParadigm(val); setPage(1); }}>
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Paradigm" />
             </SelectTrigger>
@@ -284,11 +240,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
             </SelectContent>
           </Select>
 
-          {/* Completed Filter */}
-          <Select value={filterCompleted} onValueChange={(val) => {
-            setFilterCompleted(val);
-            setPage(1);
-          }}>
+          <Select value={filterCompleted} onValueChange={(val) => { setFilterCompleted(val); setPage(1); }}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -299,11 +251,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
             </SelectContent>
           </Select>
 
-          {/* Geography Filter */}
-          <Select value={filterGeography} onValueChange={(val) => {
-            setFilterGeography(val);
-            setPage(1);
-          }}>
+          <Select value={filterGeography} onValueChange={(val) => { setFilterGeography(val); setPage(1); }}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Region" />
             </SelectTrigger>
@@ -316,47 +264,25 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
             </SelectContent>
           </Select>
 
-          {/* Sustainability Filter */}
           <Button
             variant={filterSustainability === true ? 'default' : 'outline'}
             size="sm"
-            onClick={() => {
-              setFilterSustainability(filterSustainability === true ? null : true);
-              setPage(1);
-            }}
+            onClick={() => { setFilterSustainability(filterSustainability === true ? null : true); setPage(1); }}
           >
-            <Leaf className="h-4 w-4" />
-            Sustainability
+            <Leaf className="h-4 w-4" /> Sustainability
           </Button>
 
-          {/* Regulatory Filter */}
           <Button
             variant={filterRegulatory === true ? 'default' : 'outline'}
             size="sm"
-            onClick={() => {
-              setFilterRegulatory(filterRegulatory === true ? null : true);
-              setPage(1);
-            }}
+            onClick={() => { setFilterRegulatory(filterRegulatory === true ? null : true); setPage(1); }}
           >
-            <Globe className="h-4 w-4" />
-            Regulatory
+            <Globe className="h-4 w-4" /> Regulatory
           </Button>
 
-          {/* Clear Filters */}
-          {(searchTerm || 
-            filterParadigm !== 'all' || 
-            filterCompleted !== 'all' || 
-            filterGeography !== 'all' || 
-            filterSustainability !== null || 
-            filterRegulatory !== null) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-              className="ml-auto"
-            >
-              <X className="h-4 w-4" />
-              Clear
+          {(searchTerm || filterParadigm !== 'all' || filterCompleted !== 'all' || filterGeography !== 'all' || filterSustainability !== null || filterRegulatory !== null) && (
+            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="ml-auto">
+              <X className="h-4 w-4" /> Clear
             </Button>
           )}
         </div>
@@ -365,8 +291,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
       {/* Results Count */}
       <div className="text-sm text-muted-foreground px-1">
         Showing {paginatedData.length} of {processedData.length} assessments
-        {processedData.length !== assessments.length &&
-          ` (filtered from ${assessments.length} total)`}
+        {processedData.length !== assessments.length && ` (filtered from ${assessments.length} total)`}
       </div>
 
       {/* Flag Legend */}
@@ -398,46 +323,24 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              {/* Date - Sortable */}
               <TableHead>
-                <button
-                  onClick={() => toggleSort('date')}
-                  className="flex items-center gap-1.5 font-semibold hover:text-foreground"
-                >
-                  Date
-                  <SortIcon field="date" />
+                <button onClick={() => toggleSort('date')} className="flex items-center gap-1.5 font-semibold hover:text-foreground">
+                  Date <SortIcon field="date" />
                 </button>
               </TableHead>
-
-              {/* Demographics */}
               <TableHead>Demographics</TableHead>
-
-              {/* Primary Paradigm - Sortable */}
               <TableHead>
-                <button
-                  onClick={() => toggleSort('primary_paradigm')}
-                  className="flex items-center gap-1.5 font-semibold hover:text-foreground"
-                >
-                  Primary
-                  <SortIcon field="primary_paradigm" />
+                <button onClick={() => toggleSort('primary_paradigm')} className="flex items-center gap-1.5 font-semibold hover:text-foreground">
+                  Primary <SortIcon field="primary_paradigm" />
                 </button>
               </TableHead>
-
-              {/* Flags */}
               <TableHead>Flags</TableHead>
-
-              {/* Completion Time - Sortable */}
               <TableHead>
-                <button
-                  onClick={() => toggleSort('completion_time')}
-                  className="flex items-center gap-1.5 font-semibold hover:text-foreground"
-                >
-                  Time
-                  <SortIcon field="completion_time" />
+                <button onClick={() => toggleSort('completion_time')} className="flex items-center gap-1.5 font-semibold hover:text-foreground">
+                  Time <SortIcon field="completion_time" />
                 </button>
               </TableHead>
-
-              {/* Actions */}
+              <TableHead>Rating</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -448,111 +351,147 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
               const demographics = String(r.userDemographics || 'N/A');
               const hasSustainability = hasSustainabilityReport(assessment);
               const hasRegulatory = hasRegulatoryImpact(assessment);
+              const isExpanded = expandedId === assessment.id;
 
               return (
-                <TableRow key={assessment.id}>
-                  {/* Date */}
-                  <TableCell className="text-sm font-medium">
-                    {new Date(assessment.created_at).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: '2-digit',
-                    })}
-                  </TableCell>
+                <>
+                  <TableRow key={assessment.id}>
+                    {/* Date */}
+                    <TableCell className="text-sm font-medium">
+                      {new Date(assessment.created_at).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric', year: '2-digit',
+                      })}
+                    </TableCell>
 
-                  {/* Demographics - Dialog for full text */}
-                  <TableCell>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <button className="text-sm text-primary hover:underline max-w-[200px] truncate text-left">
-                          {demographics.length > 40 
-                            ? demographics.substring(0, 40) + '…'
-                            : demographics}
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>User Demographics</DialogTitle>
-                          <DialogDescription>
-                            Full demographic description from assessment
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="p-3 bg-muted rounded text-sm">
-                          {demographics}
+                    {/* Demographics */}
+                    <TableCell>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <button className="text-sm text-primary hover:underline max-w-[200px] truncate text-left">
+                            {demographics.length > 40 ? demographics.substring(0, 40) + '…' : demographics}
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>User Demographics</DialogTitle>
+                            <DialogDescription>Full demographic description from assessment</DialogDescription>
+                          </DialogHeader>
+                          <div className="p-3 bg-muted rounded text-sm">{demographics}</div>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+
+                    {/* Primary Paradigm */}
+                    <TableCell>
+                      {primary.name !== 'N/A' ? (
+                        <Badge variant="secondary">
+                          {primary.name.replace(/_/g, ' ')} ({Math.round(primary.pct)}%)
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">—</span>
+                      )}
+                    </TableCell>
+
+                    {/* Flags */}
+                    <TableCell>
+                      <div className="flex gap-1.5 flex-wrap">
+                        <div title={assessment.is_completed ? "Completed" : "Abandoned"}>
+                          {assessment.is_completed ? (
+                            <CheckCircle className="h-4 w-4 text-accent" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-destructive" />
+                          )}
                         </div>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
-
-                  {/* Primary Paradigm */}
-                  <TableCell>
-                    {primary.name !== 'N/A' ? (
-                      <Badge variant="secondary">
-                        {primary.name.replace(/_/g, ' ')} ({Math.round(primary.pct)}%)
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">—</span>
-                    )}
-                  </TableCell>
-
-                  {/* Flags */}
-                  <TableCell>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {/* Completion Status */}
-                      <div title={assessment.is_completed ? "Completed" : "Abandoned"}>
-                        {assessment.is_completed ? (
-                          <CheckCircle className="h-4 w-4 text-accent" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-destructive" />
+                        {hasSustainability && (
+                          <div title="Sustainability Report">
+                            <Leaf className="h-4 w-4" style={{ color: 'hsl(142, 71%, 45%)' }} />
+                          </div>
+                        )}
+                        {hasRegulatory && (
+                          <div title="Regulatory Impact">
+                            <Globe className="h-4 w-4" style={{ color: 'hsl(217, 91%, 60%)' }} />
+                          </div>
                         )}
                       </div>
+                    </TableCell>
 
-                      {/* Sustainability Report */}
-                      {hasSustainability && (
-                        <div title="Sustainability Report">
-                          <Leaf className="h-4 w-4" style={{ color: 'hsl(142, 71%, 45%)' }} />
+                    {/* Completion Time */}
+                    <TableCell className="text-sm">
+                      {assessment.time_to_complete_seconds
+                        ? `${Math.floor(assessment.time_to_complete_seconds / 60)}m ${Math.floor(assessment.time_to_complete_seconds % 60)}s`
+                        : '—'}
+                    </TableCell>
+
+                    {/* Rating */}
+                    <TableCell className="text-sm">
+                      {assessment.agreement_rating ? (
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="font-semibold text-foreground">{assessment.agreement_rating}</span>
+                          <span className="text-xs text-muted-foreground">/ 5</span>
                         </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
                       )}
+                    </TableCell>
 
-                      {/* Regulatory Impact */}
-                      {hasRegulatory && (
-                        <div title="Regulatory Impact">
-                          <Globe className="h-4 w-4" style={{ color: 'hsl(217, 91%, 60%)' }} />
+                    {/* Actions */}
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setExpandedId(isExpanded ? null : assessment.id)}
+                          title="Toggle details"
+                        >
+                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
+                        >
+                          <Eye className="h-4 w-4" /> View
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Expandable detail row */}
+                  {isExpanded && (
+                    <TableRow key={`${assessment.id}-detail`}>
+                      <TableCell colSpan={7} className="bg-muted/30 p-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-sm">
+                          {[
+                            ['Geography',      String(r.geography        || '—')],
+                            ['Complexity',      String(r.taskComplexity    || '—')],
+                            ['Frequency',       String(r.frequency         || '—')],
+                            ['Predictability',  String(r.predictability    || '—')],
+                            ['Context',         String(r.contextOfUse      || '—')],
+                            ['Info Type',       String(r.informationType   || '—')],
+                            ['Exploration',     String(r.explorationMode   || '—')],
+                            ['Error Risk',      String(r.errorConsequence  || '—')],
+                            ['Control',         String(r.controlPreference || '—')],
+                            ['Values',          ((r.valuesRanking as string[] | undefined) ?? []).join(' › ')],
+                          ].map(([label, val]) => (
+                            <div key={label}>
+                              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                {label}
+                              </span>
+                              <p className="text-foreground mt-0.5">{val || '—'}</p>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  </TableCell>
-
-                  {/* Completion Time */}
-                  <TableCell className="text-sm">
-                    {assessment.time_to_complete_seconds
-                      ? `${Math.floor(assessment.time_to_complete_seconds / 60)}m ${Math.floor(
-                          assessment.time_to_complete_seconds % 60
-                        )}s`
-                      : '—'}
-                  </TableCell>
-
-                  {/* Actions */}
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        window.open(`/results/${assessment.id}`, '_blank')
-                      }
-                    >
-                      <Eye className="h-4 w-4" />
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               );
             })}
 
             {paginatedData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  {processedData.length === 0 
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  {processedData.length === 0
                     ? 'No assessments match your filters.'
                     : 'No results on this page.'}
                 </TableCell>
@@ -569,20 +508,10 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
             Page {page} of {totalPages}
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
               Previous
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
               Next
             </Button>
           </div>
