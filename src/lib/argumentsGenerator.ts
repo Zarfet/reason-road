@@ -15,9 +15,6 @@ export interface Argument {
   impact: 'high' | 'medium' | 'low';
   dataPoint?: string;
   citation?: Citation;
-  costEstimate?: string;
-  /** @deprecated Use citation instead */
-  source?: string;
 }
 
 export interface ParadigmArguments {
@@ -78,7 +75,8 @@ function generateTraditionalScreenArguments(
       title: 'Multi-Window Workflows',
       description: 'Screens enable side-by-side comparison, reference materials open alongside work, and context switching.',
       impact: 'high',
-      dataPoint: 'Knowledge workers use 2.4 windows simultaneously on average'
+      dataPoint: 'Multi-window workflows are standard in knowledge work contexts',
+      citation: getCitation('CONTEXT_SWITCHING')
     });
   }
   
@@ -88,7 +86,6 @@ function generateTraditionalScreenArguments(
     title: 'High Implementation Cost',
     description: 'Responsive design across mobile, tablet, desktop requires significant development. Each screen size needs optimization.',
     impact: 'high',
-    costEstimate: '$120,000-200,000 for full responsive web app',
     dataPoint: '400-600 developer hours for professional UI',
     citation: getCitation('RESPONSIVE_COST')
   });
@@ -113,8 +110,8 @@ function generateTraditionalScreenArguments(
     title: 'E-Waste & Energy Consumption',
     description: 'Screens require regular replacement (3-4 year cycle). Manufacturing and disposal generate significant environmental impact.',
     impact: 'low',
-    dataPoint: 'Device refresh cycle: 3-4 years, generating 0.5kg e-waste per user',
-    costEstimate: '$500-800 per device replacement'
+    dataPoint: 'Consumer electronics have 3-5 year lifecycles; end-of-life generates significant e-waste',
+    citation: getCitation('IOT_ENERGY')
   });
   
   if (answers.contextOfUse === 'Mobile') {
@@ -122,7 +119,8 @@ function generateTraditionalScreenArguments(
       title: 'Small Screen Limitations',
       description: 'Mobile screens limit information density. Complex data visualization requires zooming/panning, reducing efficiency.',
       impact: 'medium',
-      dataPoint: 'Mobile users take 2x longer for complex tasks vs desktop'
+      dataPoint: 'Reduced screen real estate increases task difficulty for data-intensive workflows',
+      citation: getCitation('SCREEN_FATIGUE')
     });
   }
   
@@ -194,7 +192,8 @@ function generateInvisibleArguments(
     title: 'Over-Automation Risk',
     description: 'If task predictability is <80%, automation becomes annoying rather than helpful. System makes wrong assumptions.',
     impact: 'high',
-    dataPoint: 'Automation failures cause 40% more frustration than manual errors'
+    dataPoint: 'Unexpected automation behavior is the leading cause of mode confusion and user frustration',
+    citation: getCitation('AUTOMATION_ANXIETY')
   });
   
   if (answers.userDemographics.toLowerCase().includes('elderly') || 
@@ -204,7 +203,8 @@ function generateInvisibleArguments(
       title: 'Low Tech Literacy Barrier',
       description: 'Non-technical users struggle to understand invisible systems. Lack of visual cues increases confusion and reduces adoption.',
       impact: 'high',
-      dataPoint: '70% abandonment rate among low-tech users for automated systems'
+      dataPoint: 'Users with limited digital skills report higher confusion and abandonment with automated interfaces',
+      citation: getCitation('AUTOMATION_ANXIETY')
     });
   }
   
@@ -212,8 +212,8 @@ function generateInvisibleArguments(
     title: 'GDPR Compliance Complexity',
     description: 'EU regulations require "Right to Explanation" for automated decisions. Must build audit logging and explanation UI.',
     impact: 'medium',
-    costEstimate: '€25,000-40,000 for GDPR Article 22 compliance',
-    dataPoint: '+15-20% development overhead for transparency features'
+    dataPoint: 'Automated decision-making systems require audit logging and explanation UI under GDPR Article 22',
+    citation: getCitation('EU_AI_ACT')
   });
   
   return {
@@ -268,16 +268,18 @@ function generateAIVectorialArguments(
   
   argsAgainst.push({
     title: 'High Compute Cost',
-    description: 'Cloud GPU inference costs $0.002-0.01 per API call. At scale, costs escalate quickly for high-usage applications.',
+    description: 'Cloud GPU inference costs scale with usage. At scale, costs escalate quickly for high-usage applications.',
     impact: 'high',
-    costEstimate: '$5,000-20,000/month for 10,000 active users'
+    dataPoint: 'Cloud inference costs scale directly with usage volume and model complexity',
+    citation: getCitation('AI_HALLUCINATION')
   });
   
   argsAgainst.push({
     title: 'Data Privacy Concerns',
     description: 'Sending user data to third-party AI providers raises privacy issues. EU data sovereignty requires careful architecture.',
     impact: 'high',
-    dataPoint: 'GDPR compliance requires on-premise or EU-hosted AI processing'
+    dataPoint: 'EU data sovereignty requirements restrict cross-border AI data transfers under GDPR Chapter V',
+    citation: getCitation('EU_AI_ACT')
   });
   
   if (answers.geography === 'Primarily Europe' || answers.geography === 'Global') {
@@ -285,7 +287,6 @@ function generateAIVectorialArguments(
       title: 'EU AI Act High-Risk Classification',
       description: 'AI systems in healthcare, critical infrastructure, or employment may be classified as "High-Risk," requiring CE marking and audits.',
       impact: 'high',
-      costEstimate: '€50,000-200,000 for AI Act compliance certification',
       citation: getCitation('EU_AI_ACT')
     });
   }
@@ -329,7 +330,8 @@ function generateSpatialArguments(
       title: 'Natural Exploration',
       description: 'VR enables intuitive 360° exploration. Users can walk through spaces, examine objects from all angles.',
       impact: 'medium',
-      dataPoint: 'Users discover 2.5x more features in VR vs traditional UI'
+      dataPoint: 'Spatial environments enable embodied exploration not possible in flat interfaces',
+      citation: getCitation('SPATIAL_TRAINING')
     });
   }
   
@@ -345,7 +347,6 @@ function generateSpatialArguments(
     title: 'Extreme Hardware Cost',
     description: 'Enterprise VR: $2,500-8,000 per seat (headset + GPU workstation). Consumer: $500-3,500. Ongoing maintenance and replacement.',
     impact: 'high',
-    costEstimate: '$2,500-8,000 per user (enterprise VR setup)',
     citation: getCitation('VR_HARDWARE_COST')
   });
   
@@ -361,15 +362,16 @@ function generateSpatialArguments(
     title: 'Social Acceptance Barrier',
     description: 'VR headsets isolate users, making them unsuitable for office environments or public spaces. AR glasses face "Google Glass effect."',
     impact: 'medium',
-    dataPoint: '85% of workers uncomfortable wearing VR in shared office space'
+    dataPoint: 'Head-mounted displays face significant social stigma in shared and public environments',
+    citation: getCitation('VR_ELDERLY_REJECTION')
   });
   
   argsAgainst.push({
     title: 'Massive Environmental Impact',
-    description: 'VR headsets consume 200 kWh/year (4x screens). Short 3-year lifecycle. Manufacturing requires rare earth materials.',
+    description: 'VR headsets consume significantly more energy than screens and have shorter replacement cycles. Manufacturing requires rare earth materials.',
     impact: 'medium',
-    dataPoint: 'VR lifecycle: 500 tons CO₂ vs 200 tons for screens',
-    costEstimate: 'Replacement every 3 years ($500-3,500)'
+    dataPoint: 'VR headsets consume significantly more energy than screens and have shorter replacement cycles',
+    citation: getCitation('IOT_ENERGY')
   });
   
   return {
@@ -434,7 +436,8 @@ function generateVoiceArguments(
     title: 'Socially Awkward in Public',
     description: 'Users avoid voice commands in offices, public transport, or quiet spaces. "Talking to your phone" stigma persists.',
     impact: 'medium',
-    dataPoint: '72% of users uncomfortable using voice in public spaces'
+    dataPoint: 'Social norms and privacy expectations significantly limit voice interface adoption in public contexts',
+    citation: getCitation('VOICE_PRIVACY')
   });
   
   if (answers.taskComplexity === 'Complex') {
@@ -442,7 +445,8 @@ function generateVoiceArguments(
       title: 'Unsuitable for Complex Tasks',
       description: 'Voice is slow for multi-step workflows, data entry, or precise editing. Users resort to screen for anything complex.',
       impact: 'high',
-      dataPoint: 'Task abandonment rate: 85% for complex tasks attempted via voice'
+      dataPoint: 'Voice is optimized for short, discrete commands; multi-step workflows cause high abandonment',
+      citation: getCitation('VOICE_ACCURACY')
     });
   }
   

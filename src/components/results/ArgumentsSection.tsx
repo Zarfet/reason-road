@@ -235,13 +235,6 @@ function ArgumentCard({
         </div>
       )}
 
-      {/* Cost Estimate */}
-      {argument.costEstimate && (
-        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-          <span>💰</span>
-          <span className="font-medium text-foreground/80">{argument.costEstimate}</span>
-        </div>
-      )}
     </motion.div>
   );
 }
