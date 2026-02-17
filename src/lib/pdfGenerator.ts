@@ -1,15 +1,12 @@
 /**
- * NEXUS PDF Report Generator — v3
- * Professional multi-section A4 report using jsPDF
- * Sections: Cover | Analysis | Regulatory | Sustainability | Red Flags
+ * NEXUS PDF Report — HTML Print Generator
+ * 
+ * Strategy: inject dynamic HTML into a hidden iframe → window.print()
+ * Result: native browser PDF — vectorial text, real CSS, no bitmap artifacts
  */
 
-import jsPDF from 'jspdf';
-import {
-  type AssessmentAnswers,
-  type RecommendationResult,
-  PARADIGM_LABELS,
-} from '@/types/assessment';
+import type { AssessmentAnswers, RecommendationResult } from '@/types/assessment';
+import { PARADIGM_LABELS } from '@/types/assessment';
 import { getReasoningBullets } from '@/lib/scoring';
 import { generateStrategicRationale } from '@/components/results/tabs/OverviewTab';
 import { generateAllArguments } from '@/lib/argumentsGenerator';
@@ -17,34 +14,7 @@ import { generateSustainabilityReport } from '@/lib/sustainabilityAnalysis';
 import { generateRegulatoryAnalysis } from '@/lib/regulatoryAnalysis';
 import { detectRedFlags } from '@/lib/redFlagsDetector';
 
-// ─── Types & tokens ───────────────────────────────────────────────────────────
-type RGB = [number, number, number];
-
-const C: Record<string, RGB> = {
-  accent:  [22, 163, 74],
-  white:   [255, 255, 255],
-  fg:      [20, 20, 20],
-  muted:   [110, 110, 110],
-  border:  [218, 218, 218],
-  card:    [246, 249, 246],
-  forBg:   [237, 252, 240],
-  againstBg:[255, 248, 236],
-  redBg:   [254, 241, 241],
-  crit:    [185, 28, 28],
-  high:    [194, 65, 12],
-  med:     [161, 98, 7],
-  darkG:   [16, 110, 48],
-};
-
-// A4 in mm
-const PW = 210;
-const PH = 297;
-const M  = 13;
-const CW = PW - M * 2;
-const HALF = (CW - 5) / 2;
-const RX = M + HALF + 5;   // right column X
-
-// Interface type labels — no "paradigm" word
+// ─── Interface labels ─────────────────────────────────────────────────────────
 const IL: Record<string, string> = {
   traditional_screen: 'Traditional Screen',
   invisible:          'Invisible / Ambient',
@@ -52,173 +22,579 @@ const IL: Record<string, string> = {
   spatial:            'Spatial Computing',
   voice:              'Voice-First',
 };
-function iLabel(key: string): string {
-  return IL[key] ?? (PARADIGM_LABELS as Record<string, string>)[key] ?? key.replace(/_/g, ' ');
+function iLabel(k: string): string {
+  return IL[k] ?? (PARADIGM_LABELS as Record<string, string>)[k] ?? k.replace(/_/g, ' ');
 }
 function clean(s: string): string {
-  return s.replace(/\*\*/g, '').replace(/CO2/g, 'CO2').trim();
-}
-// Safe replacement for special chars jsPDF can't handle
-function safeText(s: string): string {
-  return s
-    .replace(/CO2/g, 'CO2')
-    .replace(/CO₂/g, 'CO2')
-    .replace(/₂/g, '2')
-    .replace(/[▲▼✓✗→]/g, '')
-    .replace(/['']/g, "'")
-    .replace(/[""]/g, '"')
-    .replace(/…/g, '...')
-    .replace(/–/g, '-')
-    .replace(/°/g, ' deg')
-    .trim();
+  return s.replace(/\*\*/g, '').trim();
 }
 
-// ─── Builder class ────────────────────────────────────────────────────────────
-class Doc {
-  d: jsPDF;
-  y = M;
-  pageNum = 1;
+// ─── Research cache reader ────────────────────────────────────────────────────
+interface ResearchPaper { title: string; authors: string; year: number; venue: string; abstract: string; relevance: string; }
+interface CaseStudy { name: string; company: string; year: number; outcome: 'success' | 'failure'; description: string; keyFactors: string[]; lessonsLearned: string; }
 
-  constructor() {
-    this.d = new jsPDF({ unit: 'mm', format: 'a4' });
-  }
-
-  /** Add new page + strip header */
-  newPage(): void {
-    this.footer();
-    this.d.addPage();
-    this.pageNum++;
-    this.y = M;
-    this.pageStrip();
-  }
-
-  /** Check remaining space, add page if needed */
-  need(h: number): void {
-    if (this.y + h > PH - M - 12) this.newPage();
-  }
-
-  // ── Layout ──────────────────────────────────────────────────────────────
-
-  pageStrip(): void {
-    this.d.setFillColor(...C.accent);
-    this.d.rect(0, 0, PW, 7, 'F');
-    this.d.setTextColor(...C.white);
-    this.d.setFontSize(6.5);
-    this.d.setFont('helvetica', 'bold');
-    this.d.text('NEXUS  -  Interface Paradigm Assessment Report', M, 5);
-    this.y = 13;
-  }
-
-  footer(): void {
-    const fy = PH - 8;
-    this.d.setDrawColor(...C.border);
-    this.d.setLineWidth(0.25);
-    this.d.line(M, fy - 2, PW - M, fy - 2);
-    this.d.setTextColor(...C.muted);
-    this.d.setFontSize(6.5);
-    this.d.setFont('helvetica', 'normal');
-    this.d.text('NEXUS - Interface Paradigm Assessment', M, fy);
-    this.d.text(String(this.pageNum), PW - M, fy, { align: 'right' });
-  }
-
-  sectionBand(label: string): void {
-    this.need(12);
-    this.d.setFillColor(...C.accent);
-    this.d.rect(M, this.y, CW, 9, 'F');
-    this.d.setTextColor(...C.white);
-    this.d.setFontSize(9);
-    this.d.setFont('helvetica', 'bold');
-    this.d.text(safeText(label).toUpperCase(), M + 4, this.y + 6.5);
-    this.y += 13;
-  }
-
-  rule(): void {
-    this.d.setDrawColor(...C.border);
-    this.d.setLineWidth(0.2);
-    this.d.line(M, this.y, PW - M, this.y);
-    this.y += 4;
-  }
-
-  gap(h = 4): void { this.y += h; }
-
-  // ── Text helpers ────────────────────────────────────────────────────────
-
-  h2(text: string, color: RGB = C.accent): void {
-    this.need(8);
-    this.d.setTextColor(...color);
-    this.d.setFontSize(10);
-    this.d.setFont('helvetica', 'bold');
-    this.d.text(safeText(text), M, this.y);
-    this.y += 6;
-  }
-
-  h3(text: string, x = M, color: RGB = C.fg): void {
-    this.need(7);
-    this.d.setTextColor(...color);
-    this.d.setFontSize(8.5);
-    this.d.setFont('helvetica', 'bold');
-    this.d.text(safeText(text), x, this.y);
-    this.y += 5;
-  }
-
-  /** Renders body text, returns height used */
-  body(text: string, x = M, maxW = CW, lh = 4.4): number {
-    this.d.setTextColor(...C.fg);
-    this.d.setFontSize(8);
-    this.d.setFont('helvetica', 'normal');
-    const lines = this.d.splitTextToSize(safeText(clean(text)), maxW);
-    this.d.text(lines, x, this.y);
-    const h = lines.length * lh;
-    this.y += h;
-    return h;
-  }
-
-  caption(text: string, x = M, maxW = CW, color: RGB = C.muted): void {
-    this.d.setTextColor(...color);
-    this.d.setFontSize(7);
-    this.d.setFont('helvetica', 'normal');
-    const lines = this.d.splitTextToSize(safeText(clean(text)), maxW);
-    this.d.text(lines, x, this.y);
-    this.y += lines.length * 3.8;
-  }
-
-  /** Pill/badge */
-  pill(text: string, x: number, y: number, bg: RGB, fg: RGB = C.white, w = 22): void {
-    this.d.setFillColor(...bg);
-    this.d.roundedRect(x, y - 3.5, w, 5.5, 1.5, 1.5, 'F');
-    this.d.setTextColor(...fg);
-    this.d.setFontSize(5.5);
-    this.d.setFont('helvetica', 'bold');
-    this.d.text(safeText(text).toUpperCase(), x + w / 2, y + 0.2, { align: 'center' });
-  }
-
-  /** Card background rect */
-  card(x: number, y: number, w: number, h: number, bg: RGB = C.card): void {
-    this.d.setFillColor(...bg);
-    this.d.roundedRect(x, y, w, h, 2, 2, 'F');
-  }
+function readFromCache<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { timestamp: number };
+    if (Date.now() - parsed.timestamp > 7 * 24 * 60 * 60 * 1000) { localStorage.removeItem(key); return null; }
+    return parsed as T;
+  } catch { return null; }
 }
 
-
-// ─── Research cache interfaces (mirrors ResearchPanel / CaseStudiesPanel) ────
-interface ResearchPaper {
-  title: string;
-  authors: string;
-  year: number;
-  venue: string;
-  abstract: string;
-  relevance: string;
+// ─── Escape HTML ──────────────────────────────────────────────────────────────
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-interface CaseStudy {
-  name: string;
-  company: string;
-  year: number;
-  outcome: 'success' | 'failure';
-  description: string;
-  keyFactors: string[];
-  lessonsLearned: string;
+// ─── Page wrapper ─────────────────────────────────────────────────────────────
+function pageWrapper(num: number, title: string, rightMeta: string, content: string): string {
+  return `
+  <div class="a4-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">${esc(title)}</div>
+      </div>
+      <div class="mono">${esc(rightMeta)}</div>
+    </div>
+    ${content}
+    <div class="page-footer">
+      <span>NEXUS Paradigm Assessment</span>
+      <span>Page ${num} of ?</span>
+    </div>
+  </div>`;
 }
+
+// ─── PAGE 1: Cover ────────────────────────────────────────────────────────────
+function buildCover(answers: AssessmentAnswers, recommendation: RecommendationResult, dateStr: string): string {
+  const diff = recommendation.primary.pct - recommendation.secondary.pct;
+  const confLabel = diff >= 30 ? 'STRONG' : diff >= 15 ? 'MODERATE' : 'LOW';
+  const bullets = getReasoningBullets(answers, recommendation).slice(0, 4);
+  const rationale = clean(generateStrategicRationale(recommendation, answers));
+
+  const sortedScores = Object.entries(recommendation.allScores)
+    .sort(([, a], [, b]) => (b as number) - (a as number));
+
+  const scoreBars = sortedScores.map(([key, score]) => {
+    const pct = score as number;
+    const isPrimary = key === recommendation.primary.paradigm;
+    return `
+    <div class="score-row ${isPrimary ? 'score-primary' : ''}">
+      <div class="score-label">${esc(iLabel(key).toUpperCase())}</div>
+      <div class="bar-container"><div class="bar-fill" style="width:${pct}%;background:${isPrimary ? '#000' : '#aaa'}"></div></div>
+      <div class="score-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  const bulletItems = bullets.map((b, i) =>
+    `<li>${i + 1}. ${esc(clean(b))}</li>`
+  ).join('');
+
+  return `
+  <div class="a4-page">
+    <div class="cover-header">
+      <div>
+        <div class="project-label">Project: ${esc(answers.projectName || 'Untitled')}</div>
+        <div class="cover-title">NEXUS Assessment</div>
+        ${answers.userDemographics ? `<div class="cover-sub">User: ${esc(answers.userDemographics)}</div>` : ''}
+      </div>
+      <div class="cover-meta">
+        <div class="mono">CONFIDENCE: ${confLabel} (${diff}pts split)</div>
+        <div class="mono">DATE: ${esc(dateStr.toUpperCase())}</div>
+      </div>
+    </div>
+
+    <div class="cover-grid">
+      <div class="strategy-card">
+        <div class="badge">Recommended Strategy</div>
+        <div class="strategy-name">
+          ${esc(iLabel(recommendation.primary.paradigm))}
+          <span class="strategy-secondary"> + ${esc(iLabel(recommendation.secondary.paradigm))}</span>
+        </div>
+        <div class="strategy-rationale">${esc(rationale)}</div>
+        <ul class="reasoning-list">${bulletItems}</ul>
+      </div>
+
+      <div class="scores-panel">
+        ${scoreBars}
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span>NEXUS Paradigm Assessment</span>
+      <span>Page 1 of ?</span>
+    </div>
+  </div>`;
+}
+
+// ─── PAGE 2: Analysis ─────────────────────────────────────────────────────────
+function buildAnalysis(answers: AssessmentAnswers, recommendation: RecommendationResult): string {
+  const allArgs = generateAllArguments(answers, recommendation);
+  const diff = recommendation.primary.pct - recommendation.secondary.pct;
+
+  const sections = allArgs.map(pArg => {
+    const forItems = pArg.argumentsFor.map(a => `
+      <div class="arg-card arg-for">
+        <div class="arg-header">
+          <div class="arg-title">${esc(clean(a.title))}</div>
+          <span class="impact-badge impact-${a.impact}">${esc(a.impact)}</span>
+        </div>
+        <div class="arg-desc">${esc(clean(a.description))}</div>
+      </div>`).join('');
+
+    const againstItems = pArg.argumentsAgainst.map(a => `
+      <div class="arg-card arg-against">
+        <div class="arg-header">
+          <div class="arg-title">${esc(clean(a.title))}</div>
+          <span class="impact-badge impact-${a.impact}">${esc(a.impact)}</span>
+        </div>
+        <div class="arg-desc">${esc(clean(a.description))}</div>
+      </div>`).join('');
+
+    return `
+    <div class="paradigm-section">
+      <div class="paradigm-bar">
+        <span>${esc(iLabel(pArg.paradigmKey ?? pArg.paradigm).toUpperCase())}</span>
+        <span>${Math.round(pArg.percentage)}%</span>
+      </div>
+      <div class="args-grid">
+        <div class="args-col">
+          <div class="col-header col-for">FOR</div>
+          ${forItems}
+        </div>
+        <div class="args-col">
+          <div class="col-header col-against">AGAINST</div>
+          ${againstItems}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const content = `
+    <div class="page-subtitle">Arguments for and against each interface type, weighted by your context.</div>
+    ${sections}`;
+
+  return pageWrapper(2, '02. Analysis — Arguments For & Against', `CONFIDENCE GAP: ${diff} PTS`, content);
+}
+
+// ─── PAGE 3: Regulatory ──────────────────────────────────────────────────────
+function buildRegulatory(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+  const reg = generateRegulatoryAnalysis(answers, recommendation);
+  if (!reg || !reg.applicable || reg.requirements.length === 0) return null;
+
+  const riskClass = `risk-${reg.overallRiskLevel}`;
+
+  const reqs = reg.requirements.map(req => {
+    const affectedLabels = req.applicableParadigms.map((p: string) => iLabel(p)).join(', ');
+    const steps = req.mitigationSteps.slice(0, 4).map((s: string) => {
+      const isReq = s.startsWith('REQUIRED');
+      return `<li class="${isReq ? 'step-required' : ''}">${esc(clean(s.replace(/^REQUIRED: /, '')))}</li>`;
+    }).join('');
+
+    return `
+    <div class="reg-row">
+      <div class="reg-meta">
+        <strong>${esc(req.title)}</strong>
+        <span class="mono reg-law">${esc(req.regulation)}</span>
+        <span class="reg-impact reg-impact-${req.impactLevel}">${esc(req.impactLevel.toUpperCase())}</span>
+      </div>
+      <div class="reg-body">
+        <div class="text-xs">${esc(clean(req.description))}</div>
+        <div class="reg-cols">
+          <div>
+            <span class="field-label">APPLIES TO</span>
+            <div class="text-xs">${esc(affectedLabels)}</div>
+          </div>
+          <div>
+            <span class="field-label">REQUIRED ACTIONS</span>
+            <ul class="steps-list">${steps}</ul>
+          </div>
+        </div>
+        <div class="citation-row">
+          <span class="field-label">SOURCE</span>
+          <span class="text-xs citation-link">${esc(req.citation.title)} (${req.citation.year})</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const content = `
+    <div class="reg-overview">
+      <div>
+        <span>Overall risk: </span><span class="risk-badge ${riskClass}">${esc(reg.overallRiskLevel.toUpperCase())} RISK</span>
+        <span class="mono" style="margin-left:12px">Region: ${esc(reg.region)}</span>
+      </div>
+    </div>
+    <div class="reg-list">${reqs}</div>
+    <div class="legal-disclaimer">Legal Disclaimer: ${esc(clean(reg.disclaimer))}</div>`;
+
+  return pageWrapper(3, '03. Regulatory Audit', 'STATUS: ACTION REQUIRED', content);
+}
+
+// ─── PAGE 4: Sustainability ──────────────────────────────────────────────────
+function buildSustainability(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+  const sust = generateSustainabilityReport(recommendation, answers.valuesRanking ?? [], answers.geography);
+  if (!sust.applicable) return null;
+
+  const tableRows = sust.paradigmBreakdown.map((p: { paradigm: string; percentage: number; annualEnergyKwh: number; annualCO2Kg: number; hardwareLifecycle: number }, i: number) => `
+    <tr class="${i % 2 === 1 ? 'tr-alt' : ''}">
+      <td>${esc(iLabel(p.paradigm))}</td>
+      <td>${Math.round(p.percentage)}%</td>
+      <td>${p.annualEnergyKwh} kWh</td>
+      <td>${p.annualCO2Kg} kg</td>
+      <td>${p.hardwareLifecycle} yrs</td>
+    </tr>`).join('');
+
+  const greenFlags = sust.greenFlags.map((f: string) =>
+    `<li class="green-flag">&#10003; ${esc(clean(f))}</li>`
+  ).join('');
+
+  const content = `
+    <div class="sust-metrics">
+      <div class="metric-tile">
+        <div class="metric-val">${sust.weightedAnnualEnergy.toFixed(0)} <span class="metric-unit">kWh</span></div>
+        <div class="metric-label">Annual Energy / User</div>
+      </div>
+      <div class="metric-tile">
+        <div class="metric-val">${sust.weightedAnnualCO2.toFixed(1)} <span class="metric-unit">kg</span></div>
+        <div class="metric-label">CO2 Emissions / Year</div>
+      </div>
+      <div class="metric-tile">
+        <div class="metric-val">${sust.weightedLifecycle.toFixed(1)} <span class="metric-unit">yrs</span></div>
+        <div class="metric-label">Device Lifecycle</div>
+      </div>
+    </div>
+
+    <div class="sust-compare">
+      <div class="compare-card">
+        <span class="field-label">VS PURE SCREEN</span>
+        <div class="text-xs">Energy: ${esc(sust.comparisonVsPureScreen.energySavings)}</div>
+        <div class="text-xs">CO2: ${esc(sust.comparisonVsPureScreen.co2Savings)}</div>
+      </div>
+      <div class="compare-card">
+        <span class="field-label">VS PURE SPATIAL (VR)</span>
+        <div class="text-xs">Energy: ${esc(sust.comparisonVsPureVR.energySavings)}</div>
+        <div class="text-xs">CO2: ${esc(sust.comparisonVsPureVR.co2Savings)}</div>
+      </div>
+    </div>
+
+    ${sust.greenFlags.length > 0 ? `
+    <div class="green-flags-section">
+      <div class="section-title">What You Are Doing Right</div>
+      <ul class="green-flags-list">${greenFlags}</ul>
+    </div>` : ''}
+
+    <div class="section-title">Environmental Impact by Interface Type</div>
+    <table class="sust-table">
+      <thead>
+        <tr>
+          <th>Interface Type</th><th>Share</th><th>Energy (kWh)</th><th>CO2 (kg)</th><th>Lifecycle</th>
+        </tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+
+    <div class="disclaimer-text">${esc(clean(sust.disclaimer))}</div>`;
+
+  return pageWrapper(4, '04. Sustainability Report', 'ENV. IMPACT', content);
+}
+
+// ─── PAGE 5: Red Flags ───────────────────────────────────────────────────────
+function buildRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+  const flags = detectRedFlags(answers, recommendation);
+  if (!flags.hasFlags) return null;
+
+  const summary = flags.criticalCount > 0
+    ? `${flags.criticalCount} critical issue(s) require immediate attention before implementation.`
+    : `${flags.totalFlags} issue(s) detected that should be addressed.`;
+
+  const cards = flags.flags.map((flag: { severity: string; category: string; title: string; description: string; impact: string; affectedParadigms: string[]; mitigation: string[]; citation?: { title: string; year: number } }) => {
+    const affectedLabels = flag.affectedParadigms.map((p: string) => iLabel(p)).join(', ');
+    const mitigations = flag.mitigation.map((m: string) => {
+      const isReq = m.startsWith('REQUIRED');
+      return `<li class="${isReq ? 'step-required' : ''}">${esc(clean(m.replace(/^REQUIRED: /, '')))}</li>`;
+    }).join('');
+
+    return `
+    <div class="flag-card flag-${flag.severity}">
+      <div class="flag-header">
+        <div class="flag-badges">
+          <span class="sev-badge sev-${flag.severity}">${esc(flag.severity.toUpperCase())}</span>
+          <span class="cat-badge">${esc(flag.category.toUpperCase())}</span>
+        </div>
+        <div class="flag-title">${esc(clean(flag.title))}</div>
+      </div>
+      <div class="flag-body">
+        <div class="flag-col">
+          <span class="field-label">ISSUE</span>
+          <div class="text-xs">${esc(clean(flag.description))}</div>
+          <span class="field-label mt-2">IMPACT IF IGNORED</span>
+          <div class="text-xs">${esc(clean(flag.impact))}</div>
+          ${flag.citation ? `
+          <span class="field-label mt-2">RESEARCH EVIDENCE</span>
+          <div class="text-xs citation-link">${esc(flag.citation.title)} (${flag.citation.year})</div>` : ''}
+        </div>
+        <div class="flag-col">
+          <span class="field-label">AFFECTS</span>
+          <div class="text-xs">${esc(affectedLabels)}</div>
+          <span class="field-label mt-2">REQUIRED MITIGATIONS</span>
+          <ul class="steps-list">${mitigations}</ul>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const content = `
+    <div class="flag-summary ${flags.criticalCount > 0 ? 'flag-summary-critical' : ''}">${esc(summary)}</div>
+    ${cards}`;
+
+  return pageWrapper(5, '05. Red Flags & Critical Considerations', `${flags.totalFlags} ISSUE(S)`, content);
+}
+
+// ─── PAGE 6: Research ────────────────────────────────────────────────────────
+function buildResearch(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+  const demo = (answers.userDemographics?.trim() || 'general').toLowerCase().replace(/\s+/g, '_');
+  const paradigm = recommendation.primary.paradigm;
+  const rKey = `nexus_research_${paradigm}_${demo}`;
+  const cKey = `nexus_case_studies_${paradigm}_${demo}`;
+
+  const rCache = readFromCache<{ papers: ResearchPaper[] }>(rKey);
+  const cCache = readFromCache<{ cases: CaseStudy[] }>(cKey);
+  const papers = rCache?.papers ?? [];
+  const cases = cCache?.cases ?? [];
+
+  if (papers.length === 0 && cases.length === 0) return null;
+
+  const paperItems = papers.slice(0, 6).map(p => `
+    <li class="research-item">
+      <strong>${esc(p.title)}</strong>
+      <span class="mono author-line">${esc(p.authors)} &middot; ${p.year} &middot; ${esc(p.venue)}</span>
+      <div class="text-xs">${esc(p.abstract)}</div>
+      <div class="relevance-box">
+        <span class="field-label">WHY RELEVANT</span>
+        <div class="text-xs">${esc(p.relevance)}</div>
+      </div>
+    </li>`).join('');
+
+  const successes = cases.filter(c => c.outcome === 'success');
+  const failures = cases.filter(c => c.outcome === 'failure');
+
+  function caseGroup(list: CaseStudy[], label: string, cls: string): string {
+    if (list.length === 0) return '';
+    const items = list.map(cs => `
+      <div class="case-card">
+        <div class="case-header">
+          <span class="outcome-badge outcome-${cs.outcome}">${esc(cs.outcome.toUpperCase())}</span>
+          <strong>${esc(cs.name)}</strong>
+          <span class="mono" style="margin-left:auto">${esc(cs.company)} &middot; ${cs.year}</span>
+        </div>
+        <div class="case-body">
+          <div class="case-col">
+            <span class="field-label">DESCRIPTION</span>
+            <div class="text-xs">${esc(cs.description)}</div>
+            <span class="field-label mt-2">LESSON LEARNED</span>
+            <div class="text-xs">${esc(cs.lessonsLearned)}</div>
+          </div>
+          <div class="case-col">
+            <span class="field-label">KEY FACTORS</span>
+            <ul class="steps-list">${cs.keyFactors.slice(0, 4).map(f => `<li>${esc(f)}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>`).join('');
+    return `<div class="case-group ${cls}"><div class="case-group-title">${esc(label)}</div>${items}</div>`;
+  }
+
+  const content = `
+    ${papers.length > 0 ? `
+    <div class="section-title">Supporting Academic Research</div>
+    <ul class="research-list">${paperItems}</ul>` : ''}
+    ${(successes.length > 0 || failures.length > 0) ? `
+    <div class="section-title">Real-World Case Studies</div>
+    ${caseGroup(successes, 'Successes', 'group-success')}
+    ${caseGroup(failures, 'Failures', 'group-failure')}` : ''}`;
+
+  return pageWrapper(6, '06. Research & Case Studies', 'SOURCE MATERIAL', content);
+}
+
+// ─── CSS ──────────────────────────────────────────────────────────────────────
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;600;800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #e5e5e5; }
+
+  .a4-page {
+    background: white; width: 210mm; min-height: 297mm; padding: 15mm;
+    position: relative; color: #111; display: flex; flex-direction: column; gap: 16px;
+    page-break-after: always;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: -0.02em; }
+  .text-xs { font-size: 0.72rem; line-height: 1.5; color: #444; }
+  .mt-2 { display: block; margin-top: 8px; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 1px solid #ccc; padding-bottom: 8px; margin-bottom: 4px;
+  }
+  .page-title { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
+  .page-subtitle { font-size: 0.72rem; color: #666; font-style: italic; margin-bottom: 8px; }
+  .page-footer {
+    margin-top: auto; border-top: 1px solid #000; padding-top: 6px;
+    display: flex; justify-content: space-between; font-size: 0.65rem; color: #888;
+  }
+
+  .cover-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 2px solid #000; padding-bottom: 14px;
+  }
+  .project-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-bottom: 4px; }
+  .cover-title { font-size: 2.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
+  .cover-sub { font-size: 0.78rem; color: #555; margin-top: 4px; }
+  .cover-meta { text-align: right; }
+  .cover-meta div { margin-bottom: 2px; }
+  .cover-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+  .strategy-card { border: 2px solid #000; padding: 16px; }
+  .badge {
+    display: inline-block; background: #000; color: #fff;
+    font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+    padding: 2px 6px; margin-bottom: 8px;
+  }
+  .strategy-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+  .strategy-secondary { color: #aaa; font-weight: 400; }
+  .strategy-rationale { font-size: 0.72rem; color: #444; line-height: 1.5; margin-bottom: 10px; }
+  .reasoning-list { list-style: none; font-size: 0.72rem; display: flex; flex-direction: column; gap: 6px; }
+  .reasoning-list li { padding-left: 4px; border-left: 3px solid #000; line-height: 1.4; }
+
+  .scores-panel { border: 1px solid #ccc; padding: 14px; background: #fafafa; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .score-row { display: grid; grid-template-columns: 1fr auto; gap: 4px; align-items: center; }
+  .score-label { font-size: 0.6rem; font-weight: 700; grid-column: 1 / -1; }
+  .bar-container { height: 8px; border: 1px solid #000; padding: 1px; }
+  .bar-fill { height: 100%; }
+  .score-pct { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; text-align: right; }
+  .score-primary .score-label { color: #000; }
+  .score-row:not(.score-primary) { opacity: 0.5; }
+
+  .paradigm-section { margin-bottom: 14px; }
+  .paradigm-bar {
+    display: flex; justify-content: space-between;
+    background: #1a1a1a; color: #fff;
+    font-size: 0.72rem; font-weight: 700;
+    padding: 5px 10px; margin-bottom: 8px;
+  }
+  .args-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .args-col { display: flex; flex-direction: column; gap: 5px; }
+  .col-header {
+    font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+    padding: 4px 8px; margin-bottom: 2px;
+  }
+  .col-for { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .col-against { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+
+  .arg-card { padding: 7px 9px; border-radius: 3px; }
+  .arg-for { background: #f0fdf4; border-left: 3px solid #16a34a; }
+  .arg-against { background: #fff7ed; border-left: 3px solid #ea580c; }
+  .arg-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; margin-bottom: 4px; }
+  .arg-title { font-size: 0.7rem; font-weight: 700; line-height: 1.3; }
+  .arg-desc { font-size: 0.65rem; color: #444; line-height: 1.4; }
+  .impact-badge {
+    font-size: 0.55rem; font-weight: 700; text-transform: uppercase;
+    padding: 1px 5px; border-radius: 2px; white-space: nowrap; flex-shrink: 0;
+  }
+  .impact-high { background: #000; color: #fff; }
+  .impact-medium { background: #555; color: #fff; }
+  .impact-low { background: #bbb; color: #333; }
+
+  .reg-overview { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .risk-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border: 1px solid #000; }
+  .risk-critical { background: #fee2e2; border-color: #b91c1c; color: #b91c1c; }
+  .risk-high { background: #fff7ed; border-color: #c2410c; color: #c2410c; }
+  .risk-medium { background: #fefce8; border-color: #a16207; color: #a16207; }
+  .risk-low { background: #f0fdf4; border-color: #166534; color: #166534; }
+
+  .reg-list { display: flex; flex-direction: column; gap: 0; }
+  .reg-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid #e5e5e5; }
+  .reg-meta { display: flex; flex-direction: column; gap: 4px; }
+  .reg-meta strong { font-size: 0.72rem; }
+  .reg-law { color: #888; }
+  .reg-impact { font-size: 0.6rem; font-weight: 700; padding: 1px 4px; border: 1px solid currentColor; width: fit-content; }
+  .reg-impact-critical { color: #b91c1c; }
+  .reg-impact-high { color: #c2410c; }
+  .reg-impact-medium { color: #a16207; }
+  .reg-impact-low { color: #166534; }
+  .reg-body { display: flex; flex-direction: column; gap: 6px; }
+  .reg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .citation-row { display: flex; gap: 8px; align-items: center; }
+  .legal-disclaimer {
+    margin-top: 12px; border: 1px solid #000; padding: 8px 12px;
+    font-size: 0.65rem; background: #fafafa;
+  }
+
+  .sust-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .metric-tile { border: 1px solid #ccc; padding: 12px; text-align: left; }
+  .metric-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+  .metric-unit { font-size: 0.65rem; font-weight: 400; }
+  .metric-label { font-size: 0.6rem; text-transform: uppercase; color: #888; margin-top: 4px; }
+  .sust-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .compare-card { border: 1px solid #ccc; padding: 10px; }
+  .green-flags-section { margin-top: 4px; }
+  .green-flags-list { list-style: none; font-size: 0.72rem; display: flex; flex-direction: column; gap: 4px; }
+  .green-flag { color: #166534; padding-left: 4px; }
+  .sust-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+  .sust-table th { background: #000; color: #fff; padding: 5px 8px; text-align: left; font-size: 0.65rem; }
+  .sust-table td { padding: 5px 8px; border-bottom: 1px solid #eee; }
+  .tr-alt td { background: #f7f9f7; }
+  .disclaimer-text { font-size: 0.6rem; color: #888; margin-top: 6px; }
+
+  .flag-summary { font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
+  .flag-summary-critical { color: #b91c1c; }
+  .flag-card { margin-bottom: 10px; border-radius: 3px; overflow: hidden; border-left: 4px solid; }
+  .flag-critical { border-color: #b91c1c; background: #fef2f2; }
+  .flag-high { border-color: #c2410c; background: #fff7ed; }
+  .flag-medium { border-color: #a16207; background: #fefce8; }
+  .flag-header { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .flag-badges { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+  .sev-badge { font-size: 0.6rem; font-weight: 700; padding: 2px 6px; color: #fff; border-radius: 2px; }
+  .sev-critical { background: #b91c1c; }
+  .sev-high { background: #c2410c; }
+  .sev-medium { background: #a16207; }
+  .cat-badge { font-size: 0.58rem; font-weight: 600; padding: 2px 6px; background: #e5e5e5; color: #555; border-radius: 2px; }
+  .flag-title { font-size: 0.78rem; font-weight: 700; }
+  .flag-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+  .flag-col { display: flex; flex-direction: column; gap: 4px; }
+
+  .research-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .research-item { border-left: 2px solid #ccc; padding-left: 10px; }
+  .research-item strong { font-size: 0.78rem; display: block; margin-bottom: 2px; }
+  .author-line { display: block; color: #888; margin-bottom: 4px; }
+  .relevance-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 6px 8px; margin-top: 5px; border-radius: 2px; }
+  .case-group { margin-bottom: 10px; }
+  .case-group-title { font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+  .group-success .case-group-title { color: #166534; }
+  .group-failure .case-group-title { color: #b91c1c; }
+  .case-card { border: 1px solid #ccc; margin-bottom: 8px; border-radius: 3px; overflow: hidden; }
+  .case-header { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fafafa; border-bottom: 1px solid #eee; }
+  .case-header strong { font-size: 0.78rem; }
+  .outcome-badge { font-size: 0.6rem; font-weight: 700; padding: 2px 6px; border-radius: 2px; }
+  .outcome-success { background: #dcfce7; color: #166534; }
+  .outcome-failure { background: #fee2e2; color: #b91c1c; }
+  .case-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+  .case-col { display: flex; flex-direction: column; gap: 4px; }
+
+  .section-title { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 3px; margin-bottom: 8px; }
+  .field-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: #888; display: block; margin-bottom: 2px; }
+  .steps-list { list-style: none; font-size: 0.65rem; display: flex; flex-direction: column; gap: 3px; padding-left: 0; }
+  .steps-list li::before { content: "— "; }
+  .step-required { font-weight: 700; color: #b91c1c; }
+  .citation-link { color: #166534; }
+
+  @media print {
+    body { background: none; }
+    .a4-page { box-shadow: none; width: 100%; margin: 0; }
+  }
+`;
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 export function generatePDFReport({
@@ -230,715 +606,45 @@ export function generatePDFReport({
   recommendation: RecommendationResult;
   createdAt?: string;
 }): void {
-  const doc = new Doc();
-  const d = doc.d;
-
-  const date = createdAt
-    ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-    : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-  // ════════════════════════════════════════════════════════
-  // PAGE 1 — COVER
-  // ════════════════════════════════════════════════════════
-
-  // Header band
-  d.setFillColor(...C.accent);
-  d.rect(0, 0, PW, 42, 'F');
-  d.setTextColor(...C.white);
-  d.setFontSize(26);
-  d.setFont('helvetica', 'bold');
-  d.text('NEXUS', M, 22);
-  d.setFontSize(9);
-  d.setFont('helvetica', 'normal');
-  d.text('Interface Paradigm Assessment Report', M, 31);
-  d.text(date, PW - M, 31, { align: 'right' });
-
-  doc.y = 50;
-
-  // Project context
-  const ctx: string[] = [];
-  if (answers.projectName) ctx.push('Project: ' + answers.projectName);
-  if (answers.userDemographics) ctx.push('Users: ' + answers.userDemographics);
-  if (ctx.length) { doc.caption(ctx.join('   |   ')); doc.gap(3); }
-
-  // ── Strategy card ─────────────────────────────────────────────────────
-  doc.card(M, doc.y, CW, 36, C.card);
-  doc.y += 5;
-
-  // Badge
-  doc.pill('Recommended Interface Strategy', M + 4, doc.y + 1, C.accent, C.white, 76);
-  doc.y += 9;
-
-  // Primary name
-  d.setTextColor(...C.fg);
-  d.setFontSize(20);
-  d.setFont('helvetica', 'bold');
-  d.text(safeText(PARADIGM_LABELS[recommendation.primary.paradigm]), M + 4, doc.y);
-  d.setTextColor(...C.accent);
-  d.setFontSize(18);
-  d.text(recommendation.primary.pct + '%', PW - M - 4, doc.y, { align: 'right' });
-  doc.y += 10;
-
-  // Secondary
-  if (recommendation.secondary.pct > 8) {
-    d.setTextColor(...C.muted);
-    d.setFontSize(8);
-    d.setFont('helvetica', 'normal');
-    d.text(
-      '+ ' + safeText(PARADIGM_LABELS[recommendation.secondary.paradigm]) + '  ' + recommendation.secondary.pct + '%',
-      M + 4, doc.y
-    );
-  }
-  doc.y += 14;
-
-  // Confidence
-  const diff = recommendation.primary.pct - recommendation.secondary.pct;
-  const confLabel = diff >= 30 ? 'Strong' : diff >= 15 ? 'Moderate' : 'Low';
-  const confColor: RGB = diff >= 30 ? C.accent : diff >= 15 ? [202, 138, 4] : C.crit;
-  d.setFontSize(7.5);
-  d.setFont('helvetica', 'normal');
-  d.setTextColor(...C.muted);
-  d.text('Confidence:', M + 4, doc.y);
-  d.setTextColor(...confColor);
-  d.setFont('helvetica', 'bold');
-  d.text(confLabel, M + 28, doc.y);
-  d.setTextColor(...C.muted);
-  d.setFont('helvetica', 'normal');
-  d.text('  Score separation: ' + diff + 'pts', M + 41, doc.y);
-  doc.y += 10;
-
-  // ── Score bars ────────────────────────────────────────────────────────
-  doc.h2('All Interface Scores');
-  const sorted = Object.entries(recommendation.allScores)
-    .sort(([, a], [, b]) => (b as number) - (a as number));
-
-  for (const [key, rawScore] of sorted) {
-    const score = rawScore as number;
-    const isPrimary = key === recommendation.primary.paradigm;
-    doc.need(11);
-
-    d.setTextColor(...(isPrimary ? C.accent : C.fg));
-    d.setFontSize(8);
-    d.setFont('helvetica', isPrimary ? 'bold' : 'normal');
-    d.text(iLabel(key), M, doc.y);
-    d.setTextColor(...(isPrimary ? C.accent : C.muted));
-    d.text(score + '%', PW - M, doc.y, { align: 'right' });
-    doc.y += 3.5;
-
-    d.setFillColor(...C.border);
-    d.roundedRect(M, doc.y, CW, 4, 1.2, 1.2, 'F');
-    const fw = Math.max((CW * score) / 100, 1.5);
-    d.setFillColor(...(isPrimary ? C.accent : [175, 175, 175] as RGB));
-    d.roundedRect(M, doc.y, fw, 4, 1.2, 1.2, 'F');
-    doc.y += 7.5;
-  }
-
-  doc.gap(3);
-  doc.rule();
-
-  // ── Strategic Rationale ────────────────────────────────────────────────
-  doc.h2('Strategic Rationale');
-  doc.body(generateStrategicRationale(recommendation, answers));
-  doc.gap(5);
-
-  // ── Reasoning bullets 2-col ────────────────────────────────────────────
-  const bullets = getReasoningBullets(answers, recommendation).slice(0, 4);
-  if (bullets.length > 0) {
-    doc.h3('Key Reasoning');
-    const bW = (CW - 5) / 2;
-
-    for (let i = 0; i < bullets.length; i++) {
-      const bx = i % 2 === 0 ? M : M + bW + 5;
-      const txt = (i + 1) + '.  ' + clean(bullets[i]);
-      const lines = d.splitTextToSize(safeText(txt), bW - 7);
-      const cardH = lines.length * 4.2 + 8;
-      if (i % 2 === 0) doc.need(cardH + 3);
-      doc.card(bx, doc.y, bW, cardH, C.card);
-      d.setTextColor(...C.fg);
-      d.setFontSize(7.5);
-      d.setFont('helvetica', 'normal');
-      d.text(lines, bx + 3.5, doc.y + 5.5);
-      if (i % 2 === 1 || i === bullets.length - 1) doc.y += cardH + 3;
-    }
-  }
-
-  doc.footer();
-
-  // ════════════════════════════════════════════════════════
-  // ANALYSIS — Arguments For & Against
-  // ════════════════════════════════════════════════════════
-  d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
-  doc.sectionBand('Analysis - Arguments For & Against');
-  doc.caption('Research-backed reasoning for each interface type in your recommendation');
-  doc.gap(4);
-
-  const allArgs = generateAllArguments(answers, recommendation);
-
-  for (const pArg of allArgs) {
-    doc.need(28);
-
-    // Interface type bar
-    d.setFillColor(...C.darkG);
-    d.roundedRect(M, doc.y, CW, 8.5, 1.5, 1.5, 'F');
-    d.setTextColor(...C.white);
-    d.setFontSize(9);
-    d.setFont('helvetica', 'bold');
-    d.text(iLabel(pArg.paradigmKey ?? pArg.paradigm), M + 4, doc.y + 6);
-    d.setFontSize(8);
-    d.setFont('helvetica', 'normal');
-    d.text(Math.round(pArg.percentage) + '%', PW - M - 4, doc.y + 6, { align: 'right' });
-    doc.y += 12;
-
-    // Column header bars
-    d.setFillColor(...C.forBg);
-    d.roundedRect(M, doc.y, HALF, 7.5, 1, 1, 'F');
-    d.setFillColor(...C.againstBg);
-    d.roundedRect(RX, doc.y, HALF, 7.5, 1, 1, 'F');
-    d.setTextColor(...C.accent);
-    d.setFontSize(7.5);
-    d.setFont('helvetica', 'bold');
-    d.text('FOR', M + 3, doc.y + 5);
-    d.setTextColor(...C.high);
-    d.text('AGAINST', RX + 3, doc.y + 5);
-    doc.y += 11;
-
-    // Argument pairs
-    const maxA = Math.max(pArg.argumentsFor.length, pArg.argumentsAgainst.length);
-    for (let i = 0; i < maxA; i++) {
-      const fa = pArg.argumentsFor[i];
-      const aa = pArg.argumentsAgainst[i];
-
-      const fTitleL = fa ? d.splitTextToSize(safeText(clean(fa.title)), HALF - 22) : [];
-      const fDescL  = fa ? d.splitTextToSize(safeText(clean(fa.description)), HALF - 7) : [];
-      const aTitleL = aa ? d.splitTextToSize(safeText(clean(aa.title)), HALF - 22) : [];
-      const aDescL  = aa ? d.splitTextToSize(safeText(clean(aa.description)), HALF - 7) : [];
-
-      const fH = fa ? fTitleL.length * 4 + fDescL.length * 3.8 + 10 : 0;
-      const aH = aa ? aTitleL.length * 4 + aDescL.length * 3.8 + 10 : 0;
-      const cardH = Math.max(fH, aH, 18);
-
-      doc.need(cardH + 3);
-
-      if (fa) {
-        doc.card(M, doc.y, HALF, cardH, C.forBg);
-        // Impact pill
-        const iC: RGB = fa.impact === 'high' ? C.accent : fa.impact === 'medium' ? [202, 138, 4] : C.muted;
-        doc.pill(fa.impact, M + HALF - 20, doc.y + 4, iC, C.white, 18);
-        // Title
-        d.setTextColor(...C.accent);
-        d.setFontSize(7.5);
-        d.setFont('helvetica', 'bold');
-        d.text(fTitleL, M + 3, doc.y + 5.5);
-        // Description
-        d.setTextColor(...C.fg);
-        d.setFontSize(7);
-        d.setFont('helvetica', 'normal');
-        d.text(fDescL, M + 3, doc.y + 5.5 + fTitleL.length * 4 + 1);
-      }
-
-      if (aa) {
-        doc.card(RX, doc.y, HALF, cardH, C.againstBg);
-        const iC: RGB = aa.impact === 'high' ? C.crit : aa.impact === 'medium' ? C.high : C.med;
-        doc.pill(aa.impact, RX + HALF - 20, doc.y + 4, iC, C.white, 18);
-        d.setTextColor(...C.high);
-        d.setFontSize(7.5);
-        d.setFont('helvetica', 'bold');
-        d.text(aTitleL, RX + 3, doc.y + 5.5);
-        d.setTextColor(...C.fg);
-        d.setFontSize(7);
-        d.setFont('helvetica', 'normal');
-        d.text(aDescL, RX + 3, doc.y + 5.5 + aTitleL.length * 4 + 1);
-      }
-
-      doc.y += cardH + 3;
-    }
-    doc.gap(6);
-  }
-
-  doc.footer();
-
-  // ════════════════════════════════════════════════════════
-  // REGULATORY (conditional: EU or Global)
-  // ════════════════════════════════════════════════════════
-  const reg = generateRegulatoryAnalysis(answers, recommendation);
-  if (reg && reg.applicable && reg.requirements.length > 0) {
-    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
-    doc.sectionBand('Regulatory Impact - ' + reg.region);
-
-    // Overall risk badge
-    const rC: RGB = reg.overallRiskLevel === 'critical' ? C.crit :
-                    reg.overallRiskLevel === 'high'     ? C.high :
-                    reg.overallRiskLevel === 'medium'   ? C.med  : C.accent;
-    doc.pill(reg.overallRiskLevel + ' overall risk', PW - M - 38, doc.y - 11, rC, C.white, 36);
-    doc.gap(2);
-
-    for (const req of reg.requirements) {
-      // Estimate card height
-      const descL = d.splitTextToSize(safeText(clean(req.description)), HALF - 7);
-      const appL  = d.splitTextToSize(
-        req.applicableParadigms.map(p => iLabel(p)).join(', '),
-        HALF - 7
-      );
-      const mitH = req.mitigationSteps.slice(0, 4).reduce(
-        (sum, s) => sum + d.splitTextToSize(safeText(clean(s)), HALF - 7).length * 4 + 2, 0
-      );
-      const leftH  = descL.length * 4.2 + 18;
-      const rightH = appL.length * 4.2 + mitH + 18;
-      const cardH  = Math.max(leftH, rightH) + 6;
-
-      doc.need(cardH + 16);
-
-      // Requirement title row
-      d.setFillColor(242, 248, 242);
-      d.roundedRect(M, doc.y, CW, 8.5, 1.5, 1.5, 'F');
-      d.setDrawColor(...C.border); d.setLineWidth(0.25);
-      d.roundedRect(M, doc.y, CW, 8.5, 1.5, 1.5, 'S');
-
-      // Impact level pill
-      const reqC: RGB = req.impactLevel === 'critical' ? C.crit :
-                        req.impactLevel === 'high'     ? C.high :
-                        req.impactLevel === 'medium'   ? C.med  : C.accent;
-      doc.pill(req.impactLevel, M + 3, doc.y + 5, reqC, C.white, 18);
-
-      d.setTextColor(...C.fg);
-      d.setFontSize(8.5);
-      d.setFont('helvetica', 'bold');
-      d.text(safeText(req.title), M + 25, doc.y + 6);
-      d.setTextColor(...C.muted);
-      d.setFontSize(7);
-      d.setFont('helvetica', 'normal');
-      d.text(safeText(req.regulation), PW - M - 3, doc.y + 6, { align: 'right' });
-      doc.y += 12;
-
-      // Two-column body
-      doc.card(M, doc.y, HALF, cardH, C.card);
-      doc.card(RX, doc.y, HALF, cardH, C.card);
-
-      const startY = doc.y;
-
-      // LEFT: description + citation
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('DESCRIPTION', M + 3, startY + 5);
-      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
-      d.text(descL, M + 3, startY + 9.5);
-      const citStartY = startY + 9.5 + descL.length * 4.2 + 4;
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('LEGAL SOURCE', M + 3, citStartY);
-      d.setTextColor(...C.accent); d.setFontSize(7); d.setFont('helvetica', 'normal');
-      const citL = d.splitTextToSize(
-        safeText(req.citation.title + ' (' + req.citation.year + ')'), HALF - 7
-      );
-      d.text(citL, M + 3, citStartY + 4);
-
-      // RIGHT: applies to + actions
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('APPLIES TO', RX + 3, startY + 5);
-      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
-      d.text(appL, RX + 3, startY + 9.5);
-      let ry = startY + 9.5 + appL.length * 4.2 + 4;
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('REQUIRED ACTIONS', RX + 3, ry);
-      ry += 4;
-      for (const step of req.mitigationSteps.slice(0, 4)) {
-        const isReq = step.startsWith('REQUIRED');
-        const sl = d.splitTextToSize('- ' + safeText(clean(step.replace(/^REQUIRED: /, ''))), HALF - 7);
-        d.setTextColor(...(isReq ? C.crit : C.fg));
-        d.setFontSize(7);
-        d.setFont('helvetica', isReq ? 'bold' : 'normal');
-        d.text(sl, RX + 3, ry);
-        ry += sl.length * 4 + 1.5;
-      }
-
-      doc.y += cardH + 5;
-    }
-
-    doc.rule();
-    doc.caption(safeText(reg.disclaimer));
-    doc.footer();
-  }
-
-  // ════════════════════════════════════════════════════════
-  // SUSTAINABILITY
-  // ════════════════════════════════════════════════════════
-  const sust = generateSustainabilityReport(recommendation, answers.valuesRanking ?? [], answers.geography);
-  if (sust.applicable) {
-    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
-    doc.sectionBand('Sustainability Report');
-    doc.caption('Environmental impact based on your interface mix. Benchmarks from LBNL, IEA & Global E-waste Monitor.');
-    doc.gap(5);
-
-    // Three metric tiles
-    const tW = (CW - 8) / 3;
-    const metrics = [
-      { label: 'Annual Energy',   val: sust.weightedAnnualEnergy.toFixed(0) + ' kWh', sub: 'per user / year' },
-      { label: 'CO2 Emissions',   val: sust.weightedAnnualCO2.toFixed(1) + ' kg',     sub: 'per year' },
-      { label: 'Device Lifecycle',val: sust.weightedLifecycle.toFixed(1) + ' yrs',    sub: 'weighted average' },
-    ];
-    for (let i = 0; i < 3; i++) {
-      const tx = M + i * (tW + 4);
-      doc.card(tx, doc.y, tW, 26, C.card);
-      d.setTextColor(...C.muted); d.setFontSize(7); d.setFont('helvetica', 'normal');
-      d.text(metrics[i].label, tx + 3, doc.y + 6);
-      d.setTextColor(...C.accent); d.setFontSize(15); d.setFont('helvetica', 'bold');
-      d.text(metrics[i].val, tx + 3, doc.y + 17);
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'normal');
-      d.text(metrics[i].sub, tx + 3, doc.y + 23);
-    }
-    doc.y += 31;
-
-    // Comparison cards
-    doc.h3('Compared to Pure Interface Baselines');
-    doc.card(M, doc.y, HALF, 20, C.card);
-    doc.card(RX, doc.y, HALF, 20, C.card);
-    d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-    d.text('VS PURE SCREEN (100% Traditional)', M + 3, doc.y + 5);
-    d.text('VS PURE SPATIAL (100% VR)', RX + 3, doc.y + 5);
-    d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
-    d.text('Energy: ' + safeText(sust.comparisonVsPureScreen.energySavings), M + 3, doc.y + 11);
-    d.text('CO2:    ' + safeText(sust.comparisonVsPureScreen.co2Savings),    M + 3, doc.y + 16);
-    d.text('Energy: ' + safeText(sust.comparisonVsPureVR.energySavings), RX + 3, doc.y + 11);
-    d.text('CO2:    ' + safeText(sust.comparisonVsPureVR.co2Savings),    RX + 3, doc.y + 16);
-    doc.y += 26;
-
-    // Green flags
-    if (sust.greenFlags.length > 0) {
-      doc.rule();
-      doc.h3('What You Are Doing Right', M, C.accent);
-      for (const f of sust.greenFlags) {
-        doc.need(7);
-        d.setTextColor(...C.accent); d.setFontSize(8); d.setFont('helvetica', 'normal');
-        d.text('+', M + 1, doc.y);
-        doc.body(safeText(clean(f)), M + 7, CW - 8, 4.2);
-        doc.y -= 1;
-      }
-      doc.gap(4);
-    }
-
-    // Breakdown table
-    doc.rule();
-    doc.h3('Environmental Impact by Interface Type');
-    doc.need(10);
-
-    // Header row
-    d.setFillColor(...C.accent);
-    d.rect(M, doc.y, CW, 8, 'F');
-    d.setTextColor(...C.white); d.setFontSize(7); d.setFont('helvetica', 'bold');
-    const cols = [M + 2, M + 66, M + 88, M + 112, M + 144];
-    ['Interface Type', 'Share', 'Energy (kWh)', 'CO2 (kg)', 'Lifecycle'].forEach((h, i) => {
-      d.text(h, cols[i], doc.y + 5.5);
-    });
-    doc.y += 10;
-
-    for (let ri = 0; ri < sust.paradigmBreakdown.length; ri++) {
-      const p = sust.paradigmBreakdown[ri];
-      doc.need(8);
-      if (ri % 2 === 0) { d.setFillColor(...C.card); d.rect(M, doc.y - 1, CW, 7.5, 'F'); }
-      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
-      d.text(iLabel(p.paradigm), cols[0], doc.y + 4.5);
-      d.text(Math.round(p.percentage) + '%', cols[1], doc.y + 4.5);
-      d.text(String(p.annualEnergyKwh), cols[2], doc.y + 4.5);
-      d.text(String(p.annualCO2Kg), cols[3], doc.y + 4.5);
-      d.text(p.hardwareLifecycle + ' yrs', cols[4], doc.y + 4.5);
-      doc.y += 7.5;
-    }
-
-    doc.gap(5);
-    doc.caption(safeText(sust.disclaimer));
-    doc.footer();
-  }
-
-  // ════════════════════════════════════════════════════════
-  // RED FLAGS (conditional)
-  // ════════════════════════════════════════════════════════
-  const flags = detectRedFlags(answers, recommendation);
-  if (flags.hasFlags) {
-    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
-    doc.sectionBand('Red Flags & Critical Considerations');
-
-    const sumMsg = flags.criticalCount > 0
-      ? flags.criticalCount + ' critical issue(s) require immediate attention before implementation'
-      : flags.totalFlags + ' issue(s) detected that should be addressed';
-    doc.caption(sumMsg, M, CW, C.crit);
-    doc.gap(5);
-
-    for (const flag of flags.flags) {
-      const sevColor: RGB = flag.severity === 'critical' ? C.crit :
-                            flag.severity === 'high'     ? C.high : C.med;
-      const sevBg: RGB    = flag.severity === 'critical' ? C.redBg :
-                            flag.severity === 'high'     ? C.againstBg : [255, 253, 235] as RGB;
-
-      // Estimate heights
-      const issL = d.splitTextToSize(safeText(clean(flag.description)), HALF - 8);
-      const impL = d.splitTextToSize(safeText(clean(flag.impact)), HALF - 8);
-      const affText = flag.affectedParadigms.map(p => iLabel(p)).join(', ');
-      const affL = d.splitTextToSize(safeText(affText), HALF - 8);
-      const mitH = flag.mitigation.reduce(
-        (sum, m) => sum + d.splitTextToSize(safeText(clean(m.replace(/^REQUIRED: /, ''))), HALF - 8).length * 4 + 2, 0
-      );
-      const leftH  = (issL.length + impL.length) * 4.2 + 26;
-      const rightH = affL.length * 4.2 + mitH + 26;
-      const cardH  = Math.max(leftH, rightH) + 4;
-
-      doc.need(cardH + 10);
-
-      // Card bg + left accent line
-      d.setFillColor(...sevBg);
-      d.roundedRect(M, doc.y, CW, cardH, 2, 2, 'F');
-      d.setFillColor(...sevColor);
-      d.roundedRect(M, doc.y, 3, cardH, 1, 1, 'F');
-
-      // Severity + category badges
-      doc.pill(flag.severity, M + 6, doc.y + 6, sevColor, C.white, 20);
-      d.setFillColor(230, 230, 230);
-      d.roundedRect(M + 28, doc.y + 2.5, 36, 5.5, 1.5, 1.5, 'F');
-      d.setTextColor(...C.muted); d.setFontSize(5.5); d.setFont('helvetica', 'bold');
-      d.text(safeText(flag.category).toUpperCase(), M + 29, doc.y + 6.5);
-
-      // Title
-      d.setTextColor(...sevColor); d.setFontSize(9); d.setFont('helvetica', 'bold');
-      const titleL = d.splitTextToSize(safeText(clean(flag.title)), CW - 80);
-      d.text(titleL, M + 68, doc.y + 6.5);
-
-      const cy = doc.y + 14;
-
-      // LEFT: Issue + Impact
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('ISSUE', M + 6, cy);
-      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
-      d.text(issL, M + 6, cy + 4);
-
-      const impY = cy + issL.length * 4.2 + 7;
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('IMPACT IF IGNORED', M + 6, impY);
-      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
-      d.text(impL, M + 6, impY + 4);
-
-      // Citation if exists
-      if (flag.citation) {
-        const evY = impY + impL.length * 4.2 + 7;
-        d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-        d.text('RESEARCH EVIDENCE', M + 6, evY);
-        d.setTextColor(...C.accent); d.setFontSize(7); d.setFont('helvetica', 'normal');
-        const evL = d.splitTextToSize(
-          safeText(flag.citation.title + ' (' + flag.citation.year + ')'), HALF - 10
-        );
-        d.text(evL, M + 6, evY + 4);
-      }
-
-      // RIGHT: Affects + Mitigations
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('AFFECTS', RX + 3, cy);
-      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
-      d.text(affL, RX + 3, cy + 4);
-
-      let my = cy + affL.length * 4.2 + 7;
-      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
-      d.text('REQUIRED MITIGATIONS', RX + 3, my);
-      my += 4;
-      for (const step of flag.mitigation) {
-        const isReq = step.startsWith('REQUIRED');
-        const sl = d.splitTextToSize(
-          '- ' + safeText(clean(step.replace(/^REQUIRED: /, ''))), HALF - 8
-        );
-        d.setTextColor(...(isReq ? sevColor : C.fg));
-        d.setFontSize(7);
-        d.setFont('helvetica', isReq ? 'bold' : 'normal');
-        d.text(sl, RX + 3, my);
-        my += sl.length * 4 + 1.5;
-      }
-
-      doc.y += cardH + 6;
-    }
-
-    doc.footer();
-  }
-
-
-  // ════════════════════════════════════════════════════════
-  // RESEARCH (from localStorage cache — only if user visited the tab)
-  // ════════════════════════════════════════════════════════
-
-  // Read research data from localStorage cache (populated when user visits Research tab)
-  const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
-  const primaryParadigm = recommendation.primary.paradigm;
-  const demo = (answers.userDemographics?.trim() || 'general').toLowerCase().replace(/\s+/g, '_');
-  const rKey = ('nexus_research_' + primaryParadigm + '_' + demo).toLowerCase().replace(/\s+/g, '_');
-  const cKey = ('nexus_case_studies_' + primaryParadigm + '_' + demo).toLowerCase().replace(/\s+/g, '_');
-
-  function readResearchCache(key: string): unknown | null {
-    try {
-      const raw = localStorage.getItem(key);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as { timestamp: number };
-      if (Date.now() - parsed.timestamp > CACHE_TTL) { localStorage.removeItem(key); return null; }
-      return parsed;
-    } catch { return null; }
-  }
-
-  const rawPapers = readResearchCache(rKey) as { papers: ResearchPaper[] } | null;
-  const rawCases  = readResearchCache(cKey) as { cases: CaseStudy[] } | null;
-  const papers    = rawPapers?.papers ?? [];
-  const cases     = rawCases?.cases   ?? [];
-
-  if (papers.length > 0 || cases.length > 0) {
-    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
-    doc.sectionBand('Research & Case Studies');
-
-    // ── Academic Papers ───────────────────────────────────────────────────
-    if (papers.length > 0) {
-      doc.h2('Supporting Academic Research');
-      doc.caption(
-        'Papers curated for ' + iLabel(recommendation.primary.paradigm) +
-        (answers.userDemographics ? ' · ' + answers.userDemographics : '')
-      );
-      doc.gap(4);
-
-      for (const paper of papers.slice(0, 6)) {
-        // Estimate card height
-        const titleL   = d.splitTextToSize(safeText(paper.title), CW - 8);
-        const abstractL= d.splitTextToSize(safeText(paper.abstract), CW - 8);
-        const relL     = d.splitTextToSize(safeText(paper.relevance), CW - 8);
-        const cardH    = titleL.length * 4.5 + abstractL.length * 4 + relL.length * 3.8 + 18;
-
-        doc.need(cardH + 4);
-        doc.card(M, doc.y, CW, cardH, C.card);
-
-        // Title
-        d.setTextColor(...C.fg);
-        d.setFontSize(8.5);
-        d.setFont('helvetica', 'bold');
-        d.text(titleL, M + 4, doc.y + 6);
-
-        // Authors · Year · Venue
-        const meta = safeText(paper.authors) + '  ·  ' + paper.year + '  ·  ' + safeText(paper.venue);
-        d.setTextColor(...C.muted);
-        d.setFontSize(6.5);
-        d.setFont('helvetica', 'normal');
-        d.text(safeText(meta), M + 4, doc.y + 6 + titleL.length * 4.5 + 1);
-
-        // Abstract
-        d.setTextColor(...C.fg);
-        d.setFontSize(7.5);
-        d.text(abstractL, M + 4, doc.y + 6 + titleL.length * 4.5 + 5.5);
-
-        // Relevance tag
-        const relY = doc.y + 6 + titleL.length * 4.5 + 5.5 + abstractL.length * 4 + 3;
-        d.setFillColor(...C.forBg);
-        d.roundedRect(M + 4, relY - 3, CW - 8, relL.length * 3.8 + 5, 1.5, 1.5, 'F');
-        d.setTextColor(...C.accent);
-        d.setFontSize(6.5);
-        d.setFont('helvetica', 'bold');
-        d.text('WHY RELEVANT', M + 6, relY);
-        d.setTextColor(...C.fg);
-        d.setFontSize(7);
-        d.setFont('helvetica', 'normal');
-        d.text(relL, M + 6, relY + 4);
-
-        doc.y += cardH + 4;
-      }
-
-      doc.gap(4);
-    }
-
-    // ── Case Studies ──────────────────────────────────────────────────────
-    if (cases.length > 0) {
-      doc.need(16);
-      doc.rule();
-      doc.h2('Real-World Case Studies');
-      doc.gap(3);
-
-      // Separate successes and failures
-      const successes = cases.filter(c => c.outcome === 'success');
-      const failures  = cases.filter(c => c.outcome === 'failure');
-
-      for (const [group, groupLabel, bg, headerColor] of [
-        [successes, 'Successes', C.forBg,    C.accent],
-        [failures,  'Failures',  C.againstBg, C.high],
-      ] as Array<[CaseStudy[], string, RGB, RGB]>) {
-        if (group.length === 0) continue;
-
-        doc.need(10);
-        doc.h3(groupLabel, M, headerColor);
-
-        for (const cs of group) {
-          const descL    = d.splitTextToSize(safeText(cs.description), HALF - 8);
-          const lessonL  = d.splitTextToSize(safeText(cs.lessonsLearned), HALF - 8);
-          const factorsH = cs.keyFactors.slice(0, 4).reduce(
-            (sum, f) => sum + d.splitTextToSize(safeText(f), HALF - 8).length * 3.8 + 1.5, 0
-          );
-          const leftH  = descL.length * 4.2 + lessonL.length * 4 + 22;
-          const rightH = factorsH + 18;
-          const cardH  = Math.max(leftH, rightH) + 4;
-
-          doc.need(cardH + 6);
-          doc.card(M, doc.y, CW, cardH, bg);
-
-          // Outcome pill + company + year
-          const outC: RGB = cs.outcome === 'success' ? C.accent : C.crit;
-          doc.pill(cs.outcome, M + 4, doc.y + 6, outC, C.white, 20);
-          d.setTextColor(...C.fg);
-          d.setFontSize(8.5);
-          d.setFont('helvetica', 'bold');
-          d.text(safeText(cs.name), M + 28, doc.y + 6.5);
-          d.setTextColor(...C.muted);
-          d.setFontSize(7);
-          d.setFont('helvetica', 'normal');
-          d.text(safeText(cs.company) + '  ' + cs.year, PW - M - 4, doc.y + 6.5, { align: 'right' });
-
-          const cy2 = doc.y + 13;
-
-          // LEFT: description + lesson learned
-          d.setTextColor(...C.muted);
-          d.setFontSize(6.5);
-          d.setFont('helvetica', 'bold');
-          d.text('DESCRIPTION', M + 4, cy2);
-          d.setTextColor(...C.fg);
-          d.setFontSize(7.5);
-          d.setFont('helvetica', 'normal');
-          d.text(descL, M + 4, cy2 + 4);
-
-          const lessY = cy2 + descL.length * 4.2 + 7;
-          d.setTextColor(...C.muted);
-          d.setFontSize(6.5);
-          d.setFont('helvetica', 'bold');
-          d.text('LESSON LEARNED', M + 4, lessY);
-          d.setTextColor(...C.fg);
-          d.setFontSize(7.5);
-          d.setFont('helvetica', 'normal');
-          d.text(lessonL, M + 4, lessY + 4);
-
-          // RIGHT: key factors
-          d.setTextColor(...C.muted);
-          d.setFontSize(6.5);
-          d.setFont('helvetica', 'bold');
-          d.text('KEY FACTORS', RX + 3, cy2);
-          let fy2 = cy2 + 4;
-          for (const factor of cs.keyFactors.slice(0, 4)) {
-            const fl = d.splitTextToSize('- ' + safeText(factor), HALF - 8);
-            d.setTextColor(...C.fg);
-            d.setFontSize(7);
-            d.setFont('helvetica', 'normal');
-            d.text(fl, RX + 3, fy2);
-            fy2 += fl.length * 3.8 + 1.5;
-          }
-
-          doc.y += cardH + 5;
-        }
-        doc.gap(3);
-      }
-    }
-
-    // Note if cache was empty
-    doc.footer();
-  } else {
-    // Research tab not visited — add a note on the last page
-    // (no new page needed, just a footer note handled naturally)
-  }
-
-  // ── Save ──────────────────────────────────────────────────────────────
-  const fname = answers.projectName
-    ? 'NEXUS-Report-' + answers.projectName.replace(/[^a-zA-Z0-9]/g, '-') + '.pdf'
-    : 'NEXUS-Report-' + new Date().toISOString().split('T')[0] + '.pdf';
-
-  d.save(fname);
+  const dateStr = createdAt
+    ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  // Build all pages
+  const pages: string[] = [];
+  pages.push(buildCover(answers, recommendation, dateStr));
+  pages.push(buildAnalysis(answers, recommendation));
+
+  const regPage = buildRegulatory(answers, recommendation);
+  const sustPage = buildSustainability(answers, recommendation);
+  const flagsPage = buildRedFlags(answers, recommendation);
+  const resPage = buildResearch(answers, recommendation);
+
+  if (regPage) pages.push(regPage);
+  if (sustPage) pages.push(sustPage);
+  if (flagsPage) pages.push(flagsPage);
+  if (resPage) pages.push(resPage);
+
+  // Fix page numbers now that we know total
+  const total = pages.length;
+  const html = pages.join('\n').replace(/Page (\d+) of \?/g, (_, n) => `Page ${n} of ${total}`);
+
+  // Inject into hidden iframe and trigger print
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;';
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentDocument!;
+  iframeDoc.open();
+  iframeDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${CSS}</style></head><body>${html}</body></html>`);
+  iframeDoc.close();
+
+  // Wait for fonts to load, then print
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow!.focus();
+      iframe.contentWindow!.print();
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    }, 800);
+  };
 }
