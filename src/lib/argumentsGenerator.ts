@@ -19,6 +19,7 @@ export interface Argument {
 
 export interface ParadigmArguments {
   paradigm: string;
+  paradigmKey: string;
   percentage: number;
   argumentsFor: Argument[];
   argumentsAgainst: Argument[];
@@ -126,6 +127,7 @@ function generateTraditionalScreenArguments(
   
   return {
     paradigm: 'Traditional Screen',
+    paradigmKey: 'traditional_screen',
     percentage,
     argumentsFor: argsFor,
     argumentsAgainst: argsAgainst
@@ -218,6 +220,7 @@ function generateInvisibleArguments(
   
   return {
     paradigm: 'Invisible',
+    paradigmKey: 'invisible',
     percentage,
     argumentsFor: argsFor,
     argumentsAgainst: argsAgainst
@@ -293,6 +296,7 @@ function generateAIVectorialArguments(
   
   return {
     paradigm: 'AI Vectorial',
+    paradigmKey: 'ai_vectorial',
     percentage,
     argumentsFor: argsFor,
     argumentsAgainst: argsAgainst
@@ -376,6 +380,7 @@ function generateSpatialArguments(
   
   return {
     paradigm: 'Spatial',
+    paradigmKey: 'spatial',
     percentage,
     argumentsFor: argsFor,
     argumentsAgainst: argsAgainst
@@ -452,6 +457,7 @@ function generateVoiceArguments(
   
   return {
     paradigm: 'Voice',
+    paradigmKey: 'voice',
     percentage,
     argumentsFor: argsFor,
     argumentsAgainst: argsAgainst
