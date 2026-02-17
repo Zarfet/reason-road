@@ -65,7 +65,7 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">{INTERFACE_LABELS[key] ?? pArg.paradigm}</p>
                     <p className="text-xs text-muted-foreground">
-                      {pArg.argumentsFor.length} strengths · {pArg.argumentsAgainst.length} challenges
+                      {(pArg.argumentsFor ?? []).length} strengths · {(pArg.argumentsAgainst ?? []).length} challenges
                     </p>
                   </div>
                   <Badge className="bg-accent/10 text-accent border border-accent/20 text-xs font-semibold mr-2">
@@ -84,7 +84,7 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
                       <span className="font-semibold text-sm text-foreground tracking-tight">Arguments For</span>
                     </div>
                     <div className="space-y-3">
-                      {pArg.argumentsFor.map((arg, argIdx) => (
+                      {(pArg.argumentsFor ?? []).map((arg, argIdx) => (
                         <ArgumentCard key={argIdx} argument={arg} type="for" />
                       ))}
                     </div>
@@ -98,7 +98,7 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
                       <span className="font-semibold text-sm text-foreground tracking-tight">Arguments Against</span>
                     </div>
                     <div className="space-y-3">
-                      {pArg.argumentsAgainst.map((arg, argIdx) => (
+                      {(pArg.argumentsAgainst ?? []).map((arg, argIdx) => (
                         <ArgumentCard key={argIdx} argument={arg} type="against" />
                       ))}
                     </div>
