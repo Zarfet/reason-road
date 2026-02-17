@@ -1,13 +1,18 @@
 /**
  * Research Tab - Supporting research and case studies
- * 
- * Uses existing ResearchPanel and CaseStudiesPanel components
+ * Uses accordion navigation for each section
  */
 
-import { BentoGrid, BentoBox, BentoHeader } from '../bento/BentoGrid';
+import { BookOpen, Lightbulb } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { ResearchPanel } from '../ResearchPanel';
 import { CaseStudiesPanel } from '../CaseStudiesPanel';
-import { BookOpen, Briefcase } from 'lucide-react';
 import type { ParadigmScores } from '@/types/assessment';
 
 interface ResearchTabProps {
@@ -17,22 +22,58 @@ interface ResearchTabProps {
 
 export function ResearchTab({ paradigm, userDemographics }: ResearchTabProps) {
   return (
-    <BentoGrid className="mt-6">
-      {/* Supporting Research - WIDE */}
-      <BentoBox size="wide" className="p-0 overflow-hidden">
-        <ResearchPanel 
-          paradigm={paradigm}
-          userDemographics={userDemographics}
-        />
-      </BentoBox>
+    <div className="space-y-6 mt-6">
+      <Accordion type="multiple" defaultValue={['research', 'cases']} className="space-y-0">
+        <AccordionItem value="research" className="border-border">
+          <AccordionTrigger className="hover:no-underline py-4">
+            <div className="flex items-center gap-3 flex-1 text-left">
+              <div className="h-6 w-6 rounded-full bg-accent/10 flex items-center justify-center">
+                <BookOpen className="h-3.5 w-3.5 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-foreground">Supporting Research</p>
+                <p className="text-xs text-muted-foreground">AI-generated academic paper suggestions</p>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider mr-2 bg-accent/10 text-accent border-accent/20">
+                AI Generated
+              </Badge>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-2 pb-4">
+              <ResearchPanel
+                paradigm={paradigm}
+                userDemographics={userDemographics}
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Case Studies - WIDE */}
-      <BentoBox size="wide" className="p-0 overflow-hidden">
-        <CaseStudiesPanel
-          paradigm={paradigm}
-          userDemographics={userDemographics}
-        />
-      </BentoBox>
-    </BentoGrid>
+        <AccordionItem value="cases" className="border-border">
+          <AccordionTrigger className="hover:no-underline py-4">
+            <div className="flex items-center gap-3 flex-1 text-left">
+              <div className="h-6 w-6 rounded-full bg-accent/10 flex items-center justify-center">
+                <Lightbulb className="h-3.5 w-3.5 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-foreground">Real-World Case Studies</p>
+                <p className="text-xs text-muted-foreground">Success stories and lessons from failures</p>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider mr-2 bg-accent/10 text-accent border-accent/20">
+                AI Generated
+              </Badge>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-2 pb-4">
+              <CaseStudiesPanel
+                paradigm={paradigm}
+                userDemographics={userDemographics}
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
   );
 }
