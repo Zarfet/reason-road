@@ -153,7 +153,8 @@ function generateRisks(rec: RecommendationResult, answers: AssessmentAnswers, re
       severity: 'Medium',
       title: 'Screen Fatigue Risk',
       description: 'Heavy reliance on screens (>60%) may cause eye strain in extended sessions.',
-      mitigation: 'Implement 20-20-20 rule and dark mode support.'
+      mitigation: 'Implement 20-20-20 rule and dark mode support.',
+      tabLink: { label: 'See Sustainability Report', tab: 'implementation' }
     });
   }
 
@@ -162,9 +163,10 @@ function generateRisks(rec: RecommendationResult, answers: AssessmentAnswers, re
   if (activeParadigms > 3) {
     risks.push({
       severity: 'Low',
-      title: 'Multi-Paradigm Complexity',
+      title: 'Multi-Modal Complexity',
       description: `Users must learn ${activeParadigms} interaction models, increasing onboarding time.`,
-      mitigation: 'Provide unified onboarding covering all paradigms progressively.'
+      mitigation: 'Provide unified onboarding covering all interaction modes progressively.',
+      tabLink: { label: 'See Red Flags analysis', tab: 'implementation' }
     });
   }
 
@@ -172,8 +174,9 @@ function generateRisks(rec: RecommendationResult, answers: AssessmentAnswers, re
     risks.push({
       severity: 'Low',
       title: 'Training Investment',
-      description: 'Team needs onboarding time for new paradigm adoption.',
-      mitigation: 'Budget 1-2 weeks training and create internal documentation.'
+      description: 'Team needs onboarding time for new interaction model adoption.',
+      mitigation: 'Budget 1-2 weeks training and create internal documentation.',
+      tabLink: { label: 'See Red Flags analysis', tab: 'implementation' }
     });
   }
 
