@@ -242,7 +242,7 @@ export function generateSustainabilityReport(
      applicable: true,
      reason: isTopThree ? 
        `Sustainability ranked #${sustainabilityRank + 1} in your values` : 
-       isEuDeployment ? 'EU Green Deal compliance recommended' : 'High environmental impact detected',
+       isEuDeployment ? 'EU Green Deal compliance recommended (ec.europa.eu/green-deal)' : 'High environmental impact detected',
      paradigmBreakdown,
      weightedAnnualEnergy,
      weightedAnnualCO2,
