@@ -133,20 +133,20 @@ export default function SharedResults() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+              <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
                 <Target className="h-4 w-4 text-accent-foreground" />
               </div>
-              <span className="font-semibold text-lg text-foreground">NEXUS</span>
+              <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
             </Link>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+              <span className="text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-full font-medium">
                 Shared Assessment
               </span>
-              <Button size="sm" asChild>
+              <Button size="sm" asChild className="rounded-xl bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link to="/assessment">Take Your Own Assessment</Link>
               </Button>
             </div>
@@ -184,7 +184,7 @@ export default function SharedResults() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="analysis" className="w-full">
-            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50">
+            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1.5 bg-secondary/60 rounded-xl border border-border">
               <TabsTrigger value="analysis" className="flex-1 sm:flex-none">
                 Analysis
               </TabsTrigger>

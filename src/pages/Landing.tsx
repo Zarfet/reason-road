@@ -101,7 +101,7 @@ export default function Landing() {
             >
               <Button 
                 size="lg" 
-                className="gap-2 px-8 py-6 text-lg bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg"
+                className="gap-2 px-8 py-6 text-lg bg-accent text-accent-foreground hover:bg-accent/90 shadow-nexus-emerald rounded-2xl"
                 onClick={handleStartAssessment}
                 disabled={loading}
               >
@@ -160,7 +160,7 @@ export default function Landing() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-secondary/30">
+      <footer className="border-t border-border">
         <div className="nexus-container py-8">
           <p className="text-sm text-muted-foreground text-center">
             Built for designers making evidence-based interface decisions
@@ -193,7 +193,7 @@ function FeatureCard({
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+      <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
         {icon}
       </div>
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>

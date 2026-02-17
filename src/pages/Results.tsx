@@ -90,21 +90,21 @@ export default function Results() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
                 <Target className="h-4 w-4 text-accent-foreground" />
               </div>
-              <span className="font-semibold text-lg text-foreground">NEXUS</span>
+              <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className="text-muted-foreground hover:text-foreground">
                 <User className="h-4 w-4 mr-2" />
                 My Assessments
               </Button>
-              <Button variant="outline" size="sm" onClick={handleStartOver}>
+              <Button variant="outline" size="sm" onClick={handleStartOver} className="rounded-xl">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Start Over
               </Button>
@@ -143,7 +143,7 @@ export default function Results() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50 sticky top-[65px] z-30 backdrop-blur-sm">
+            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1.5 bg-secondary/60 rounded-xl sticky top-[65px] z-30 backdrop-blur-sm border border-border">
               <TabsTrigger value="analysis" className="flex-1 sm:flex-none">
                 <span className="sm:hidden">📈</span>
                 <span className="hidden sm:inline">Analysis</span>

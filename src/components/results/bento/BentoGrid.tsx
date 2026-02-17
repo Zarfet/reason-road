@@ -1,8 +1,6 @@
 /**
- * Bento Grid Layout System
- * 
- * A responsive CSS Grid-based layout for organizing content
- * into modular containers of varying sizes.
+ * Bento Grid Layout System — Modern Eco-Executive
+ * Clean white cards, rounded-2xl, generous padding
  */
 
 import { cn } from '@/lib/utils';
@@ -13,15 +11,11 @@ interface BentoGridProps {
   className?: string;
 }
 
-/**
- * Container for bento grid items
- * 12 columns on desktop, 6 on tablet, 1 on mobile
- */
 export function BentoGrid({ children, className }: BentoGridProps) {
   return (
     <div
       className={cn(
-        'grid gap-4',
+        'grid gap-5',
         'grid-cols-1 sm:grid-cols-6 lg:grid-cols-12',
         className
       )}
@@ -46,16 +40,13 @@ const sizeClasses: Record<BentoSize, string> = {
   wide: 'col-span-1 sm:col-span-6 lg:col-span-12',
 };
 
-/**
- * Individual bento box container
- * Wraps content in a styled card with responsive column spans
- */
 export function BentoBox({ children, size = 'medium', className }: BentoBoxProps) {
   return (
     <div
       className={cn(
-        'rounded-lg border bg-card p-6 shadow-sm',
+        'rounded-2xl border border-border bg-card p-6 md:p-8',
         'transition-all duration-200',
+        'shadow-nexus-card',
         sizeClasses[size],
         className
       )}
@@ -71,21 +62,18 @@ interface BentoHeaderProps {
   icon?: ReactNode;
 }
 
-/**
- * Standard header for bento boxes
- */
 export function BentoHeader({ title, subtitle, icon }: BentoHeaderProps) {
   return (
     <div className="flex items-start gap-3 mb-4">
       {icon && (
-        <div className="shrink-0 h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+        <div className="shrink-0 h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
           {icon}
         </div>
       )}
       <div>
-        <h3 className="text-lg font-bold text-foreground">{title}</h3>
+        <h3 className="text-lg font-semibold tracking-tight text-foreground">{title}</h3>
         {subtitle && (
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{subtitle}</p>
         )}
       </div>
     </div>

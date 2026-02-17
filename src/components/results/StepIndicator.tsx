@@ -1,6 +1,5 @@
 /**
- * Step indicator component for results page
- * Shows progress through assessment steps with numbered circles
+ * Step indicator — thin elegant line with dots
  */
 
 import { motion } from 'framer-motion';
@@ -15,7 +14,7 @@ const STEPS = [
 ];
 
 interface StepIndicatorProps {
-  currentStep?: number; // defaults to 5 (Results)
+  currentStep?: number;
 }
 
 export function StepIndicator({ currentStep = 5 }: StepIndicatorProps) {
@@ -35,15 +34,15 @@ export function StepIndicator({ currentStep = 5 }: StepIndicatorProps) {
           >
             <div
               className={`
-                h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold
+                h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors
                 ${isCompleted || isCurrent
                   ? 'bg-accent text-accent-foreground'
-                  : 'bg-muted text-muted-foreground'
+                  : 'bg-secondary text-muted-foreground border border-border'
                 }
               `}
             >
               {isCompleted ? (
-                <Check className="h-4 w-4" />
+                <Check className="h-3.5 w-3.5" />
               ) : (
                 step.number
               )}
