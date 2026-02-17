@@ -54,8 +54,8 @@ export default function Results() {
         if (result.success && result.assessmentId) {
           setSavedAssessmentId(result.assessmentId);
           toast({
-            title: "Assessment guardado",
-            description: "Tu evaluación ha sido guardada exitosamente.",
+            title: "Assessment saved",
+            description: "Your assessment has been saved successfully.",
           });
         } else if (result.error) {
           console.error('Failed to save assessment:', result.error);
