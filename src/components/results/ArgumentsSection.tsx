@@ -3,12 +3,16 @@
  * No colored backgrounds on cards, pill badges for impact, generous whitespace
  */
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Zap, ExternalLink, BookOpen, FileText, Newspaper } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { BentoGrid, BentoBox, BentoHeader } from './bento/BentoGrid';
 import { generateAllArguments, type Argument } from '@/lib/argumentsGenerator';
 import type { Citation } from '@/lib/citations';
@@ -29,110 +33,82 @@ const INTERFACE_LABELS: Record<string, string> = {
 
 export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionProps) {
   const allArguments = generateAllArguments(answers, recommendation);
-  const [selectedKey, setSelectedKey] = useState<string>(
-    allArguments.length > 0 ? (allArguments[0].paradigmKey ?? allArguments[0].paradigm) : ''
-  );
 
   if (allArguments.length === 0) return null;
 
-  const selectedArg = allArguments.find(
-    a => (a.paradigmKey ?? a.paradigm) === selectedKey
-  ) ?? allArguments[0];
-
   return (
     <div className="space-y-6">
-      {/* Section header + dropdown */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
-            <Zap className="h-5 w-5 text-accent" />
-          </div>
-          <div>
-            <h3 className="text-xl font-semibold tracking-tight">Detailed Argumentation</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Research-backed reasoning for each interface type
-            </p>
-          </div>
+      {/* Section header */}
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
+          <Zap className="h-5 w-5 text-accent" />
         </div>
-
-        <Select value={selectedKey} onValueChange={setSelectedKey}>
-          <SelectTrigger className="w-full sm:w-[240px] rounded-xl">
-            <SelectValue placeholder="Select interface type" />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl">
-            {allArguments.map((pArg) => {
-              const key = pArg.paradigmKey ?? pArg.paradigm;
-              return (
-                <SelectItem key={key} value={key} className="rounded-lg">
-                  <span className="flex items-center gap-2">
-                    {INTERFACE_LABELS[key] ?? pArg.paradigm}
-                    <Badge variant="secondary" className="text-[10px] ml-1">
-                      {Math.round(pArg.percentage)}%
-                    </Badge>
-                  </span>
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+        <div>
+          <h3 className="text-xl font-semibold tracking-tight">Detailed Argumentation</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Research-backed reasoning for each interface type
+          </p>
+        </div>
       </div>
 
-      {/* Selected interface type content */}
-      <motion.div
-        key={selectedKey}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="space-y-4"
-      >
-        {/* Label row */}
-        <div className="px-5 py-3.5 rounded-xl bg-secondary border border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-lg font-semibold tracking-tight text-foreground">
-                {INTERFACE_LABELS[selectedKey] ?? selectedArg.paradigm}
-              </span>
-              <Badge className="bg-accent/10 text-accent border border-accent/20 text-xs font-semibold">
-                {Math.round(selectedArg.percentage)}%
-              </Badge>
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {selectedArg.argumentsFor.length} strengths · {selectedArg.argumentsAgainst.length} challenges
-            </span>
-          </div>
-        </div>
+      {/* Accordion per interface type */}
+      <Accordion type="multiple" className="space-y-0">
+        {allArguments.map((pArg) => {
+          const key = pArg.paradigmKey ?? pArg.paradigm;
+          return (
+            <AccordionItem key={key} value={key} className="border-border">
+              <AccordionTrigger className="hover:no-underline py-4">
+                <div className="flex items-center gap-3 flex-1 text-left">
+                  <div className="h-6 w-6 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Zap className="h-3.5 w-3.5 text-accent" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground">{INTERFACE_LABELS[key] ?? pArg.paradigm}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {pArg.argumentsFor.length} strengths · {pArg.argumentsAgainst.length} challenges
+                    </p>
+                  </div>
+                  <Badge className="bg-accent/10 text-accent border border-accent/20 text-xs font-semibold mr-2">
+                    {Math.round(pArg.percentage)}%
+                  </Badge>
+                </div>
+              </AccordionTrigger>
 
-        {/* Two-column: FOR / AGAINST */}
-        <BentoGrid>
-          <BentoBox size="medium" className="border-border">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="h-6 w-6 rounded-full bg-accent/10 flex items-center justify-center">
-                <CheckCircle className="h-3.5 w-3.5 text-accent" />
-              </div>
-              <span className="font-semibold text-sm text-foreground tracking-tight">Arguments For</span>
-            </div>
-            <div className="space-y-3">
-              {selectedArg.argumentsFor.map((arg, argIdx) => (
-                <ArgumentCard key={argIdx} argument={arg} type="for" />
-              ))}
-            </div>
-          </BentoBox>
+              <AccordionContent>
+                <BentoGrid>
+                  <BentoBox size="medium" className="border-border">
+                    <div className="flex items-center gap-2 mb-5">
+                      <div className="h-6 w-6 rounded-full bg-accent/10 flex items-center justify-center">
+                        <CheckCircle className="h-3.5 w-3.5 text-accent" />
+                      </div>
+                      <span className="font-semibold text-sm text-foreground tracking-tight">Arguments For</span>
+                    </div>
+                    <div className="space-y-3">
+                      {pArg.argumentsFor.map((arg, argIdx) => (
+                        <ArgumentCard key={argIdx} argument={arg} type="for" />
+                      ))}
+                    </div>
+                  </BentoBox>
 
-          <BentoBox size="medium" className="border-border">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center">
-                <XCircle className="h-3.5 w-3.5 text-destructive" />
-              </div>
-              <span className="font-semibold text-sm text-foreground tracking-tight">Arguments Against</span>
-            </div>
-            <div className="space-y-3">
-              {selectedArg.argumentsAgainst.map((arg, argIdx) => (
-                <ArgumentCard key={argIdx} argument={arg} type="against" />
-              ))}
-            </div>
-          </BentoBox>
-        </BentoGrid>
-      </motion.div>
+                  <BentoBox size="medium" className="border-border">
+                    <div className="flex items-center gap-2 mb-5">
+                      <div className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center">
+                        <XCircle className="h-3.5 w-3.5 text-destructive" />
+                      </div>
+                      <span className="font-semibold text-sm text-foreground tracking-tight">Arguments Against</span>
+                    </div>
+                    <div className="space-y-3">
+                      {pArg.argumentsAgainst.map((arg, argIdx) => (
+                        <ArgumentCard key={argIdx} argument={arg} type="against" />
+                      ))}
+                    </div>
+                  </BentoBox>
+                </BentoGrid>
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
     </div>
   );
 }
