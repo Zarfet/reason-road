@@ -3,10 +3,9 @@
  * 
  * Contains:
  * - Strategic Rationale (WHY this config for THIS user)
- * - Confidence Metrics (evidence strength, user fit)
- * - Top 3 Strengths (personalized)
- * - Top 3 Risks (personalized with mitigations)
- * - Implementation Readiness (timeline, complexity)
+ * - Signal Strength (confidence + score differentiation)
+ * - Top 3 Strengths (personalized, with tab links)
+ * - Top 3 Risks (personalized with mitigations + tab links)
  */
 
 import { ReactNode, useMemo } from 'react';
@@ -16,16 +15,12 @@ import {
   Shield,
   CheckCircle,
   AlertTriangle,
-  Clock,
-  Users,
-  TrendingUp,
-  Gauge,
-  Target
+  Gauge
 } from 'lucide-react';
 import { BentoGrid, BentoBox, BentoHeader } from '../bento/BentoGrid';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import type { RecommendationResult, AssessmentAnswers, ParadigmScores } from '@/types/assessment';
+import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 import { PARADIGM_LABELS } from '@/types/assessment';
 import type { RedFlag } from '@/lib/scoring';
 
@@ -35,6 +30,7 @@ interface OverviewTabProps {
   reasoningBullets: string[];
   redFlags: RedFlag[];
   confidenceLevel: number;
+  onTabChange?: (tab: string) => void;
 }
 
 // --- Helper: render **bold** markdown ---
@@ -69,6 +65,7 @@ function generateStrategicRationale(rec: RecommendationResult, answers: Assessme
 interface Strength {
   title: string;
   description: string;
+  tabLink?: { label: string; tab: string };
 }
 
 function generateStrengths(rec: RecommendationResult, answers: AssessmentAnswers): Strength[] {
@@ -88,12 +85,20 @@ function generateStrengths(rec: RecommendationResult, answers: AssessmentAnswers
 
   // Geography-driven
   if (answers.geography === 'Primarily Europe') {
-    strengths.push({ title: 'GDPR Ready', description: 'Configuration minimizes automated decision-making, reducing GDPR Article 22 compliance burden.' });
+    strengths.push({ 
+      title: 'GDPR Ready', 
+      description: 'Configuration minimizes automated decision-making, reducing GDPR Article 22 compliance burden.',
+      tabLink: { label: 'See Regulatory Analysis', tab: 'implementation' }
+    });
   }
 
   // Values-driven
   if (answers.valuesRanking[0] === 'Sustainability') {
-    strengths.push({ title: 'Low Carbon Impact', description: 'Estimated 40% lower energy consumption compared to high-compute alternatives like spatial interfaces.' });
+    strengths.push({ 
+      title: 'Low Carbon Impact', 
+      description: 'Configuration avoids high-energy spatial computing. See Sustainability tab for full environmental analysis.',
+      tabLink: { label: 'See Sustainability Report', tab: 'implementation' }
+    });
   }
   if (answers.valuesRanking[0] === 'Accessibility') {
     strengths.push({ title: 'Universal Access', description: 'Multi-modal approach ensures alternatives exist for every ability level and context.' });
@@ -125,6 +130,7 @@ interface Risk {
   title: string;
   description: string;
   mitigation: string;
+  tabLink?: { label: string; tab: string };
 }
 
 function generateRisks(rec: RecommendationResult, answers: AssessmentAnswers, redFlags: RedFlag[]): Risk[] {
@@ -136,7 +142,8 @@ function generateRisks(rec: RecommendationResult, answers: AssessmentAnswers, re
       severity: 'Medium',
       title: flag.source,
       description: flag.text.replace(/⚠️\s*/, ''),
-      mitigation: flag.description.split('.')[1]?.trim() || 'Review configuration carefully.'
+      mitigation: flag.description.split('.')[1]?.trim() || 'Review configuration carefully.',
+      tabLink: { label: 'See full analysis', tab: 'analysis' }
     });
   });
 
@@ -173,50 +180,20 @@ function generateRisks(rec: RecommendationResult, answers: AssessmentAnswers, re
   return risks.slice(0, 3);
 }
 
-interface Readiness {
-  timeline: string;
-  complexity: 'Low' | 'Medium' | 'High';
-  teamSize: string;
-  riskLevel: 'Low' | 'Medium' | 'High';
-}
-
-function calculateReadiness(rec: RecommendationResult): Readiness {
-  const activeCount = Object.values(rec.allScores).filter(p => p > 10).length;
-  const hasSpatial = rec.allScores.spatial > 15;
-
-  return {
-    timeline: hasSpatial ? '6-12 months' : activeCount > 2 ? '4-8 months' : '2-5 months',
-    complexity: hasSpatial ? 'High' : activeCount > 2 ? 'Medium' : 'Low',
-    teamSize: hasSpatial ? '6-10 devs' : activeCount > 2 ? '4-7 devs' : '2-4 devs',
-    riskLevel: activeCount > 3 ? 'Medium' : 'Low',
-  };
-}
-
 const severityColor: Record<string, string> = {
   High: 'bg-destructive/10 text-destructive border-destructive/20',
   Medium: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
   Low: 'bg-accent/10 text-accent border-accent/20',
 };
 
-const complexityColor: Record<string, string> = {
-  High: 'text-destructive',
-  Medium: 'text-amber-600',
-  Low: 'text-accent',
-};
-
 // ================================================
 // COMPONENT
 // ================================================
 
-export function OverviewTab({ recommendation, answers, reasoningBullets, redFlags, confidenceLevel }: OverviewTabProps) {
+export function OverviewTab({ recommendation, answers, reasoningBullets, redFlags, confidenceLevel, onTabChange }: OverviewTabProps) {
   const rationale = useMemo(() => generateStrategicRationale(recommendation, answers), [recommendation, answers]);
   const strengths = useMemo(() => generateStrengths(recommendation, answers), [recommendation, answers]);
   const risks = useMemo(() => generateRisks(recommendation, answers, redFlags), [recommendation, answers, redFlags]);
-  const readiness = useMemo(() => calculateReadiness(recommendation), [recommendation]);
-
-  // Confidence breakdown
-  const evidenceStrength = Math.min(95, confidenceLevel + 5);
-  const userFit = Math.min(95, confidenceLevel + (recommendation.primary.pct >= 35 ? 8 : -3));
 
   return (
     <BentoGrid className="mt-6">
@@ -248,43 +225,42 @@ export function OverviewTab({ recommendation, answers, reasoningBullets, redFlag
         </div>
       </BentoBox>
 
-      {/* Confidence Metrics - SMALL */}
+      {/* Signal Strength - SMALL */}
       <BentoBox size="small">
         <BentoHeader
-          title="Confidence"
+          title="Signal Strength"
           icon={<Gauge className="h-5 w-5 text-accent" />}
         />
         <div className="space-y-4">
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">Overall</span>
+              <span className="text-muted-foreground">Recommendation Confidence</span>
               <span className={`font-bold ${confidenceLevel >= 70 ? 'text-accent' : confidenceLevel >= 50 ? 'text-amber-600' : 'text-destructive'}`}>
-                {confidenceLevel}%
+                {confidenceLevel >= 70 ? 'Strong' : confidenceLevel >= 50 ? 'Moderate' : 'Weak'}
               </span>
             </div>
             <Progress value={confidenceLevel} className="h-2" />
           </div>
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">Evidence</span>
-              <span className="font-semibold text-foreground">{evidenceStrength}%</span>
+              <span className="text-muted-foreground">Score Differentiation</span>
+              <span className="font-semibold text-foreground">
+                {recommendation.primary.pct - recommendation.secondary.pct >= 15 ? 'High' :
+                 recommendation.primary.pct - recommendation.secondary.pct >= 8 ? 'Medium' : 'Low'}
+              </span>
             </div>
-            <Progress value={evidenceStrength} className="h-1.5" />
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">User Fit</span>
-              <span className="font-semibold text-foreground">{userFit}%</span>
-            </div>
-            <Progress value={userFit} className="h-1.5" />
+            <Progress
+              value={Math.min(100, (recommendation.primary.pct - recommendation.secondary.pct) * 3)}
+              className="h-1.5"
+            />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Based on response consistency and score differentiation
+            Based on response consistency and score separation between paradigms
           </p>
         </div>
       </BentoBox>
 
-      {/* Top 3 Strengths - LARGE (fills remaining space) */}
+      {/* Top 3 Strengths - LARGE */}
       <BentoBox size="large">
         <BentoHeader
           title="Key Strengths"
@@ -307,6 +283,14 @@ export function OverviewTab({ recommendation, answers, reasoningBullets, redFlag
                 <h4 className="text-sm font-semibold text-foreground">{s.title}</h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">{s.description}</p>
+              {s.tabLink && onTabChange && (
+                <button
+                  onClick={() => onTabChange(s.tabLink!.tab)}
+                  className="text-xs text-accent hover:underline mt-2 flex items-center gap-1"
+                >
+                  → {s.tabLink.label}
+                </button>
+              )}
             </motion.div>
           ))}
         </div>
@@ -338,38 +322,16 @@ export function OverviewTab({ recommendation, answers, reasoningBullets, redFlag
               <p className="text-xs font-medium">
                 → {r.mitigation}
               </p>
+              {r.tabLink && onTabChange && (
+                <button
+                  onClick={() => onTabChange(r.tabLink!.tab)}
+                  className="text-xs text-accent hover:underline mt-1 flex items-center gap-1"
+                >
+                  → {r.tabLink.label}
+                </button>
+              )}
             </motion.div>
           ))}
-        </div>
-      </BentoBox>
-
-      {/* Implementation Readiness - WIDE */}
-      <BentoBox size="wide">
-        <BentoHeader
-          title="Implementation Readiness"
-          icon={<Target className="h-5 w-5 text-accent" />}
-        />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <Clock className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-            <p className="text-xs text-muted-foreground">Timeline</p>
-            <p className="text-sm font-bold text-foreground">{readiness.timeline}</p>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <TrendingUp className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-            <p className="text-xs text-muted-foreground">Complexity</p>
-            <p className={`text-sm font-bold ${complexityColor[readiness.complexity]}`}>{readiness.complexity}</p>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <Users className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-            <p className="text-xs text-muted-foreground">Team Size</p>
-            <p className="text-sm font-bold text-foreground">{readiness.teamSize}</p>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <Shield className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
-            <p className="text-xs text-muted-foreground">Risk Level</p>
-            <p className={`text-sm font-bold ${complexityColor[readiness.riskLevel]}`}>{readiness.riskLevel}</p>
-          </div>
         </div>
       </BentoBox>
     </BentoGrid>
