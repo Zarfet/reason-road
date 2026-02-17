@@ -6,13 +6,12 @@ import { motion } from 'framer-motion';
 import { 
   Download, 
   Share2, 
-  Save, 
   RefreshCw,
   FileText,
   Link2,
-  User,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  Info
 } from 'lucide-react';
 import { BentoGrid, BentoBox, BentoHeader } from '../bento/BentoGrid';
 import { Button } from '@/components/ui/button';
@@ -69,9 +68,15 @@ export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: Ac
           transition={{ delay: 0.1 }}
           className="mt-6"
         >
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-3">
             Share your assessment results with team members or stakeholders via a secure link.
           </p>
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border mb-4">
+            <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground">
+              The shared link includes Overview, Analysis, and Impact tabs. The Research tab is not included as it requires authentication.
+            </p>
+          </div>
           {savedAssessmentId ? (
             <ShareButton assessmentId={savedAssessmentId} />
           ) : (
@@ -105,31 +110,7 @@ export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: Ac
         </motion.div>
       </BentoBox>
 
-      {/* Save to Profile - MEDIUM */}
-      <BentoBox size="medium">
-        <BentoHeader 
-          title="Saved to Profile" 
-          subtitle="Access anytime from your account"
-          icon={<User className="h-5 w-5 text-accent" />}
-        />
-        
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-6"
-        >
-          <p className="text-sm text-muted-foreground mb-4">
-            Your assessment has been automatically saved to your profile for future reference.
-          </p>
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-accent/10 border border-accent/20">
-            <Save className="h-4 w-4 text-accent" />
-            <span className="text-sm font-medium text-accent">Assessment saved</span>
-          </div>
-        </motion.div>
-      </BentoBox>
-
-      {/* Start New - MEDIUM */}
+      {/* New Assessment - MEDIUM (replaces Save to Profile) */}
       <BentoBox size="medium">
         <BentoHeader 
           title="New Assessment" 
@@ -140,7 +121,7 @@ export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: Ac
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
           className="mt-6"
         >
           <p className="text-sm text-muted-foreground mb-4">
