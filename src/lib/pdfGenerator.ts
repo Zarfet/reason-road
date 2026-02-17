@@ -1,16 +1,7 @@
 /**
- * PDF Report Generator for NEXUS Assessment Results
- * Full multi-page report covering all tabs.
- *
- * Sections:
- *   1  — Cover: strategy card, score bars, rationale, bullets 2×2
- *   2+ — Analysis: per interface type FOR / AGAINST side-by-side
- *   ?  — Regulatory (EU / Global only)
- *   ?  — Sustainability (conditional)
- *   ?  — Research (only if user visited tab → localStorage cache exists)
- *   ?  — Red Flags (conditional)
- *
- * Every page has a footer with page number.
+ * NEXUS PDF Report Generator — v3
+ * Professional multi-section A4 report using jsPDF
+ * Sections: Cover | Analysis | Regulatory | Sustainability | Red Flags
  */
 
 import jsPDF from 'jspdf';
@@ -23,65 +14,193 @@ import { getReasoningBullets } from '@/lib/scoring';
 import { generateStrategicRationale } from '@/components/results/tabs/OverviewTab';
 import { generateAllArguments } from '@/lib/argumentsGenerator';
 import { generateSustainabilityReport } from '@/lib/sustainabilityAnalysis';
-import { detectRedFlags } from '@/lib/redFlagsDetector';
 import { generateRegulatoryAnalysis } from '@/lib/regulatoryAnalysis';
+import { detectRedFlags } from '@/lib/redFlagsDetector';
 
-interface PDFGeneratorParams {
-  answers: AssessmentAnswers;
-  recommendation: RecommendationResult;
-  createdAt?: string;
-}
+// ─── Types & tokens ───────────────────────────────────────────────────────────
+type RGB = [number, number, number];
 
-// ─── Design tokens ───────────────────────────────────────────────────────────
-const ACCENT: [number, number, number]     = [22, 163, 74];   // emerald-600
-const FG: [number, number, number]         = [26, 26, 26];
-const MUTED: [number, number, number]      = [100, 100, 100];
-const CARD: [number, number, number]       = [248, 250, 248];
-const BORDER: [number, number, number]     = [229, 231, 235];
-const FOR_BG: [number, number, number]     = [240, 253, 244]; // green-50
-const AGAINST_BG: [number, number, number] = [255, 247, 237]; // amber-50
-const FLAG_BG: [number, number, number]    = [254, 242, 242]; // red-50
-const REG_BG: [number, number, number]     = [239, 246, 255]; // blue-50
-const RESEARCH_BG: [number, number, number] = [245, 243, 255]; // violet-50
-
-const MARGIN = 14;
-const PAGE_W = 210; // A4
-const PAGE_H = 297;
-const CONTENT_W = PAGE_W - MARGIN * 2;
-
-const INTERFACE_LABELS: Record<string, string> = {
-  traditional_screen: 'Traditional Screen',
-  invisible: 'Invisible / Ambient',
-  ai_vectorial: 'AI Conversational',
-  spatial: 'Spatial Computing',
-  voice: 'Voice-First',
+const C: Record<string, RGB> = {
+  accent:  [22, 163, 74],
+  white:   [255, 255, 255],
+  fg:      [20, 20, 20],
+  muted:   [110, 110, 110],
+  border:  [218, 218, 218],
+  card:    [246, 249, 246],
+  forBg:   [237, 252, 240],
+  againstBg:[255, 248, 236],
+  redBg:   [254, 241, 241],
+  crit:    [185, 28, 28],
+  high:    [194, 65, 12],
+  med:     [161, 98, 7],
+  darkG:   [16, 110, 48],
 };
 
-// ─── Safe text helper ─────────────────────────────────────────────────────────
+// A4 in mm
+const PW = 210;
+const PH = 297;
+const M  = 13;
+const CW = PW - M * 2;
+const HALF = (CW - 5) / 2;
+const RX = M + HALF + 5;   // right column X
+
+// Interface type labels — no "paradigm" word
+const IL: Record<string, string> = {
+  traditional_screen: 'Traditional Screen',
+  invisible:          'Invisible / Ambient',
+  ai_vectorial:       'AI Conversational',
+  spatial:            'Spatial Computing',
+  voice:              'Voice-First',
+};
+function iLabel(key: string): string {
+  return IL[key] ?? (PARADIGM_LABELS as Record<string, string>)[key] ?? key.replace(/_/g, ' ');
+}
+function clean(s: string): string {
+  return s.replace(/\*\*/g, '').replace(/CO2/g, 'CO2').trim();
+}
+// Safe replacement for special chars jsPDF can't handle
 function safeText(s: string): string {
   return s
-    .replace(/\*\*/g, '')
+    .replace(/CO2/g, 'CO2')
     .replace(/CO₂/g, 'CO2')
-    .replace(/\u2019/g, "'")
-    .replace(/\u2018/g, "'")
-    .replace(/\u201C/g, '"')
-    .replace(/\u201D/g, '"')
-    .replace(/\u2013/g, '-')
-    .replace(/\u2014/g, '--')
-    .replace(/\u2026/g, '...')
-    .replace(/\u00B2/g, '2')
-    .replace(/\u00BC/g, '1/4')
-    .replace(/\u00BD/g, '1/2')
-    .replace(/\u00BE/g, '3/4')
-    .replace(/\u2153/g, '1/3')
-    .replace(/✅/g, '+')
-    .replace(/⚠️/g, '!')
-    .replace(/🚨/g, '!!')
-    .replace(/[^\x00-\x7F]/g, '');
+    .replace(/₂/g, '2')
+    .replace(/[▲▼✓✗→]/g, '')
+    .replace(/['']/g, "'")
+    .replace(/[""]/g, '"')
+    .replace(/…/g, '...')
+    .replace(/–/g, '-')
+    .replace(/°/g, ' deg')
+    .trim();
 }
 
-// ─── LocalStorage readers for Research tab data ──────────────────────────────
+// ─── Builder class ────────────────────────────────────────────────────────────
+class Doc {
+  d: jsPDF;
+  y = M;
+  pageNum = 1;
 
+  constructor() {
+    this.d = new jsPDF({ unit: 'mm', format: 'a4' });
+  }
+
+  /** Add new page + strip header */
+  newPage(): void {
+    this.footer();
+    this.d.addPage();
+    this.pageNum++;
+    this.y = M;
+    this.pageStrip();
+  }
+
+  /** Check remaining space, add page if needed */
+  need(h: number): void {
+    if (this.y + h > PH - M - 12) this.newPage();
+  }
+
+  // ── Layout ──────────────────────────────────────────────────────────────
+
+  pageStrip(): void {
+    this.d.setFillColor(...C.accent);
+    this.d.rect(0, 0, PW, 7, 'F');
+    this.d.setTextColor(...C.white);
+    this.d.setFontSize(6.5);
+    this.d.setFont('helvetica', 'bold');
+    this.d.text('NEXUS  -  Interface Paradigm Assessment Report', M, 5);
+    this.y = 13;
+  }
+
+  footer(): void {
+    const fy = PH - 8;
+    this.d.setDrawColor(...C.border);
+    this.d.setLineWidth(0.25);
+    this.d.line(M, fy - 2, PW - M, fy - 2);
+    this.d.setTextColor(...C.muted);
+    this.d.setFontSize(6.5);
+    this.d.setFont('helvetica', 'normal');
+    this.d.text('NEXUS - Interface Paradigm Assessment', M, fy);
+    this.d.text(String(this.pageNum), PW - M, fy, { align: 'right' });
+  }
+
+  sectionBand(label: string): void {
+    this.need(12);
+    this.d.setFillColor(...C.accent);
+    this.d.rect(M, this.y, CW, 9, 'F');
+    this.d.setTextColor(...C.white);
+    this.d.setFontSize(9);
+    this.d.setFont('helvetica', 'bold');
+    this.d.text(safeText(label).toUpperCase(), M + 4, this.y + 6.5);
+    this.y += 13;
+  }
+
+  rule(): void {
+    this.d.setDrawColor(...C.border);
+    this.d.setLineWidth(0.2);
+    this.d.line(M, this.y, PW - M, this.y);
+    this.y += 4;
+  }
+
+  gap(h = 4): void { this.y += h; }
+
+  // ── Text helpers ────────────────────────────────────────────────────────
+
+  h2(text: string, color: RGB = C.accent): void {
+    this.need(8);
+    this.d.setTextColor(...color);
+    this.d.setFontSize(10);
+    this.d.setFont('helvetica', 'bold');
+    this.d.text(safeText(text), M, this.y);
+    this.y += 6;
+  }
+
+  h3(text: string, x = M, color: RGB = C.fg): void {
+    this.need(7);
+    this.d.setTextColor(...color);
+    this.d.setFontSize(8.5);
+    this.d.setFont('helvetica', 'bold');
+    this.d.text(safeText(text), x, this.y);
+    this.y += 5;
+  }
+
+  /** Renders body text, returns height used */
+  body(text: string, x = M, maxW = CW, lh = 4.4): number {
+    this.d.setTextColor(...C.fg);
+    this.d.setFontSize(8);
+    this.d.setFont('helvetica', 'normal');
+    const lines = this.d.splitTextToSize(safeText(clean(text)), maxW);
+    this.d.text(lines, x, this.y);
+    const h = lines.length * lh;
+    this.y += h;
+    return h;
+  }
+
+  caption(text: string, x = M, maxW = CW, color: RGB = C.muted): void {
+    this.d.setTextColor(...color);
+    this.d.setFontSize(7);
+    this.d.setFont('helvetica', 'normal');
+    const lines = this.d.splitTextToSize(safeText(clean(text)), maxW);
+    this.d.text(lines, x, this.y);
+    this.y += lines.length * 3.8;
+  }
+
+  /** Pill/badge */
+  pill(text: string, x: number, y: number, bg: RGB, fg: RGB = C.white, w = 22): void {
+    this.d.setFillColor(...bg);
+    this.d.roundedRect(x, y - 3.5, w, 5.5, 1.5, 1.5, 'F');
+    this.d.setTextColor(...fg);
+    this.d.setFontSize(5.5);
+    this.d.setFont('helvetica', 'bold');
+    this.d.text(safeText(text).toUpperCase(), x + w / 2, y + 0.2, { align: 'center' });
+  }
+
+  /** Card background rect */
+  card(x: number, y: number, w: number, h: number, bg: RGB = C.card): void {
+    this.d.setFillColor(...bg);
+    this.d.roundedRect(x, y, w, h, 2, 2, 'F');
+  }
+}
+
+
+// ─── Research cache interfaces (mirrors ResearchPanel / CaseStudiesPanel) ────
 interface ResearchPaper {
   title: string;
   authors: string;
@@ -101,931 +220,725 @@ interface CaseStudy {
   lessonsLearned: string;
 }
 
-const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+// ─── Main export ──────────────────────────────────────────────────────────────
+export function generatePDFReport({
+  answers,
+  recommendation,
+  createdAt,
+}: {
+  answers: AssessmentAnswers;
+  recommendation: RecommendationResult;
+  createdAt?: string;
+}): void {
+  const doc = new Doc();
+  const d = doc.d;
 
-function getCachedResearchPapers(paradigm: string, userDemographics?: string): ResearchPaper[] | null {
-  try {
-    const demographics = userDemographics?.trim() || 'general';
-    const key = `nexus_research_${paradigm}_${demographics}`.toLowerCase().replace(/\s+/g, '_');
-    const cached = localStorage.getItem(key);
-    if (!cached) return null;
-    const data = JSON.parse(cached);
-    if (Date.now() - data.timestamp > CACHE_DURATION_MS) return null;
-    return data.papers || null;
-  } catch {
-    return null;
-  }
-}
-
-function getCachedCaseStudies(paradigm: string, userDemographics?: string): CaseStudy[] | null {
-  try {
-    const demographics = userDemographics?.trim() || 'general';
-    const key = `nexus_case_studies_${paradigm}_${demographics}`.toLowerCase().replace(/\s+/g, '_');
-    const cached = localStorage.getItem(key);
-    if (!cached) return null;
-    const data = JSON.parse(cached);
-    if (Date.now() - data.timestamp > CACHE_DURATION_MS) return null;
-    return data.cases || null;
-  } catch {
-    return null;
-  }
-}
-
-// ─── Helper class ─────────────────────────────────────────────────────────────
-class PDFBuilder {
-  doc: jsPDF;
-  y: number;
-  page: number;
-
-  constructor() {
-    this.doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    this.y = MARGIN;
-    this.page = 1;
-  }
-
-  needSpace(h: number): void {
-    if (this.y + h > PAGE_H - MARGIN - 8) {
-      this.addFooter();
-      this.doc.addPage();
-      this.page++;
-      this.y = MARGIN;
-      this.addPageHeader();
-    }
-  }
-
-  h2(text: string, color: [number, number, number] = ACCENT): void {
-    this.doc.setTextColor(...color);
-    this.doc.setFontSize(11);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text(safeText(text), MARGIN, this.y);
-    this.y += 6;
-  }
-
-  h3(text: string, x: number = MARGIN): void {
-    this.doc.setTextColor(...FG);
-    this.doc.setFontSize(9);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text(safeText(text), x, this.y);
-    this.y += 5;
-  }
-
-  body(text: string, x: number = MARGIN, maxW: number = CONTENT_W, lineH: number = 4.5): number {
-    this.doc.setTextColor(...FG);
-    this.doc.setFontSize(8);
-    this.doc.setFont('helvetica', 'normal');
-    const lines = this.doc.splitTextToSize(safeText(text), maxW);
-    this.doc.text(lines, x, this.y);
-    const used = lines.length * lineH;
-    this.y += used;
-    return used;
-  }
-
-  muted(text: string, x: number = MARGIN, maxW: number = CONTENT_W, size: number = 7): void {
-    this.doc.setTextColor(...MUTED);
-    this.doc.setFontSize(size);
-    this.doc.setFont('helvetica', 'normal');
-    const lines = this.doc.splitTextToSize(safeText(text), maxW);
-    this.doc.text(lines, x, this.y);
-    this.y += lines.length * 4;
-  }
-
-  gap(h: number = 4): void { this.y += h; }
-
-  divider(): void {
-    this.doc.setDrawColor(...BORDER);
-    this.doc.setLineWidth(0.3);
-    this.doc.line(MARGIN, this.y, PAGE_W - MARGIN, this.y);
-    this.y += 4;
-  }
-
-  cardStart(h: number, bg: [number, number, number] = CARD, x: number = MARGIN, w: number = CONTENT_W): void {
-    this.doc.setFillColor(...bg);
-    this.doc.roundedRect(x, this.y - 3, w, h, 2, 2, 'F');
-  }
-
-  badge(text: string, x: number, y: number, color: [number, number, number] = ACCENT): void {
-    this.doc.setFontSize(6);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.setTextColor(...color);
-    this.doc.text(safeText(text).toUpperCase(), x, y);
-  }
-
-  addPageHeader(): void {
-    this.doc.setFillColor(...ACCENT);
-    this.doc.rect(0, 0, PAGE_W, 8, 'F');
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(7);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('NEXUS Assessment Report', MARGIN, 5.5);
-    this.y = 14;
-  }
-
-  addFooter(): void {
-    const fy = PAGE_H - 7;
-    this.doc.setTextColor(...MUTED);
-    this.doc.setFontSize(6.5);
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.text('NEXUS -- Interface Paradigm Assessment', MARGIN, fy);
-    this.doc.text(`Page ${this.page}`, PAGE_W - MARGIN, fy, { align: 'right' });
-  }
-
-  newPage(): void {
-    this.addFooter();
-    this.doc.addPage();
-    this.page++;
-    this.y = MARGIN;
-    this.addPageHeader();
-  }
-}
-
-// ─── Main export ─────────────────────────────────────────────────────────────
-export function generatePDFReport({ answers, recommendation, createdAt }: PDFGeneratorParams): void {
-  const b = new PDFBuilder();
-  const doc = b.doc;
-
-  const dateStr = createdAt
+  const date = createdAt
     ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 1 — COVER / HERO
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════
+  // PAGE 1 — COVER
+  // ════════════════════════════════════════════════════════
 
-  doc.setFillColor(...ACCENT);
-  doc.rect(0, 0, PAGE_W, 40, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('NEXUS', MARGIN, 18);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Interface Paradigm Assessment Report', MARGIN, 27);
-  doc.text(dateStr, PAGE_W - MARGIN, 27, { align: 'right' });
+  // Header band
+  d.setFillColor(...C.accent);
+  d.rect(0, 0, PW, 42, 'F');
+  d.setTextColor(...C.white);
+  d.setFontSize(26);
+  d.setFont('helvetica', 'bold');
+  d.text('NEXUS', M, 22);
+  d.setFontSize(9);
+  d.setFont('helvetica', 'normal');
+  d.text('Interface Paradigm Assessment Report', M, 31);
+  d.text(date, PW - M, 31, { align: 'right' });
 
-  b.y = 50;
+  doc.y = 50;
 
-  if (answers.projectName || answers.userDemographics) {
-    const ctx: string[] = [];
-    if (answers.projectName) ctx.push(`Project: ${answers.projectName}`);
-    if (answers.userDemographics) ctx.push(`Users: ${answers.userDemographics}`);
-    b.muted(ctx.join('   |   '), MARGIN, CONTENT_W, 8);
-    b.gap(2);
-  }
+  // Project context
+  const ctx: string[] = [];
+  if (answers.projectName) ctx.push('Project: ' + answers.projectName);
+  if (answers.userDemographics) ctx.push('Users: ' + answers.userDemographics);
+  if (ctx.length) { doc.caption(ctx.join('   |   ')); doc.gap(3); }
 
-  // Recommended strategy card
-  const heroCardH = 34;
-  b.cardStart(heroCardH, CARD);
-  b.y += 5;
-  b.badge('Recommended Interface Strategy', MARGIN + 5, b.y);
-  b.y += 6;
+  // ── Strategy card ─────────────────────────────────────────────────────
+  doc.card(M, doc.y, CW, 36, C.card);
+  doc.y += 5;
 
-  doc.setTextColor(...FG);
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text(safeText(PARADIGM_LABELS[recommendation.primary.paradigm]), MARGIN + 5, b.y);
-  doc.setTextColor(...ACCENT);
-  doc.setFontSize(16);
-  doc.text(`${recommendation.primary.pct}%`, PAGE_W - MARGIN - 5, b.y, { align: 'right' });
-  b.y += 8;
+  // Badge
+  doc.pill('Recommended Interface Strategy', M + 4, doc.y + 1, C.accent, C.white, 76);
+  doc.y += 9;
 
-  if (recommendation.secondary.pct > 10) {
-    doc.setTextColor(...MUTED);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      safeText(`Secondary: ${PARADIGM_LABELS[recommendation.secondary.paradigm]} (${recommendation.secondary.pct}%)`),
-      MARGIN + 5, b.y
+  // Primary name
+  d.setTextColor(...C.fg);
+  d.setFontSize(20);
+  d.setFont('helvetica', 'bold');
+  d.text(safeText(PARADIGM_LABELS[recommendation.primary.paradigm]), M + 4, doc.y);
+  d.setTextColor(...C.accent);
+  d.setFontSize(18);
+  d.text(recommendation.primary.pct + '%', PW - M - 4, doc.y, { align: 'right' });
+  doc.y += 10;
+
+  // Secondary
+  if (recommendation.secondary.pct > 8) {
+    d.setTextColor(...C.muted);
+    d.setFontSize(8);
+    d.setFont('helvetica', 'normal');
+    d.text(
+      '+ ' + safeText(PARADIGM_LABELS[recommendation.secondary.paradigm]) + '  ' + recommendation.secondary.pct + '%',
+      M + 4, doc.y
     );
   }
-  b.y += 16;
+  doc.y += 14;
 
   // Confidence
-  const confidence = recommendation.primary.pct > 0
-    ? Math.round(((recommendation.primary.pct - recommendation.secondary.pct) / recommendation.primary.pct) * 100)
-    : 0;
-  doc.setTextColor(...MUTED);
-  doc.setFontSize(7.5);
-  doc.text(
-    `Confidence: ${confidence >= 70 ? 'Strong' : confidence >= 40 ? 'Moderate' : 'Low'}  |  Score gap: ${recommendation.primary.pct - recommendation.secondary.pct}pts`,
-    MARGIN, b.y
-  );
-  b.y += 8;
+  const diff = recommendation.primary.pct - recommendation.secondary.pct;
+  const confLabel = diff >= 30 ? 'Strong' : diff >= 15 ? 'Moderate' : 'Low';
+  const confColor: RGB = diff >= 30 ? C.accent : diff >= 15 ? [202, 138, 4] : C.crit;
+  d.setFontSize(7.5);
+  d.setFont('helvetica', 'normal');
+  d.setTextColor(...C.muted);
+  d.text('Confidence:', M + 4, doc.y);
+  d.setTextColor(...confColor);
+  d.setFont('helvetica', 'bold');
+  d.text(confLabel, M + 28, doc.y);
+  d.setTextColor(...C.muted);
+  d.setFont('helvetica', 'normal');
+  d.text('  Score separation: ' + diff + 'pts', M + 41, doc.y);
+  doc.y += 10;
 
-  // Score breakdown bars
-  b.h2('All Interface Scores');
-  const paradigms = Object.entries(recommendation.allScores)
-    .sort(([, a], [, _b]) => (_b as number) - (a as number)) as Array<[string, number]>;
+  // ── Score bars ────────────────────────────────────────────────────────
+  doc.h2('All Interface Scores');
+  const sorted = Object.entries(recommendation.allScores)
+    .sort(([, a], [, b]) => (b as number) - (a as number));
 
-  for (const [key, score] of paradigms) {
-    b.needSpace(12);
-    const label = INTERFACE_LABELS[key] ?? PARADIGM_LABELS[key as keyof typeof PARADIGM_LABELS] ?? key;
+  for (const [key, rawScore] of sorted) {
+    const score = rawScore as number;
     const isPrimary = key === recommendation.primary.paradigm;
-    doc.setTextColor(...FG);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', isPrimary ? 'bold' : 'normal');
-    doc.text(safeText(label), MARGIN, b.y);
-    doc.setTextColor(...(isPrimary ? ACCENT : MUTED));
-    doc.text(`${score}%`, PAGE_W - MARGIN, b.y, { align: 'right' });
-    b.y += 3;
+    doc.need(11);
 
-    const barW = CONTENT_W;
-    const barH = 3.5;
-    doc.setFillColor(...BORDER);
-    doc.roundedRect(MARGIN, b.y, barW, barH, 1, 1, 'F');
-    const fill = Math.max((barW * (score as number)) / 100, 1);
-    doc.setFillColor(...(isPrimary ? ACCENT : [180, 180, 180] as [number, number, number]));
-    doc.roundedRect(MARGIN, b.y, fill, barH, 1, 1, 'F');
-    b.y += 7;
+    d.setTextColor(...(isPrimary ? C.accent : C.fg));
+    d.setFontSize(8);
+    d.setFont('helvetica', isPrimary ? 'bold' : 'normal');
+    d.text(iLabel(key), M, doc.y);
+    d.setTextColor(...(isPrimary ? C.accent : C.muted));
+    d.text(score + '%', PW - M, doc.y, { align: 'right' });
+    doc.y += 3.5;
+
+    d.setFillColor(...C.border);
+    d.roundedRect(M, doc.y, CW, 4, 1.2, 1.2, 'F');
+    const fw = Math.max((CW * score) / 100, 1.5);
+    d.setFillColor(...(isPrimary ? C.accent : [175, 175, 175] as RGB));
+    d.roundedRect(M, doc.y, fw, 4, 1.2, 1.2, 'F');
+    doc.y += 7.5;
   }
 
-  b.gap(4);
-  b.divider();
+  doc.gap(3);
+  doc.rule();
 
-  // Strategic Rationale
-  b.h2('Strategic Rationale');
-  const rationale = generateStrategicRationale(recommendation, answers);
-  b.body(rationale);
-  b.gap(4);
+  // ── Strategic Rationale ────────────────────────────────────────────────
+  doc.h2('Strategic Rationale');
+  doc.body(generateStrategicRationale(recommendation, answers));
+  doc.gap(5);
 
-  // Reasoning bullets in two columns
+  // ── Reasoning bullets 2-col ────────────────────────────────────────────
   const bullets = getReasoningBullets(answers, recommendation).slice(0, 4);
   if (bullets.length > 0) {
-    b.h3('Key Reasoning');
-    const colW = (CONTENT_W - 6) / 2;
-    const col2X = MARGIN + colW + 6;
+    doc.h3('Key Reasoning');
+    const bW = (CW - 5) / 2;
 
     for (let i = 0; i < bullets.length; i++) {
-      const x = i % 2 === 0 ? MARGIN : col2X;
-      const mW = colW - 4;
-      const txt = `${i + 1}. ${safeText(bullets[i])}`;
-      const lines = doc.splitTextToSize(txt, mW);
-      const cardH = lines.length * 4.2 + 6;
-
-      if (i % 2 === 0) b.needSpace(cardH + 2);
-
-      doc.setFillColor(...CARD);
-      doc.roundedRect(x, b.y - 2, colW, cardH, 1.5, 1.5, 'F');
-      doc.setTextColor(...FG);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'normal');
-      doc.text(lines, x + 3, b.y + 2);
-
-      if (i % 2 === 1 || i === bullets.length - 1) b.y += cardH + 3;
+      const bx = i % 2 === 0 ? M : M + bW + 5;
+      const txt = (i + 1) + '.  ' + clean(bullets[i]);
+      const lines = d.splitTextToSize(safeText(txt), bW - 7);
+      const cardH = lines.length * 4.2 + 8;
+      if (i % 2 === 0) doc.need(cardH + 3);
+      doc.card(bx, doc.y, bW, cardH, C.card);
+      d.setTextColor(...C.fg);
+      d.setFontSize(7.5);
+      d.setFont('helvetica', 'normal');
+      d.text(lines, bx + 3.5, doc.y + 5.5);
+      if (i % 2 === 1 || i === bullets.length - 1) doc.y += cardH + 3;
     }
   }
 
-  b.addFooter();
+  doc.footer();
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PAGE 2+ — ANALYSIS (Arguments For / Against)
-  // ═══════════════════════════════════════════════════════════════════════════
-  b.newPage();
-
-  b.h2('Detailed Argumentation');
-  b.muted('Research-backed reasoning for each interface type in your recommendation');
-  b.gap(4);
+  // ════════════════════════════════════════════════════════
+  // ANALYSIS — Arguments For & Against
+  // ════════════════════════════════════════════════════════
+  d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
+  doc.sectionBand('Analysis - Arguments For & Against');
+  doc.caption('Research-backed reasoning for each interface type in your recommendation');
+  doc.gap(4);
 
   const allArgs = generateAllArguments(answers, recommendation);
-  const colW2 = (CONTENT_W - 6) / 2;
-  const rightX = MARGIN + colW2 + 6;
 
   for (const pArg of allArgs) {
-    b.needSpace(20);
+    doc.need(28);
 
-    // Dark bar with interface name + %
-    const typeName = INTERFACE_LABELS[pArg.paradigmKey] ?? pArg.paradigm;
-    doc.setFillColor(40, 40, 40);
-    doc.roundedRect(MARGIN, b.y - 1, CONTENT_W, 8, 1.5, 1.5, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text(safeText(`${typeName}  --  ${Math.round(pArg.percentage)}%`), MARGIN + 3, b.y + 4.5);
-    b.y += 12;
+    // Interface type bar
+    d.setFillColor(...C.darkG);
+    d.roundedRect(M, doc.y, CW, 8.5, 1.5, 1.5, 'F');
+    d.setTextColor(...C.white);
+    d.setFontSize(9);
+    d.setFont('helvetica', 'bold');
+    d.text(iLabel(pArg.paradigmKey ?? pArg.paradigm), M + 4, doc.y + 6);
+    d.setFontSize(8);
+    d.setFont('helvetica', 'normal');
+    d.text(Math.round(pArg.percentage) + '%', PW - M - 4, doc.y + 6, { align: 'right' });
+    doc.y += 12;
 
-    // FOR / AGAINST column headers
-    doc.setFillColor(...FOR_BG);
-    doc.roundedRect(MARGIN, b.y - 1, colW2, 6, 1, 1, 'F');
-    doc.setTextColor(...ACCENT);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('FOR', MARGIN + 2, b.y + 3.5);
+    // Column header bars
+    d.setFillColor(...C.forBg);
+    d.roundedRect(M, doc.y, HALF, 7.5, 1, 1, 'F');
+    d.setFillColor(...C.againstBg);
+    d.roundedRect(RX, doc.y, HALF, 7.5, 1, 1, 'F');
+    d.setTextColor(...C.accent);
+    d.setFontSize(7.5);
+    d.setFont('helvetica', 'bold');
+    d.text('FOR', M + 3, doc.y + 5);
+    d.setTextColor(...C.high);
+    d.text('AGAINST', RX + 3, doc.y + 5);
+    doc.y += 11;
 
-    doc.setFillColor(...AGAINST_BG);
-    doc.roundedRect(rightX, b.y - 1, colW2, 6, 1, 1, 'F');
-    doc.setTextColor(180, 83, 9);
-    doc.text('AGAINST', rightX + 2, b.y + 3.5);
-    b.y += 10;
+    // Argument pairs
+    const maxA = Math.max(pArg.argumentsFor.length, pArg.argumentsAgainst.length);
+    for (let i = 0; i < maxA; i++) {
+      const fa = pArg.argumentsFor[i];
+      const aa = pArg.argumentsAgainst[i];
 
-    const maxArgs = Math.max(pArg.argumentsFor.length, pArg.argumentsAgainst.length);
-    for (let i = 0; i < maxArgs; i++) {
-      const forArg = pArg.argumentsFor[i];
-      const againstArg = pArg.argumentsAgainst[i];
+      const fTitleL = fa ? d.splitTextToSize(safeText(clean(fa.title)), HALF - 22) : [];
+      const fDescL  = fa ? d.splitTextToSize(safeText(clean(fa.description)), HALF - 7) : [];
+      const aTitleL = aa ? d.splitTextToSize(safeText(clean(aa.title)), HALF - 22) : [];
+      const aDescL  = aa ? d.splitTextToSize(safeText(clean(aa.description)), HALF - 7) : [];
 
-      const forLines = forArg
-        ? doc.splitTextToSize(safeText(`${forArg.title}: ${forArg.description}`), colW2 - 6).length
-        : 0;
-      const againstLines = againstArg
-        ? doc.splitTextToSize(safeText(`${againstArg.title}: ${againstArg.description}`), colW2 - 6).length
-        : 0;
-      const cardH = Math.max(forLines, againstLines) * 4 + 12;
+      const fH = fa ? fTitleL.length * 4 + fDescL.length * 3.8 + 10 : 0;
+      const aH = aa ? aTitleL.length * 4 + aDescL.length * 3.8 + 10 : 0;
+      const cardH = Math.max(fH, aH, 18);
 
-      b.needSpace(cardH + 3);
+      doc.need(cardH + 3);
 
-      if (forArg) {
-        doc.setFillColor(...FOR_BG);
-        doc.roundedRect(MARGIN, b.y, colW2, cardH, 1.5, 1.5, 'F');
-        doc.setTextColor(...ACCENT);
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(safeText(forArg.title), MARGIN + 3, b.y + 5);
-        doc.setTextColor(...FG);
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        const desc = doc.splitTextToSize(safeText(forArg.description), colW2 - 6);
-        doc.text(desc, MARGIN + 3, b.y + 9.5);
+      if (fa) {
+        doc.card(M, doc.y, HALF, cardH, C.forBg);
         // Impact pill
-        doc.setFillColor(...ACCENT);
-        const pillW = doc.getTextWidth(forArg.impact.toUpperCase()) + 4;
-        doc.roundedRect(MARGIN + colW2 - pillW - 2, b.y + 2, pillW, 4, 1, 1, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(5.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(forArg.impact.toUpperCase(), MARGIN + colW2 - pillW, b.y + 4.8);
+        const iC: RGB = fa.impact === 'high' ? C.accent : fa.impact === 'medium' ? [202, 138, 4] : C.muted;
+        doc.pill(fa.impact, M + HALF - 20, doc.y + 4, iC, C.white, 18);
+        // Title
+        d.setTextColor(...C.accent);
+        d.setFontSize(7.5);
+        d.setFont('helvetica', 'bold');
+        d.text(fTitleL, M + 3, doc.y + 5.5);
+        // Description
+        d.setTextColor(...C.fg);
+        d.setFontSize(7);
+        d.setFont('helvetica', 'normal');
+        d.text(fDescL, M + 3, doc.y + 5.5 + fTitleL.length * 4 + 1);
       }
 
-      if (againstArg) {
-        doc.setFillColor(...AGAINST_BG);
-        doc.roundedRect(rightX, b.y, colW2, cardH, 1.5, 1.5, 'F');
-        doc.setTextColor(180, 83, 9);
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(safeText(againstArg.title), rightX + 3, b.y + 5);
-        doc.setTextColor(...FG);
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        const desc = doc.splitTextToSize(safeText(againstArg.description), colW2 - 6);
-        doc.text(desc, rightX + 3, b.y + 9.5);
-        // Impact pill
-        const amberDark: [number, number, number] = [180, 83, 9];
-        doc.setFillColor(...amberDark);
-        const pillW2 = doc.getTextWidth(againstArg.impact.toUpperCase()) + 4;
-        doc.roundedRect(rightX + colW2 - pillW2 - 2, b.y + 2, pillW2, 4, 1, 1, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(5.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(againstArg.impact.toUpperCase(), rightX + colW2 - pillW2, b.y + 4.8);
+      if (aa) {
+        doc.card(RX, doc.y, HALF, cardH, C.againstBg);
+        const iC: RGB = aa.impact === 'high' ? C.crit : aa.impact === 'medium' ? C.high : C.med;
+        doc.pill(aa.impact, RX + HALF - 20, doc.y + 4, iC, C.white, 18);
+        d.setTextColor(...C.high);
+        d.setFontSize(7.5);
+        d.setFont('helvetica', 'bold');
+        d.text(aTitleL, RX + 3, doc.y + 5.5);
+        d.setTextColor(...C.fg);
+        d.setFontSize(7);
+        d.setFont('helvetica', 'normal');
+        d.text(aDescL, RX + 3, doc.y + 5.5 + aTitleL.length * 4 + 1);
       }
 
-      b.y += cardH + 3;
+      doc.y += cardH + 3;
     }
-
-    b.gap(6);
+    doc.gap(6);
   }
 
-  b.addFooter();
+  doc.footer();
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONDITIONAL — REGULATORY (EU / Global only)
-  // ═══════════════════════════════════════════════════════════════════════════
-  const regAnalysis = generateRegulatoryAnalysis(answers, recommendation);
+  // ════════════════════════════════════════════════════════
+  // REGULATORY (conditional: EU or Global)
+  // ════════════════════════════════════════════════════════
+  const reg = generateRegulatoryAnalysis(answers, recommendation);
+  if (reg && reg.applicable && reg.requirements.length > 0) {
+    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
+    doc.sectionBand('Regulatory Impact - ' + reg.region);
 
-  if (regAnalysis && regAnalysis.applicable && regAnalysis.requirements.length > 0) {
-    b.newPage();
+    // Overall risk badge
+    const rC: RGB = reg.overallRiskLevel === 'critical' ? C.crit :
+                    reg.overallRiskLevel === 'high'     ? C.high :
+                    reg.overallRiskLevel === 'medium'   ? C.med  : C.accent;
+    doc.pill(reg.overallRiskLevel + ' overall risk', PW - M - 38, doc.y - 11, rC, C.white, 36);
+    doc.gap(2);
 
-    const riskColor: [number, number, number] =
-      regAnalysis.overallRiskLevel === 'critical' ? [185, 28, 28] :
-      regAnalysis.overallRiskLevel === 'high'     ? [194, 65, 12] :
-      regAnalysis.overallRiskLevel === 'medium'   ? [161, 98, 7] :
-                                                     [22, 163, 74];
-    b.h2(`Regulatory Compliance -- ${regAnalysis.region}`);
-    doc.setFillColor(...riskColor);
-    const riskLabel = `OVERALL RISK: ${regAnalysis.overallRiskLevel.toUpperCase()}`;
-    const riskW = doc.getTextWidth(riskLabel) + 6;
-    doc.roundedRect(PAGE_W - MARGIN - riskW, b.y - 10, riskW, 5, 1, 1, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'bold');
-    doc.text(riskLabel, PAGE_W - MARGIN - riskW + 3, b.y - 6.5);
+    for (const req of reg.requirements) {
+      // Estimate card height
+      const descL = d.splitTextToSize(safeText(clean(req.description)), HALF - 7);
+      const appL  = d.splitTextToSize(
+        req.applicableParadigms.map(p => iLabel(p)).join(', '),
+        HALF - 7
+      );
+      const mitH = req.mitigationSteps.slice(0, 4).reduce(
+        (sum, s) => sum + d.splitTextToSize(safeText(clean(s)), HALF - 7).length * 4 + 2, 0
+      );
+      const leftH  = descL.length * 4.2 + 18;
+      const rightH = appL.length * 4.2 + mitH + 18;
+      const cardH  = Math.max(leftH, rightH) + 6;
 
-    b.muted('Applicable EU regulations based on your paradigm mix and deployment region');
-    b.gap(4);
+      doc.need(cardH + 16);
 
-    const halfW = (CONTENT_W - 6) / 2;
-    const rRightX = MARGIN + halfW + 6;
+      // Requirement title row
+      d.setFillColor(242, 248, 242);
+      d.roundedRect(M, doc.y, CW, 8.5, 1.5, 1.5, 'F');
+      d.setDrawColor(...C.border); d.setLineWidth(0.25);
+      d.roundedRect(M, doc.y, CW, 8.5, 1.5, 1.5, 'S');
 
-    for (const req of regAnalysis.requirements) {
-      b.needSpace(30);
+      // Impact level pill
+      const reqC: RGB = req.impactLevel === 'critical' ? C.crit :
+                        req.impactLevel === 'high'     ? C.high :
+                        req.impactLevel === 'medium'   ? C.med  : C.accent;
+      doc.pill(req.impactLevel, M + 3, doc.y + 5, reqC, C.white, 18);
 
-      const impColor: [number, number, number] =
-        req.impactLevel === 'critical' ? [185, 28, 28] :
-        req.impactLevel === 'high'     ? [194, 65, 12] :
-        req.impactLevel === 'medium'   ? [161, 98, 7] :
-                                          ACCENT;
+      d.setTextColor(...C.fg);
+      d.setFontSize(8.5);
+      d.setFont('helvetica', 'bold');
+      d.text(safeText(req.title), M + 25, doc.y + 6);
+      d.setTextColor(...C.muted);
+      d.setFontSize(7);
+      d.setFont('helvetica', 'normal');
+      d.text(safeText(req.regulation), PW - M - 3, doc.y + 6, { align: 'right' });
+      doc.y += 12;
 
-      doc.setFillColor(...REG_BG);
-      const descLines = doc.splitTextToSize(safeText(req.description), halfW - 4);
-      const citLines = doc.splitTextToSize(safeText(`${req.citation.regulation} - ${req.citation.title}`), halfW - 4);
-      const appliesText = safeText(req.applicableParadigms.map(p => INTERFACE_LABELS[p] ?? p).join(', '));
-      const applLines = doc.splitTextToSize(appliesText, halfW - 4);
-      const stepsH = req.mitigationSteps.reduce((a, s) => a + doc.splitTextToSize(safeText(s), halfW - 6).length * 3.5 + 1.5, 0);
-      const leftH = (descLines.length + citLines.length) * 4 + 14;
-      const rightH = applLines.length * 4 + stepsH + 14;
-      const cardH = Math.max(leftH, rightH) + 4;
+      // Two-column body
+      doc.card(M, doc.y, HALF, cardH, C.card);
+      doc.card(RX, doc.y, HALF, cardH, C.card);
 
-      doc.roundedRect(MARGIN, b.y, CONTENT_W, cardH, 2, 2, 'F');
+      const startY = doc.y;
 
-      // Impact pill
-      doc.setFillColor(...impColor);
-      const impLabel = req.impactLevel.toUpperCase();
-      const impW = doc.getTextWidth(impLabel) + 5;
-      doc.roundedRect(MARGIN + 3, b.y + 3, impW, 4.5, 1, 1, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(6);
-      doc.setFont('helvetica', 'bold');
-      doc.text(impLabel, MARGIN + 5, b.y + 6);
+      // LEFT: description + citation
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('DESCRIPTION', M + 3, startY + 5);
+      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
+      d.text(descL, M + 3, startY + 9.5);
+      const citStartY = startY + 9.5 + descL.length * 4.2 + 4;
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('LEGAL SOURCE', M + 3, citStartY);
+      d.setTextColor(...C.accent); d.setFontSize(7); d.setFont('helvetica', 'normal');
+      const citL = d.splitTextToSize(
+        safeText(req.citation.title + ' (' + req.citation.year + ')'), HALF - 7
+      );
+      d.text(citL, M + 3, citStartY + 4);
 
-      // Regulation + Title
-      doc.setTextColor(...FG);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(safeText(req.regulation), MARGIN + impW + 8, b.y + 6.5);
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(safeText(req.title), MARGIN + impW + 8 + doc.getTextWidth(safeText(req.regulation)) + 3, b.y + 6.5);
-
-      const contentY = b.y + 12;
-
-      // LEFT: Description + Citation
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('DESCRIPTION', MARGIN + 3, contentY);
-      doc.setTextColor(...FG);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'normal');
-      doc.text(descLines, MARGIN + 3, contentY + 4);
-
-      const citY = contentY + descLines.length * 4 + 6;
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CITATION', MARGIN + 3, citY);
-      doc.setTextColor(30, 100, 180);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(citLines, MARGIN + 3, citY + 4);
-
-      // RIGHT: Applies to + Actions
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('APPLIES TO', rRightX, contentY);
-      doc.setTextColor(...FG);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'normal');
-      doc.text(doc.splitTextToSize(appliesText, halfW - 4), rRightX, contentY + 4);
-
-      const actY = contentY + applLines.length * 4 + 6;
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('REQUIRED ACTIONS', rRightX, actY);
-      let ay = actY + 4;
-      for (const step of req.mitigationSteps) {
+      // RIGHT: applies to + actions
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('APPLIES TO', RX + 3, startY + 5);
+      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
+      d.text(appL, RX + 3, startY + 9.5);
+      let ry = startY + 9.5 + appL.length * 4.2 + 4;
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('REQUIRED ACTIONS', RX + 3, ry);
+      ry += 4;
+      for (const step of req.mitigationSteps.slice(0, 4)) {
         const isReq = step.startsWith('REQUIRED');
-        doc.setTextColor(...(isReq ? impColor : FG));
-        doc.setFontSize(7);
-        doc.setFont('helvetica', isReq ? 'bold' : 'normal');
-        const sl = doc.splitTextToSize(safeText(`- ${step.replace(/^REQUIRED: /, '')}`), halfW - 6);
-        doc.text(sl, rRightX, ay);
-        ay += sl.length * 3.5 + 1.5;
+        const sl = d.splitTextToSize('- ' + safeText(clean(step.replace(/^REQUIRED: /, ''))), HALF - 7);
+        d.setTextColor(...(isReq ? C.crit : C.fg));
+        d.setFontSize(7);
+        d.setFont('helvetica', isReq ? 'bold' : 'normal');
+        d.text(sl, RX + 3, ry);
+        ry += sl.length * 4 + 1.5;
       }
 
-      b.y += cardH + 5;
+      doc.y += cardH + 5;
     }
 
-    b.addFooter();
+    doc.rule();
+    doc.caption(safeText(reg.disclaimer));
+    doc.footer();
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONDITIONAL — SUSTAINABILITY REPORT
-  // ═══════════════════════════════════════════════════════════════════════════
-  const sustReport = generateSustainabilityReport(
-    recommendation,
-    answers.valuesRanking,
-    answers.geography ?? undefined
-  );
+  // ════════════════════════════════════════════════════════
+  // SUSTAINABILITY
+  // ════════════════════════════════════════════════════════
+  const sust = generateSustainabilityReport(recommendation, answers.valuesRanking ?? [], answers.geography);
+  if (sust.applicable) {
+    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
+    doc.sectionBand('Sustainability Report');
+    doc.caption('Environmental impact based on your interface mix. Benchmarks from LBNL, IEA & Global E-waste Monitor.');
+    doc.gap(5);
 
-  if (sustReport.applicable) {
-    b.newPage();
-
-    b.h2('Sustainability Report');
-    b.muted('Environmental impact based on your interface mix. Energy benchmarks from LBNL & IEA.');
-    b.gap(4);
-
-    // Three key metric tiles
+    // Three metric tiles
+    const tW = (CW - 8) / 3;
     const metrics = [
-      { label: 'Annual Energy', value: `${sustReport.weightedAnnualEnergy.toFixed(0)} kWh`, sub: 'per user/year' },
-      { label: 'CO2 Emissions', value: `${sustReport.weightedAnnualCO2.toFixed(1)} kg`, sub: '/year' },
-      { label: 'Device Lifecycle', value: `${sustReport.weightedLifecycle.toFixed(1)} yrs`, sub: 'avg' },
+      { label: 'Annual Energy',   val: sust.weightedAnnualEnergy.toFixed(0) + ' kWh', sub: 'per user / year' },
+      { label: 'CO2 Emissions',   val: sust.weightedAnnualCO2.toFixed(1) + ' kg',     sub: 'per year' },
+      { label: 'Device Lifecycle',val: sust.weightedLifecycle.toFixed(1) + ' yrs',    sub: 'weighted average' },
     ];
-    const metricW = CONTENT_W / 3 - 3;
-
-    for (let i = 0; i < metrics.length; i++) {
-      const mx = MARGIN + i * (metricW + 3);
-      doc.setFillColor(...CARD);
-      doc.roundedRect(mx, b.y, metricW, 20, 2, 2, 'F');
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(metrics[i].label, mx + 3, b.y + 6);
-      doc.setTextColor(...ACCENT);
-      doc.setFontSize(13);
-      doc.setFont('helvetica', 'bold');
-      doc.text(metrics[i].value, mx + 3, b.y + 14);
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'normal');
-      doc.text(metrics[i].sub, mx + 3, b.y + 19);
+    for (let i = 0; i < 3; i++) {
+      const tx = M + i * (tW + 4);
+      doc.card(tx, doc.y, tW, 26, C.card);
+      d.setTextColor(...C.muted); d.setFontSize(7); d.setFont('helvetica', 'normal');
+      d.text(metrics[i].label, tx + 3, doc.y + 6);
+      d.setTextColor(...C.accent); d.setFontSize(15); d.setFont('helvetica', 'bold');
+      d.text(metrics[i].val, tx + 3, doc.y + 17);
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'normal');
+      d.text(metrics[i].sub, tx + 3, doc.y + 23);
     }
-    b.y += 26;
+    doc.y += 31;
 
-    // Comparisons side by side
-    const compW = CONTENT_W / 2 - 3;
-    doc.setFillColor(...CARD);
-    doc.roundedRect(MARGIN, b.y, compW, 16, 1.5, 1.5, 'F');
-    doc.setTextColor(...MUTED);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    doc.text('vs Pure Screen Interface', MARGIN + 3, b.y + 5);
-    doc.setTextColor(...FG);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text(safeText(`Energy: ${sustReport.comparisonVsPureScreen.energySavings}`), MARGIN + 3, b.y + 10);
-    doc.text(safeText(`CO2: ${sustReport.comparisonVsPureScreen.co2Savings}`), MARGIN + 3, b.y + 14);
-
-    const compRX = MARGIN + compW + 6;
-    doc.setFillColor(...CARD);
-    doc.roundedRect(compRX, b.y, compW, 16, 1.5, 1.5, 'F');
-    doc.setTextColor(...MUTED);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    doc.text('vs Pure Spatial (VR)', compRX + 3, b.y + 5);
-    doc.setTextColor(...FG);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text(safeText(`Energy: ${sustReport.comparisonVsPureVR.energySavings}`), compRX + 3, b.y + 10);
-    doc.text(safeText(`CO2: ${sustReport.comparisonVsPureVR.co2Savings}`), compRX + 3, b.y + 14);
-
-    b.y += 22;
+    // Comparison cards
+    doc.h3('Compared to Pure Interface Baselines');
+    doc.card(M, doc.y, HALF, 20, C.card);
+    doc.card(RX, doc.y, HALF, 20, C.card);
+    d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+    d.text('VS PURE SCREEN (100% Traditional)', M + 3, doc.y + 5);
+    d.text('VS PURE SPATIAL (100% VR)', RX + 3, doc.y + 5);
+    d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
+    d.text('Energy: ' + safeText(sust.comparisonVsPureScreen.energySavings), M + 3, doc.y + 11);
+    d.text('CO2:    ' + safeText(sust.comparisonVsPureScreen.co2Savings),    M + 3, doc.y + 16);
+    d.text('Energy: ' + safeText(sust.comparisonVsPureVR.energySavings), RX + 3, doc.y + 11);
+    d.text('CO2:    ' + safeText(sust.comparisonVsPureVR.co2Savings),    RX + 3, doc.y + 16);
+    doc.y += 26;
 
     // Green flags
-    if (sustReport.greenFlags.length > 0) {
-      b.divider();
-      b.h3('What You Are Doing Right');
-      for (const flag of sustReport.greenFlags) {
-        b.needSpace(8);
-        doc.setTextColor(...ACCENT);
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`+  ${safeText(flag)}`, MARGIN + 2, b.y);
-        b.y += 5;
+    if (sust.greenFlags.length > 0) {
+      doc.rule();
+      doc.h3('What You Are Doing Right', M, C.accent);
+      for (const f of sust.greenFlags) {
+        doc.need(7);
+        d.setTextColor(...C.accent); d.setFontSize(8); d.setFont('helvetica', 'normal');
+        d.text('+', M + 1, doc.y);
+        doc.body(safeText(clean(f)), M + 7, CW - 8, 4.2);
+        doc.y -= 1;
       }
-      b.gap(4);
+      doc.gap(4);
     }
 
-    // Interface breakdown table
-    b.divider();
-    b.h3('Environmental Impact by Interface Type');
+    // Breakdown table
+    doc.rule();
+    doc.h3('Environmental Impact by Interface Type');
+    doc.need(10);
 
-    doc.setFillColor(...ACCENT);
-    doc.rect(MARGIN, b.y, CONTENT_W, 7, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Interface Type', MARGIN + 2, b.y + 5);
-    doc.text('Share', MARGIN + 70, b.y + 5);
-    doc.text('Energy (kWh)', MARGIN + 90, b.y + 5);
-    doc.text('CO2 (kg)', MARGIN + 120, b.y + 5);
-    doc.text('Lifecycle', MARGIN + 150, b.y + 5);
-    b.y += 9;
+    // Header row
+    d.setFillColor(...C.accent);
+    d.rect(M, doc.y, CW, 8, 'F');
+    d.setTextColor(...C.white); d.setFontSize(7); d.setFont('helvetica', 'bold');
+    const cols = [M + 2, M + 66, M + 88, M + 112, M + 144];
+    ['Interface Type', 'Share', 'Energy (kWh)', 'CO2 (kg)', 'Lifecycle'].forEach((h, i) => {
+      d.text(h, cols[i], doc.y + 5.5);
+    });
+    doc.y += 10;
 
-    for (const [idx, p] of sustReport.paradigmBreakdown.entries()) {
-      b.needSpace(8);
-      if (idx % 2 === 0) {
-        doc.setFillColor(...CARD);
-        doc.rect(MARGIN, b.y - 2, CONTENT_W, 7, 'F');
-      }
-      doc.setTextColor(...FG);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'normal');
-      const tn = INTERFACE_LABELS[p.paradigm] ?? p.paradigm.replace(/_/g, ' ');
-      doc.text(safeText(tn), MARGIN + 2, b.y + 3);
-      doc.text(`${Math.round(p.percentage)}%`, MARGIN + 70, b.y + 3);
-      doc.text(`${p.annualEnergyKwh}`, MARGIN + 90, b.y + 3);
-      doc.text(`${p.annualCO2Kg}`, MARGIN + 120, b.y + 3);
-      doc.text(`${p.hardwareLifecycle} yrs`, MARGIN + 150, b.y + 3);
-      b.y += 7;
+    for (let ri = 0; ri < sust.paradigmBreakdown.length; ri++) {
+      const p = sust.paradigmBreakdown[ri];
+      doc.need(8);
+      if (ri % 2 === 0) { d.setFillColor(...C.card); d.rect(M, doc.y - 1, CW, 7.5, 'F'); }
+      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
+      d.text(iLabel(p.paradigm), cols[0], doc.y + 4.5);
+      d.text(Math.round(p.percentage) + '%', cols[1], doc.y + 4.5);
+      d.text(String(p.annualEnergyKwh), cols[2], doc.y + 4.5);
+      d.text(String(p.annualCO2Kg), cols[3], doc.y + 4.5);
+      d.text(p.hardwareLifecycle + ' yrs', cols[4], doc.y + 4.5);
+      doc.y += 7.5;
     }
 
-    b.addFooter();
+    doc.gap(5);
+    doc.caption(safeText(sust.disclaimer));
+    doc.footer();
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONDITIONAL — RESEARCH (only if user visited the tab → cache exists)
-  // ═══════════════════════════════════════════════════════════════════════════
-  const cachedPapers = getCachedResearchPapers(
-    recommendation.primary.paradigm,
-    answers.userDemographics
-  );
-  const cachedCases = getCachedCaseStudies(
-    recommendation.primary.paradigm,
-    answers.userDemographics
-  );
+  // ════════════════════════════════════════════════════════
+  // RED FLAGS (conditional)
+  // ════════════════════════════════════════════════════════
+  const flags = detectRedFlags(answers, recommendation);
+  if (flags.hasFlags) {
+    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
+    doc.sectionBand('Red Flags & Critical Considerations');
 
-  const hasPapers = cachedPapers && cachedPapers.length > 0;
-  const hasCases = cachedCases && cachedCases.length > 0;
+    const sumMsg = flags.criticalCount > 0
+      ? flags.criticalCount + ' critical issue(s) require immediate attention before implementation'
+      : flags.totalFlags + ' issue(s) detected that should be addressed';
+    doc.caption(sumMsg, M, CW, C.crit);
+    doc.gap(5);
 
-  if (hasPapers || hasCases) {
-    b.newPage();
+    for (const flag of flags.flags) {
+      const sevColor: RGB = flag.severity === 'critical' ? C.crit :
+                            flag.severity === 'high'     ? C.high : C.med;
+      const sevBg: RGB    = flag.severity === 'critical' ? C.redBg :
+                            flag.severity === 'high'     ? C.againstBg : [255, 253, 235] as RGB;
 
-    b.h2('Supporting Research & Case Studies', [109, 40, 217]); // violet-700
-    b.muted('AI-generated suggestions based on your paradigm context. Verify citations independently.');
-    b.gap(4);
+      // Estimate heights
+      const issL = d.splitTextToSize(safeText(clean(flag.description)), HALF - 8);
+      const impL = d.splitTextToSize(safeText(clean(flag.impact)), HALF - 8);
+      const affText = flag.affectedParadigms.map(p => iLabel(p)).join(', ');
+      const affL = d.splitTextToSize(safeText(affText), HALF - 8);
+      const mitH = flag.mitigation.reduce(
+        (sum, m) => sum + d.splitTextToSize(safeText(clean(m.replace(/^REQUIRED: /, ''))), HALF - 8).length * 4 + 2, 0
+      );
+      const leftH  = (issL.length + impL.length) * 4.2 + 26;
+      const rightH = affL.length * 4.2 + mitH + 26;
+      const cardH  = Math.max(leftH, rightH) + 4;
 
-    // ── Papers ──
-    if (hasPapers && cachedPapers) {
-      b.h3('Academic Papers');
-      b.gap(2);
+      doc.need(cardH + 10);
 
-      for (const paper of cachedPapers) {
-        const titleLines = doc.splitTextToSize(safeText(paper.title), CONTENT_W - 10);
-        const abstractLines = doc.splitTextToSize(safeText(paper.abstract), CONTENT_W - 10);
-        const relevanceLines = doc.splitTextToSize(safeText(paper.relevance), CONTENT_W - 10);
-        const cardH = (titleLines.length + abstractLines.length + relevanceLines.length) * 4 + 20;
+      // Card bg + left accent line
+      d.setFillColor(...sevBg);
+      d.roundedRect(M, doc.y, CW, cardH, 2, 2, 'F');
+      d.setFillColor(...sevColor);
+      d.roundedRect(M, doc.y, 3, cardH, 1, 1, 'F');
 
-        b.needSpace(cardH + 4);
-
-        doc.setFillColor(...RESEARCH_BG);
-        doc.roundedRect(MARGIN, b.y, CONTENT_W, cardH, 2, 2, 'F');
-
-        // Title
-        doc.setTextColor(...FG);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.text(titleLines, MARGIN + 4, b.y + 5);
-
-        // Authors + year + venue
-        const metaY = b.y + 5 + titleLines.length * 4 + 1;
-        doc.setTextColor(...MUTED);
-        doc.setFontSize(6.5);
-        doc.setFont('helvetica', 'normal');
-        doc.text(safeText(`${paper.authors} | ${paper.year} | ${paper.venue}`), MARGIN + 4, metaY);
-
-        // Abstract
-        const absY = metaY + 5;
-        doc.setTextColor(...FG);
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        doc.text(abstractLines, MARGIN + 4, absY);
-
-        // Relevance
-        const relY = absY + abstractLines.length * 4 + 2;
-        doc.setTextColor(109, 40, 217); // violet
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        doc.text(doc.splitTextToSize(safeText(`-> ${paper.relevance}`), CONTENT_W - 10), MARGIN + 4, relY);
-
-        b.y += cardH + 4;
-      }
-
-      b.gap(4);
-    }
-
-    // ── Case Studies ──
-    if (hasCases && cachedCases) {
-      b.divider();
-      b.h3('Real-World Case Studies');
-      b.gap(2);
-
-      const caseHalfW = (CONTENT_W - 6) / 2;
-      const caseRightX = MARGIN + caseHalfW + 6;
-
-      for (const cs of cachedCases) {
-        const isSuccess = cs.outcome === 'success';
-        const outcomeColor: [number, number, number] = isSuccess ? ACCENT : [185, 28, 28];
-        const outcomeBg: [number, number, number] = isSuccess ? FOR_BG : FLAG_BG;
-
-        // Estimate height
-        const descLines = doc.splitTextToSize(safeText(cs.description), caseHalfW - 6);
-        const lessonLines = doc.splitTextToSize(safeText(cs.lessonsLearned), caseHalfW - 6);
-        const factorsH = cs.keyFactors.reduce((a, f) => a + doc.splitTextToSize(safeText(f), caseHalfW - 8).length * 3.5 + 1.5, 0);
-        const leftH = (descLines.length + lessonLines.length) * 4 + 16;
-        const rightH = factorsH + 10;
-        const cardH = Math.max(leftH, rightH) + 8;
-
-        b.needSpace(cardH + 4);
-
-        // Card bg
-        doc.setFillColor(...outcomeBg);
-        doc.roundedRect(MARGIN, b.y, CONTENT_W, cardH, 2, 2, 'F');
-
-        // Outcome pill
-        doc.setFillColor(...outcomeColor);
-        const outcomeLabel = isSuccess ? 'SUCCESS' : 'FAILURE';
-        const oPillW = doc.getTextWidth(outcomeLabel) + 5;
-        doc.roundedRect(MARGIN + 3, b.y + 3, oPillW, 4.5, 1, 1, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(6);
-        doc.setFont('helvetica', 'bold');
-        doc.text(outcomeLabel, MARGIN + 5, b.y + 6);
-
-        // Name + company + year
-        doc.setTextColor(...FG);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text(safeText(cs.name), MARGIN + oPillW + 8, b.y + 6.5);
-        doc.setTextColor(...MUTED);
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        doc.text(safeText(`${cs.company} | ${cs.year}`), MARGIN + 3, b.y + 12);
-
-        const contentY = b.y + 17;
-
-        // LEFT: Description + Lesson
-        doc.setTextColor(...MUTED);
-        doc.setFontSize(6.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('DESCRIPTION', MARGIN + 3, contentY);
-        doc.setTextColor(...FG);
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'normal');
-        doc.text(descLines, MARGIN + 3, contentY + 4);
-
-        const lessonY = contentY + descLines.length * 4 + 6;
-        doc.setTextColor(...MUTED);
-        doc.setFontSize(6.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('LESSON LEARNED', MARGIN + 3, lessonY);
-        doc.setTextColor(...outcomeColor);
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        doc.text(lessonLines, MARGIN + 3, lessonY + 4);
-
-        // RIGHT: Key Factors
-        doc.setTextColor(...MUTED);
-        doc.setFontSize(6.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('KEY FACTORS', caseRightX, contentY);
-        let fy = contentY + 4;
-        for (const factor of cs.keyFactors) {
-          doc.setTextColor(...FG);
-          doc.setFontSize(7);
-          doc.setFont('helvetica', 'normal');
-          const fLines = doc.splitTextToSize(safeText(`- ${factor}`), caseHalfW - 8);
-          doc.text(fLines, caseRightX, fy);
-          fy += fLines.length * 3.5 + 1.5;
-        }
-
-        b.y += cardH + 4;
-      }
-    }
-
-    b.addFooter();
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONDITIONAL — RED FLAGS
-  // ═══════════════════════════════════════════════════════════════════════════
-  const flagsReport = detectRedFlags(answers, recommendation);
-
-  if (flagsReport.hasFlags) {
-    b.newPage();
-
-    b.h2('Red Flags & Critical Considerations', [185, 28, 28]);
-    b.muted(
-      flagsReport.criticalCount > 0
-        ? `${flagsReport.criticalCount} critical issue(s) require immediate attention before implementation`
-        : `${flagsReport.totalFlags} issue(s) detected that should be addressed`
-    );
-    b.gap(4);
-
-    for (const flag of flagsReport.flags) {
-      const sevColor: [number, number, number] =
-        flag.severity === 'critical' ? [185, 28, 28] :
-        flag.severity === 'high'     ? [194, 65, 12] :
-                                       [161, 98, 7];
-      const sevBg: [number, number, number] =
-        flag.severity === 'critical' ? FLAG_BG :
-        flag.severity === 'high'     ? [255, 247, 237] :
-                                       [255, 251, 235];
-
-      const halfW = (CONTENT_W - 6) / 2;
-      const descLines = doc.splitTextToSize(safeText(flag.description), halfW - 4).length;
-      const impactLines = doc.splitTextToSize(safeText(flag.impact), halfW - 4).length;
-      const affectedText = safeText(flag.affectedParadigms.map(p => INTERFACE_LABELS[p] ?? p.replace(/_/g, ' ')).join(', '));
-      const affLines = doc.splitTextToSize(affectedText, halfW - 4).length;
-      const mitigH = flag.mitigation.reduce((a, s) => a + doc.splitTextToSize(safeText(s), halfW - 6).length * 3.5 + 1.5, 0);
-      const leftH = (descLines + impactLines) * 4 + 14;
-      const rightH2 = affLines * 4 + mitigH + 14;
-      const cardH = Math.max(leftH, rightH2) + 8;
-
-      b.needSpace(cardH + 5);
-
-      // Card background
-      doc.setFillColor(...sevBg);
-      doc.roundedRect(MARGIN, b.y, CONTENT_W, cardH, 2, 2, 'F');
-
-      // Color lateral line
-      doc.setFillColor(...sevColor);
-      doc.rect(MARGIN, b.y, 3, cardH, 'F');
-
-      // Severity badge
-      doc.setFillColor(...sevColor);
-      doc.roundedRect(MARGIN + 6, b.y + 3, 22, 5, 1, 1, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(6);
-      doc.setFont('helvetica', 'bold');
-      doc.text(flag.severity.toUpperCase(), MARGIN + 7, b.y + 6.5);
-
-      // Category badge
-      doc.setFillColor(...CARD);
-      doc.roundedRect(MARGIN + 30, b.y + 3, 28, 5, 1, 1, 'F');
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6);
-      doc.text(safeText(flag.category).toUpperCase(), MARGIN + 31, b.y + 6.5);
+      // Severity + category badges
+      doc.pill(flag.severity, M + 6, doc.y + 6, sevColor, C.white, 20);
+      d.setFillColor(230, 230, 230);
+      d.roundedRect(M + 28, doc.y + 2.5, 36, 5.5, 1.5, 1.5, 'F');
+      d.setTextColor(...C.muted); d.setFontSize(5.5); d.setFont('helvetica', 'bold');
+      d.text(safeText(flag.category).toUpperCase(), M + 29, doc.y + 6.5);
 
       // Title
-      doc.setTextColor(...sevColor);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(safeText(flag.title), MARGIN + 6, b.y + 14);
+      d.setTextColor(...sevColor); d.setFontSize(9); d.setFont('helvetica', 'bold');
+      const titleL = d.splitTextToSize(safeText(clean(flag.title)), CW - 80);
+      d.text(titleL, M + 68, doc.y + 6.5);
 
-      const contentY = b.y + 19;
-      const fRightX = MARGIN + CONTENT_W / 2 + 3;
+      const cy = doc.y + 14;
 
       // LEFT: Issue + Impact
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('ISSUE', MARGIN + 6, contentY);
-      doc.setTextColor(...FG);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'normal');
-      const issueLines = doc.splitTextToSize(safeText(flag.description), halfW - 4);
-      doc.text(issueLines, MARGIN + 6, contentY + 4);
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('ISSUE', M + 6, cy);
+      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
+      d.text(issL, M + 6, cy + 4);
 
-      const impactY = contentY + issueLines.length * 4 + 6;
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('IMPACT IF IGNORED', MARGIN + 6, impactY);
-      doc.setTextColor(...FG);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'normal');
-      const impLines = doc.splitTextToSize(safeText(flag.impact), halfW - 4);
-      doc.text(impLines, MARGIN + 6, impactY + 4);
+      const impY = cy + issL.length * 4.2 + 7;
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('IMPACT IF IGNORED', M + 6, impY);
+      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
+      d.text(impL, M + 6, impY + 4);
 
-      // RIGHT: Affects + Mitigations
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('AFFECTS', fRightX, contentY);
-      doc.setTextColor(...FG);
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'normal');
-      const affLines2 = doc.splitTextToSize(affectedText, halfW - 4);
-      doc.text(affLines2, fRightX, contentY + 4);
-
-      const mitigY = contentY + affLines2.length * 4 + 6;
-      doc.setTextColor(...MUTED);
-      doc.setFontSize(6.5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('REQUIRED MITIGATIONS', fRightX, mitigY);
-      let my = mitigY + 4;
-      for (const step of flag.mitigation) {
-        const isReq = step.startsWith('REQUIRED');
-        doc.setTextColor(...(isReq ? sevColor : FG));
-        doc.setFontSize(7);
-        doc.setFont('helvetica', isReq ? 'bold' : 'normal');
-        const sl = doc.splitTextToSize(safeText(`- ${step.replace(/^REQUIRED: /, '')}`), halfW - 6);
-        doc.text(sl, fRightX, my);
-        my += sl.length * 3.5 + 1.5;
+      // Citation if exists
+      if (flag.citation) {
+        const evY = impY + impL.length * 4.2 + 7;
+        d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+        d.text('RESEARCH EVIDENCE', M + 6, evY);
+        d.setTextColor(...C.accent); d.setFontSize(7); d.setFont('helvetica', 'normal');
+        const evL = d.splitTextToSize(
+          safeText(flag.citation.title + ' (' + flag.citation.year + ')'), HALF - 10
+        );
+        d.text(evL, M + 6, evY + 4);
       }
 
-      b.y += cardH + 5;
+      // RIGHT: Affects + Mitigations
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('AFFECTS', RX + 3, cy);
+      d.setTextColor(...C.fg); d.setFontSize(7.5); d.setFont('helvetica', 'normal');
+      d.text(affL, RX + 3, cy + 4);
+
+      let my = cy + affL.length * 4.2 + 7;
+      d.setTextColor(...C.muted); d.setFontSize(6.5); d.setFont('helvetica', 'bold');
+      d.text('REQUIRED MITIGATIONS', RX + 3, my);
+      my += 4;
+      for (const step of flag.mitigation) {
+        const isReq = step.startsWith('REQUIRED');
+        const sl = d.splitTextToSize(
+          '- ' + safeText(clean(step.replace(/^REQUIRED: /, ''))), HALF - 8
+        );
+        d.setTextColor(...(isReq ? sevColor : C.fg));
+        d.setFontSize(7);
+        d.setFont('helvetica', isReq ? 'bold' : 'normal');
+        d.text(sl, RX + 3, my);
+        my += sl.length * 4 + 1.5;
+      }
+
+      doc.y += cardH + 6;
     }
 
-    b.addFooter();
+    doc.footer();
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SAVE
-  // ═══════════════════════════════════════════════════════════════════════════
-  const fileName = answers.projectName
-    ? `NEXUS-Report-${answers.projectName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`
-    : `NEXUS-Report-${new Date().toISOString().split('T')[0]}.pdf`;
 
-  doc.save(fileName);
+  // ════════════════════════════════════════════════════════
+  // RESEARCH (from localStorage cache — only if user visited the tab)
+  // ════════════════════════════════════════════════════════
+
+  // Read research data from localStorage cache (populated when user visits Research tab)
+  const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+  const primaryParadigm = recommendation.primary.paradigm;
+  const demo = (answers.userDemographics?.trim() || 'general').toLowerCase().replace(/\s+/g, '_');
+  const rKey = ('nexus_research_' + primaryParadigm + '_' + demo).toLowerCase().replace(/\s+/g, '_');
+  const cKey = ('nexus_case_studies_' + primaryParadigm + '_' + demo).toLowerCase().replace(/\s+/g, '_');
+
+  function readResearchCache(key: string): unknown | null {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { timestamp: number };
+      if (Date.now() - parsed.timestamp > CACHE_TTL) { localStorage.removeItem(key); return null; }
+      return parsed;
+    } catch { return null; }
+  }
+
+  const rawPapers = readResearchCache(rKey) as { papers: ResearchPaper[] } | null;
+  const rawCases  = readResearchCache(cKey) as { cases: CaseStudy[] } | null;
+  const papers    = rawPapers?.papers ?? [];
+  const cases     = rawCases?.cases   ?? [];
+
+  if (papers.length > 0 || cases.length > 0) {
+    d.addPage(); doc.pageNum++; doc.y = M; doc.pageStrip();
+    doc.sectionBand('Research & Case Studies');
+
+    // ── Academic Papers ───────────────────────────────────────────────────
+    if (papers.length > 0) {
+      doc.h2('Supporting Academic Research');
+      doc.caption(
+        'Papers curated for ' + iLabel(recommendation.primary.paradigm) +
+        (answers.userDemographics ? ' · ' + answers.userDemographics : '')
+      );
+      doc.gap(4);
+
+      for (const paper of papers.slice(0, 6)) {
+        // Estimate card height
+        const titleL   = d.splitTextToSize(safeText(paper.title), CW - 8);
+        const abstractL= d.splitTextToSize(safeText(paper.abstract), CW - 8);
+        const relL     = d.splitTextToSize(safeText(paper.relevance), CW - 8);
+        const cardH    = titleL.length * 4.5 + abstractL.length * 4 + relL.length * 3.8 + 18;
+
+        doc.need(cardH + 4);
+        doc.card(M, doc.y, CW, cardH, C.card);
+
+        // Title
+        d.setTextColor(...C.fg);
+        d.setFontSize(8.5);
+        d.setFont('helvetica', 'bold');
+        d.text(titleL, M + 4, doc.y + 6);
+
+        // Authors · Year · Venue
+        const meta = safeText(paper.authors) + '  ·  ' + paper.year + '  ·  ' + safeText(paper.venue);
+        d.setTextColor(...C.muted);
+        d.setFontSize(6.5);
+        d.setFont('helvetica', 'normal');
+        d.text(safeText(meta), M + 4, doc.y + 6 + titleL.length * 4.5 + 1);
+
+        // Abstract
+        d.setTextColor(...C.fg);
+        d.setFontSize(7.5);
+        d.text(abstractL, M + 4, doc.y + 6 + titleL.length * 4.5 + 5.5);
+
+        // Relevance tag
+        const relY = doc.y + 6 + titleL.length * 4.5 + 5.5 + abstractL.length * 4 + 3;
+        d.setFillColor(...C.forBg);
+        d.roundedRect(M + 4, relY - 3, CW - 8, relL.length * 3.8 + 5, 1.5, 1.5, 'F');
+        d.setTextColor(...C.accent);
+        d.setFontSize(6.5);
+        d.setFont('helvetica', 'bold');
+        d.text('WHY RELEVANT', M + 6, relY);
+        d.setTextColor(...C.fg);
+        d.setFontSize(7);
+        d.setFont('helvetica', 'normal');
+        d.text(relL, M + 6, relY + 4);
+
+        doc.y += cardH + 4;
+      }
+
+      doc.gap(4);
+    }
+
+    // ── Case Studies ──────────────────────────────────────────────────────
+    if (cases.length > 0) {
+      doc.need(16);
+      doc.rule();
+      doc.h2('Real-World Case Studies');
+      doc.gap(3);
+
+      // Separate successes and failures
+      const successes = cases.filter(c => c.outcome === 'success');
+      const failures  = cases.filter(c => c.outcome === 'failure');
+
+      for (const [group, groupLabel, bg, headerColor] of [
+        [successes, 'Successes', C.forBg,    C.accent],
+        [failures,  'Failures',  C.againstBg, C.high],
+      ] as Array<[CaseStudy[], string, RGB, RGB]>) {
+        if (group.length === 0) continue;
+
+        doc.need(10);
+        doc.h3(groupLabel, M, headerColor);
+
+        for (const cs of group) {
+          const descL    = d.splitTextToSize(safeText(cs.description), HALF - 8);
+          const lessonL  = d.splitTextToSize(safeText(cs.lessonsLearned), HALF - 8);
+          const factorsH = cs.keyFactors.slice(0, 4).reduce(
+            (sum, f) => sum + d.splitTextToSize(safeText(f), HALF - 8).length * 3.8 + 1.5, 0
+          );
+          const leftH  = descL.length * 4.2 + lessonL.length * 4 + 22;
+          const rightH = factorsH + 18;
+          const cardH  = Math.max(leftH, rightH) + 4;
+
+          doc.need(cardH + 6);
+          doc.card(M, doc.y, CW, cardH, bg);
+
+          // Outcome pill + company + year
+          const outC: RGB = cs.outcome === 'success' ? C.accent : C.crit;
+          doc.pill(cs.outcome, M + 4, doc.y + 6, outC, C.white, 20);
+          d.setTextColor(...C.fg);
+          d.setFontSize(8.5);
+          d.setFont('helvetica', 'bold');
+          d.text(safeText(cs.name), M + 28, doc.y + 6.5);
+          d.setTextColor(...C.muted);
+          d.setFontSize(7);
+          d.setFont('helvetica', 'normal');
+          d.text(safeText(cs.company) + '  ' + cs.year, PW - M - 4, doc.y + 6.5, { align: 'right' });
+
+          const cy2 = doc.y + 13;
+
+          // LEFT: description + lesson learned
+          d.setTextColor(...C.muted);
+          d.setFontSize(6.5);
+          d.setFont('helvetica', 'bold');
+          d.text('DESCRIPTION', M + 4, cy2);
+          d.setTextColor(...C.fg);
+          d.setFontSize(7.5);
+          d.setFont('helvetica', 'normal');
+          d.text(descL, M + 4, cy2 + 4);
+
+          const lessY = cy2 + descL.length * 4.2 + 7;
+          d.setTextColor(...C.muted);
+          d.setFontSize(6.5);
+          d.setFont('helvetica', 'bold');
+          d.text('LESSON LEARNED', M + 4, lessY);
+          d.setTextColor(...C.fg);
+          d.setFontSize(7.5);
+          d.setFont('helvetica', 'normal');
+          d.text(lessonL, M + 4, lessY + 4);
+
+          // RIGHT: key factors
+          d.setTextColor(...C.muted);
+          d.setFontSize(6.5);
+          d.setFont('helvetica', 'bold');
+          d.text('KEY FACTORS', RX + 3, cy2);
+          let fy2 = cy2 + 4;
+          for (const factor of cs.keyFactors.slice(0, 4)) {
+            const fl = d.splitTextToSize('- ' + safeText(factor), HALF - 8);
+            d.setTextColor(...C.fg);
+            d.setFontSize(7);
+            d.setFont('helvetica', 'normal');
+            d.text(fl, RX + 3, fy2);
+            fy2 += fl.length * 3.8 + 1.5;
+          }
+
+          doc.y += cardH + 5;
+        }
+        doc.gap(3);
+      }
+    }
+
+    // Note if cache was empty
+    doc.footer();
+  } else {
+    // Research tab not visited — add a note on the last page
+    // (no new page needed, just a footer note handled naturally)
+  }
+
+  // ── Save ──────────────────────────────────────────────────────────────
+  const fname = answers.projectName
+    ? 'NEXUS-Report-' + answers.projectName.replace(/[^a-zA-Z0-9]/g, '-') + '.pdf'
+    : 'NEXUS-Report-' + new Date().toISOString().split('T')[0] + '.pdf';
+
+  d.save(fname);
 }
