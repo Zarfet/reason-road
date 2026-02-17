@@ -1,118 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* NEXUS Design System - Academic/Professional Aesthetic */
+/* NEXUS Design System — Modern Eco-Executive / Swiss Style */
 
 @layer base {
   :root {
-    /* Core Colors - Slate/Charcoal Base */
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    /* Core Colors — Slate-based, never pure black */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
 
     /* Cards & Surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 215 25% 15%;
 
-    /* Primary - Deep Slate */
-    --primary: 0 0% 10%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary — Slate 900 */
+    --primary: 215 25% 15%;
+    --primary-foreground: 210 20% 98%;
 
-    /* Secondary - Warm Gray */
-    --secondary: 30 10% 95%;
-    --secondary-foreground: 0 0% 15%;
+    /* Secondary — Slate 100 */
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 20% 25%;
 
-    /* Muted */
-    --muted: 30 10% 95%;
-    --muted-foreground: 0 0% 35%;
+    /* Muted — Slate 100/500 */
+    --muted: 210 18% 96%;
+    --muted-foreground: 215 14% 46%;
 
-    /* Accent - Emerald Success (darker for contrast) */
+    /* Accent — Emerald 600 (sparingly) */
     --accent: 160 84% 29%;
     --accent-foreground: 0 0% 100%;
 
     /* Destructive */
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders & Inputs */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    /* Borders & Inputs — Slate 200 */
+    --border: 214 20% 89%;
+    --input: 214 20% 89%;
     --ring: 160 84% 39%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
     /* Custom NEXUS tokens */
     --nexus-emerald: 160 84% 39%;
-    --nexus-emerald-light: 160 60% 95%;
-    --nexus-slate: 0 0% 10%;
-    --nexus-warm-gray: 30 10% 96%;
+    --nexus-emerald-light: 152 76% 96%;
+    --nexus-slate: 215 25% 15%;
+    --nexus-warm-gray: 210 20% 97%;
     --nexus-gold: 45 93% 47%;
-    --nexus-gold-light: 45 90% 95%;
+    --nexus-gold-light: 48 96% 96%;
 
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(160 84% 39%), hsl(180 70% 35%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(30 10% 98%));
-    --gradient-dark: linear-gradient(135deg, hsl(0 0% 10%), hsl(0 0% 18%));
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    --shadow-emerald: 0 10px 30px -10px hsla(160, 84%, 39%, 0.3);
-    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+    /* Shadows — very soft */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 2px 8px -2px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 4px 16px -4px rgba(0, 0, 0, 0.08);
+    --shadow-xl: 0 8px 24px -6px rgba(0, 0, 0, 0.1);
+    --shadow-emerald: 0 4px 14px -4px hsla(160, 84%, 39%, 0.15);
+    --shadow-card: 0 2px 10px -4px rgba(0, 0, 0, 0.05);
 
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 25%;
-    --sidebar-primary: 0 0% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 30 10% 95%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 0 0% 90%;
+    --sidebar-background: 210 20% 98%;
+    --sidebar-foreground: 215 14% 35%;
+    --sidebar-primary: 215 25% 15%;
+    --sidebar-primary-foreground: 210 20% 98%;
+    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent-foreground: 215 25% 15%;
+    --sidebar-border: 214 20% 89%;
     --sidebar-ring: 160 84% 39%;
   }
 
   .dark {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 95%;
+    --background: 220 15% 8%;
+    --foreground: 210 20% 95%;
 
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 95%;
+    --card: 220 15% 11%;
+    --card-foreground: 210 20% 95%;
 
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 220 15% 11%;
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 0 0% 95%;
-    --primary-foreground: 0 0% 10%;
+    --primary: 210 20% 95%;
+    --primary-foreground: 220 15% 8%;
 
-    --secondary: 0 0% 18%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 220 12% 16%;
+    --secondary-foreground: 210 20% 95%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 220 12% 16%;
+    --muted-foreground: 215 14% 55%;
 
-    --accent: 160 84% 45%;
+    --accent: 160 84% 40%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 160 84% 45%;
+    --border: 220 12% 18%;
+    --input: 220 12% 18%;
+    --ring: 160 84% 40%;
 
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 160 84% 45%;
+    --sidebar-background: 220 15% 8%;
+    --sidebar-foreground: 215 14% 75%;
+    --sidebar-primary: 160 84% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 18%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 160 84% 45%;
+    --sidebar-accent: 220 12% 16%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 220 12% 18%;
+    --sidebar-ring: 160 84% 40%;
   }
 }
 
@@ -126,21 +123,29 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Typography Scale */
+  /* Typography Scale — tracking-tight on headings, relaxed body */
   h1 {
     @apply text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl;
+    color: hsl(var(--foreground));
   }
 
   h2 {
     @apply text-3xl font-semibold tracking-tight md:text-4xl;
+    color: hsl(var(--foreground));
   }
 
   h3 {
     @apply text-2xl font-semibold tracking-tight;
+    color: hsl(var(--foreground));
   }
 
   h4 {
-    @apply text-xl font-medium;
+    @apply text-xl font-medium tracking-tight;
+    color: hsl(var(--foreground));
+  }
+
+  p, li, span {
+    @apply leading-relaxed;
   }
 }
 
@@ -151,16 +156,16 @@
   }
 
   .nexus-card {
-    @apply rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-200;
+    @apply rounded-2xl border border-border bg-card p-6 md:p-8 transition-all duration-200;
     box-shadow: var(--shadow-card);
   }
 
   .nexus-card-hover {
-    @apply nexus-card hover:shadow-lg hover:border-accent/30;
+    @apply nexus-card hover:shadow-lg hover:border-accent/20;
   }
 
   .nexus-badge {
-    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide;
   }
 
   .nexus-badge-success {
@@ -181,12 +186,12 @@
   }
 
   .question-card-hover {
-    @apply question-card hover:border-accent/50 hover:shadow-md;
+    @apply question-card hover:border-accent/40 hover:shadow-md;
   }
 
   /* Progress Bar */
   .nexus-progress-track {
-    @apply h-2 w-full rounded-full bg-secondary;
+    @apply h-1.5 w-full rounded-full bg-secondary;
   }
 
   .nexus-progress-fill {
@@ -195,7 +200,7 @@
 
   /* Draggable Value Cards */
   .value-card {
-    @apply flex items-center gap-4 rounded-lg border-2 border-border bg-card p-4 transition-all duration-200;
+    @apply flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 transition-all duration-200;
     box-shadow: var(--shadow-sm);
   }
 
@@ -205,16 +210,17 @@
   }
 
   .value-card-rank {
-    @apply flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold;
+    @apply flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-bold;
   }
 
   /* Results Section */
   .results-primary {
-    @apply rounded-2xl border-2 border-accent bg-gradient-to-br from-nexus-emerald-light to-white p-8;
+    @apply rounded-2xl border border-border bg-card p-8;
+    box-shadow: var(--shadow-md);
   }
 
   .results-secondary {
-    @apply rounded-xl border border-border bg-card p-6;
+    @apply rounded-2xl border border-border bg-card p-6;
   }
 
   /* Animations */
@@ -262,32 +268,16 @@
 
 /* Keyframes */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }

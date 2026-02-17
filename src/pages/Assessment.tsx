@@ -64,20 +64,20 @@ export default function Assessment() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
                 <Target className="h-4 w-4 text-accent-foreground" />
               </div>
-              <span className="font-semibold text-lg text-foreground">NEXUS</span>
+              <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
             </div>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleCancel}
-              className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground border-accent"
+              className="gap-2 rounded-xl"
             >
               <X className="h-4 w-4" />
               Cancel

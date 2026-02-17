@@ -1,20 +1,6 @@
 /**
- * NEXUS - Navigation Bar Component
- * 
- * Purpose: Main navigation header shown across the application
- * 
- * Features:
- * - NEXUS logo/brand link to home
- * - Conditional rendering based on auth state:
- *   - Not logged in: Sign In / Sign Up buttons
- *   - Logged in: User menu dropdown with Profile and Logout
- * 
- * Behavior:
- * - Subscribes to auth state changes
- * - Shows loading state briefly while checking auth
- * - Dropdown menu for authenticated users
- * 
- * Dependencies: react-router-dom, shadcn/ui, useAuth hook
+ * NEXUS - Navigation Bar — Swiss Style / Clean SaaS
+ * White/transparent header, slate-900 logo, emerald icon, subtle nav links
  */
 
 import { Link, useNavigate } from 'react-router-dom';
@@ -31,17 +17,11 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-/**
- * Navbar component with auth-aware rendering
- */
 export function Navbar() {
   const navigate = useNavigate();
   const { user, signOut, loading } = useAuth();
   const { toast } = useToast();
 
-  /**
-   * Handle user logout
-   */
   const handleLogout = async () => {
     const { error } = await signOut();
     
@@ -63,36 +43,34 @@ export function Navbar() {
   return (
     <header className="nexus-container py-6">
       <div className="flex items-center justify-between">
-        {/* Logo */}
+        {/* Logo — dark grey text, emerald icon */}
         <Link 
           to="/" 
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
         >
-          <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
+          <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
             <Target className="h-4 w-4 text-accent-foreground" />
           </div>
-          <span className="font-semibold text-lg text-foreground">NEXUS</span>
+          <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
         </Link>
 
         {/* Auth Section */}
         <div className="flex items-center gap-3">
           {loading ? (
-            // Loading state - show placeholder
-            <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+            <div className="h-8 w-8 rounded-full bg-secondary animate-pulse" />
           ) : user ? (
-            // Logged in: Show user menu dropdown
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="group flex items-center gap-2 px-2 hover:text-accent-foreground"
+                  className="group flex items-center gap-2 px-2 hover:bg-secondary"
                 >
                   <Avatar className="h-8 w-8 bg-accent/10">
                     <AvatarFallback className="text-sm font-medium text-accent">
                       {user.email?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline text-sm text-muted-foreground group-hover:text-accent-foreground">
+                  <span className="hidden sm:inline text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                     {user.email}
                   </span>
                 </Button>
@@ -110,18 +88,18 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            // Not logged in: Show auth buttons
             <>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/auth')}
+                className="text-muted-foreground hover:text-foreground"
               >
                 Sign In
               </Button>
               <Button
                 size="sm"
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl"
                 onClick={() => navigate('/auth')}
               >
                 Sign Up

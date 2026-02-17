@@ -1,8 +1,6 @@
 /**
- * Red Flags Card
- * 
- * Shows critical warnings, contradictions, and research citations.
- * Only renders when flags are detected.
+ * Red Flags Card — Clean report style
+ * No colored backgrounds, pill badges for severity, generous spacing
  */
 
 import { motion } from 'framer-motion';
@@ -20,45 +18,49 @@ interface RedFlagsCardProps {
 export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
   const report = detectRedFlags(answers, recommendation);
   
-  if (!report.hasFlags) return null; // No flags = no card
+  if (!report.hasFlags) return null;
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-destructive" />
-          <h3 className="text-lg font-semibold">Red Flags & Critical Considerations</h3>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold tracking-tight">Red Flags & Critical Considerations</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {report.criticalCount > 0 
+                ? `${report.criticalCount} CRITICAL issue(s) require immediate attention`
+                : `${report.totalFlags} issue(s) detected that should be addressed`
+              }
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {report.criticalCount > 0 
-            ? `${report.criticalCount} CRITICAL issue(s) require immediate attention`
-            : `${report.totalFlags} issue(s) detected that should be addressed`
-          }
-        </p>
       </div>
 
       {/* Summary Badges */}
       <div className="flex flex-wrap gap-2">
         {report.criticalCount > 0 && (
-          <Badge variant="destructive" className="bg-red-600">
+          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20">
             {report.criticalCount} Critical
-          </Badge>
+          </span>
         )}
         {report.highCount > 0 && (
-          <Badge variant="destructive" className="bg-orange-600">
+          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
             {report.highCount} High
-          </Badge>
+          </span>
         )}
         {report.mediumCount > 0 && (
-          <Badge variant="destructive" className="bg-amber-600">
+          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-secondary text-muted-foreground border border-border">
             {report.mediumCount} Medium
-          </Badge>
+          </span>
         )}
       </div>
 
       {/* Red Flags List */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {report.flags.map((flag, idx) => (
           <RedFlagItem key={flag.id} flag={flag} index={idx} />
         ))}
@@ -69,13 +71,15 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-3 rounded-lg border border-destructive/30 bg-destructive/5"
+          className="p-5 rounded-2xl border border-destructive/20 bg-card"
         >
           <div className="flex gap-3">
-            <AlertOctagon className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="h-8 w-8 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+              <AlertOctagon className="h-4 w-4 text-destructive" />
+            </div>
             <div>
-              <h4 className="font-semibold text-foreground text-sm">Action Required Before Implementation</h4>
-              <p className="text-xs text-muted-foreground mt-1">
+              <h4 className="font-semibold text-foreground text-sm tracking-tight">Action Required Before Implementation</h4>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                 {report.criticalCount} critical issue{report.criticalCount !== 1 ? 's' : ''} must be resolved before deployment. 
                 Address all REQUIRED mitigation steps before proceeding to development.
               </p>
@@ -87,28 +91,19 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
   );
 }
 
-/**
- * Individual Red Flag Item with citation support
- */
 function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
   const severityConfig = {
     critical: {
       icon: AlertOctagon,
-      bgColor: 'bg-destructive/5',
-      borderColor: 'border-destructive/20',
-      badgeColor: 'bg-red-600'
+      badgeClass: 'bg-destructive/10 text-destructive border-destructive/20',
     },
     high: {
       icon: AlertTriangle,
-      bgColor: 'bg-orange-500/5',
-      borderColor: 'border-orange-500/20',
-      badgeColor: 'bg-orange-600'
+      badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
     },
     medium: {
       icon: Info,
-      bgColor: 'bg-amber-500/5',
-      borderColor: 'border-amber-500/20',
-      badgeColor: 'bg-amber-600'
+      badgeClass: 'bg-secondary text-muted-foreground border-border',
     }
   };
   
@@ -120,22 +115,24 @@ function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05 }}
-      className={`p-4 rounded-lg border ${config.bgColor} ${config.borderColor}`}
+      className="p-5 rounded-2xl border border-border bg-card"
     >
       {/* Title Section */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-start gap-3 flex-1">
-          <IconComponent className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <div className="h-8 w-8 rounded-xl bg-secondary flex items-center justify-center shrink-0 mt-0.5">
+            <IconComponent className="h-4 w-4 text-muted-foreground" />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h4 className="font-semibold text-foreground">{flag.title}</h4>
+              <h4 className="font-semibold text-foreground tracking-tight">{flag.title}</h4>
               <div className="flex gap-1.5">
-                <Badge variant="secondary" className={`${config.badgeColor} text-white text-xs`}>
-                  {flag.severity.toUpperCase()}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider border ${config.badgeClass}`}>
+                  {flag.severity}
+                </span>
+                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-secondary text-muted-foreground border border-border">
                   {flag.category}
-                </Badge>
+                </span>
               </div>
             </div>
           </div>
@@ -143,29 +140,29 @@ function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
       </div>
 
       {/* Two-column body */}
-      <div className="ml-8 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div className="ml-11 grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
         {/* LEFT: Issue + Research Evidence */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div>
-            <p className="font-medium text-foreground mb-1">⚠️ Issue</p>
-            <p className="text-muted-foreground">{flag.description}</p>
+            <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wider text-muted-foreground">Issue</p>
+            <p className="text-muted-foreground leading-relaxed">{flag.description}</p>
           </div>
 
           <div>
-            <p className="font-medium text-foreground mb-1">💥 Impact if Ignored</p>
-            <p className="text-muted-foreground">{flag.impact}</p>
+            <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wider text-muted-foreground">Impact if Ignored</p>
+            <p className="text-muted-foreground leading-relaxed">{flag.impact}</p>
           </div>
 
           {flag.citation && (
-            <div className="p-3 rounded-lg bg-muted/50 border border-border">
-              <p className="font-medium text-foreground mb-2 text-xs uppercase tracking-wider">📊 Research Evidence</p>
+            <div className="p-4 rounded-xl bg-secondary border border-border">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Research Evidence</p>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground text-sm">{flag.citation.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {flag.citation.authors} ({flag.citation.year})
                   </p>
-                  <p className="text-xs text-muted-foreground italic mt-1">
+                  <p className="text-xs text-muted-foreground italic mt-1 leading-relaxed">
                     "{flag.citation.keyFinding}"
                   </p>
                 </div>
@@ -181,31 +178,31 @@ function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
           )}
 
           {flag.evidence && !flag.citation && (
-            <div className="p-3 rounded-lg bg-muted/50">
-              <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wider">📊 Research Evidence</p>
-              <p className="text-xs text-muted-foreground italic">{flag.evidence}</p>
+            <div className="p-4 rounded-xl bg-secondary border border-border">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-1">Research Evidence</p>
+              <p className="text-xs text-muted-foreground italic leading-relaxed">{flag.evidence}</p>
             </div>
           )}
         </div>
 
         {/* RIGHT: Affects + Mitigations */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div>
-            <p className="font-medium text-foreground mb-1">Affects</p>
-            <div className="flex flex-wrap gap-1">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Affects</p>
+            <div className="flex flex-wrap gap-1.5">
               {flag.affectedParadigms.map(p => (
-                <Badge key={p} variant="outline" className="text-xs capitalize">
+                <span key={p} className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-muted-foreground border border-border capitalize">
                   {p.replace(/_/g, ' ')}
-                </Badge>
+                </span>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="font-medium text-foreground mb-2">✅ Required Mitigations</p>
-            <ul className="space-y-1.5">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Required Mitigations</p>
+            <ul className="space-y-2">
               {flag.mitigation.map((step, stepIdx) => (
-                <li key={stepIdx} className="flex gap-2 text-muted-foreground">
+                <li key={stepIdx} className="flex gap-2 text-muted-foreground leading-relaxed">
                   <span className="text-accent font-bold shrink-0">•</span>
                   <span className={step.includes('REQUIRED') ? 'font-semibold text-foreground' : ''}>
                     {step}

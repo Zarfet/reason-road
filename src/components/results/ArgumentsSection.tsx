@@ -1,6 +1,6 @@
 /**
- * Arguments Section
- * Layout: per interface type, full-width header + FOR (left) / AGAINST (right) side by side
+ * Arguments Section — Clean report style
+ * No colored backgrounds on cards, pill badges for impact, generous whitespace
  */
 
 import { motion } from 'framer-motion';
@@ -34,13 +34,17 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
     <div className="space-y-8">
       {/* Section header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-accent" />
-          <h3 className="text-xl font-semibold">Detailed Argumentation</h3>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
+            <Zap className="h-5 w-5 text-accent" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold tracking-tight">Detailed Argumentation</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Research-backed reasoning for each interface type in your recommendation
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Research-backed reasoning for each interface type in your recommendation
-        </p>
       </div>
 
       {/* One block per interface type */}
@@ -53,13 +57,13 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
           className="space-y-4"
         >
           {/* Full-width label row */}
-          <div className="px-4 py-3 rounded-lg bg-muted/40 border border-border">
+          <div className="px-5 py-3.5 rounded-xl bg-secondary border border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-lg font-semibold text-foreground">
+                <span className="text-lg font-semibold tracking-tight text-foreground">
                   {INTERFACE_LABELS[paradigmArg.paradigmKey] ?? paradigmArg.paradigm}
                 </span>
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                <Badge className="bg-accent/10 text-accent border border-accent/20 text-xs font-semibold">
                   {Math.round(paradigmArg.percentage)}%
                 </Badge>
               </div>
@@ -71,11 +75,12 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
 
           {/* Two-column: FOR (left) / AGAINST (right) */}
           <BentoGrid>
-            {/* Arguments FOR */}
-            <BentoBox size="medium">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle className="h-4 w-4 text-accent" />
-                <span className="font-semibold text-sm text-foreground">Arguments For</span>
+            <BentoBox size="medium" className="border-border">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-6 w-6 rounded-full bg-accent/10 flex items-center justify-center">
+                  <CheckCircle className="h-3.5 w-3.5 text-accent" />
+                </div>
+                <span className="font-semibold text-sm text-foreground tracking-tight">Arguments For</span>
               </div>
               <div className="space-y-3">
                 {paradigmArg.argumentsFor.map((arg, argIdx) => (
@@ -84,11 +89,12 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
               </div>
             </BentoBox>
 
-            {/* Arguments AGAINST */}
-            <BentoBox size="medium">
-              <div className="flex items-center gap-2 mb-4">
-                <XCircle className="h-4 w-4 text-destructive" />
-                <span className="font-semibold text-sm text-foreground">Arguments Against</span>
+            <BentoBox size="medium" className="border-border">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <XCircle className="h-3.5 w-3.5 text-destructive" />
+                </div>
+                <span className="font-semibold text-sm text-foreground tracking-tight">Arguments Against</span>
               </div>
               <div className="space-y-3">
                 {paradigmArg.argumentsAgainst.map((arg, argIdx) => (
@@ -115,43 +121,43 @@ function CitationTypeIcon({ type }: { type: Citation['type'] }) {
 }
 
 function ArgumentCard({ argument, type }: { argument: Argument; type: 'for' | 'against' }) {
-  const impactColors = {
-    high: type === 'for' ? 'text-accent border-accent/30' : 'text-destructive border-destructive/30',
-    medium: type === 'for' ? 'text-accent/80 border-accent/20' : 'text-amber-600 border-amber-300',
-    low: type === 'for' ? 'text-accent/60 border-accent/15' : 'text-amber-500 border-amber-200',
+  const impactStyles = {
+    high: 'bg-foreground text-card font-semibold',
+    medium: 'bg-secondary text-muted-foreground font-medium',
+    low: 'bg-secondary text-muted-foreground/70 font-medium',
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, x: -5 }}
       animate={{ opacity: 1, x: 0 }}
-      className="p-4 rounded-lg border border-border/50 bg-background/50"
+      className="p-4 rounded-xl border border-border bg-card"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="font-medium text-sm text-foreground">{argument.title}</h4>
-        <Badge variant="outline" className={`text-xs shrink-0 ${impactColors[argument.impact]}`}>
-          {argument.impact === 'high' ? '⚡' : argument.impact === 'medium' ? '⚙️' : '•'} {argument.impact}
-        </Badge>
+        <h4 className="font-medium text-sm text-foreground tracking-tight">{argument.title}</h4>
+        <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${impactStyles[argument.impact]}`}>
+          {argument.impact}
+        </span>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-3">{argument.description}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-3">{argument.description}</p>
 
       {argument.dataPoint && (
-        <div className="flex items-start gap-2 mb-3 p-2.5 rounded-md bg-primary/5 border border-primary/10">
-          <span className="text-primary shrink-0 text-sm">📊</span>
-          <span className="text-sm text-foreground/80">{argument.dataPoint}</span>
+        <div className="flex items-start gap-2 mb-3 p-3 rounded-xl bg-secondary border border-border">
+          <span className="text-muted-foreground shrink-0 text-sm">📊</span>
+          <span className="text-sm text-foreground/80 leading-relaxed">{argument.dataPoint}</span>
         </div>
       )}
 
       {argument.citation && (
-        <div className="rounded-md border border-border/60 bg-muted/30 p-3">
+        <div className="rounded-xl border border-border bg-secondary/50 p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0 space-y-1">
               <div className="flex items-center gap-1.5">
                 <CitationTypeIcon type={argument.citation.type} />
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 text-muted-foreground">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
                   {argument.citation.type}
-                </Badge>
+                </span>
               </div>
               <p className="text-xs font-medium text-foreground leading-tight">
                 {argument.citation.title}

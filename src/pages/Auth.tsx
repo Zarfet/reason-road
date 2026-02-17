@@ -164,11 +164,11 @@ export default function Auth() {
       {/* Header */}
       <header className="nexus-container py-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
               <Target className="h-4 w-4 text-accent-foreground" />
             </div>
-            <span className="font-semibold text-lg text-foreground">NEXUS</span>
+            <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm" className="gap-2">

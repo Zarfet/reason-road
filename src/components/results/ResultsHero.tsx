@@ -1,12 +1,11 @@
 /**
- * Hero section for results page with paradigm breakdown
- * Updated for Bento Grid layout
+ * Hero section for results page — Modern Eco-Executive style
+ * Clean white card with emerald accents, no dark background
  */
 
 import { motion } from 'framer-motion';
-import { Target, Monitor, Eye, Sparkles, Glasses, Mic } from 'lucide-react';
+import { Monitor, Eye, Sparkles, Glasses, Mic, TrendingUp } from 'lucide-react';
 import { PARADIGM_LABELS, type ParadigmScores } from '@/types/assessment';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 
 interface ResultsHeroProps {
@@ -38,7 +37,7 @@ function renderBold(text: string): React.ReactNode[] {
   let match;
   while ((match = regex.exec(text)) !== null) {
     if (match.index > last) parts.push(text.slice(last, match.index));
-    parts.push(<strong key={match.index}>{match[1]}</strong>);
+    parts.push(<strong key={match.index} className="text-foreground">{match[1]}</strong>);
     last = regex.lastIndex;
   }
   if (last < text.length) parts.push(text.slice(last));
@@ -69,8 +68,8 @@ export function ResultsHero({
   ];
 
   return (
-    <div className="bg-foreground text-background py-10 md:py-14 -mx-4 md:-mx-8 px-4 md:px-8">
-      <div className="max-w-5xl mx-auto">
+    <div className="py-8 md:py-12">
+      <div className="nexus-card max-w-5xl mx-auto">
         {/* Badge */}
         <motion.div
           className="flex justify-center mb-6"
@@ -78,27 +77,27 @@ export function ResultsHero({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Badge className="bg-accent text-accent-foreground px-4 py-1.5 text-sm font-medium">
-            RECOMMENDED STRATEGY
+          <Badge className="bg-accent/10 text-accent border border-accent/20 px-4 py-1.5 text-xs font-semibold tracking-wide uppercase">
+            Recommended Strategy
           </Badge>
         </motion.div>
 
         {/* Main Recommendation */}
         <motion.h1
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3 tracking-tight text-foreground"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           {PARADIGM_LABELS[primaryParadigm]}
           {secondaryParadigm && secondaryPct > 15 && (
-            <span className="text-muted"> + {PARADIGM_LABELS[secondaryParadigm]}</span>
+            <span className="text-muted-foreground font-medium"> + {PARADIGM_LABELS[secondaryParadigm]}</span>
           )}
         </motion.h1>
 
         {subtitle && (
           <motion.p
-            className="text-muted text-lg text-center mb-8"
+            className="text-muted-foreground text-lg text-center mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -109,22 +108,22 @@ export function ResultsHero({
 
         {/* Multi-modal Breakdown */}
         <motion.div
-          className="flex flex-wrap justify-center gap-4 md:gap-8 mb-6"
+          className="flex flex-wrap justify-center gap-6 md:gap-10 mb-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
           {breakdownItems.map((item, index) => (
             <div key={item.paradigm} className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-background/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
                 {paradigmIcons[item.paradigm]}
               </div>
               <div>
-                <p className="text-2xl font-bold">{item.pct}%</p>
-                <p className="text-sm text-muted">{PARADIGM_LABELS[item.paradigm]}</p>
+                <p className="text-2xl font-bold text-foreground tracking-tight">{item.pct}%</p>
+                <p className="text-sm text-muted-foreground">{PARADIGM_LABELS[item.paradigm]}</p>
               </div>
               {index < breakdownItems.length - 1 && (
-                <div className="hidden md:block w-px h-10 bg-muted/30 ml-4" />
+                <div className="hidden md:block w-px h-10 bg-border ml-4" />
               )}
             </div>
           ))}
@@ -133,21 +132,22 @@ export function ResultsHero({
         {/* Confidence Level */}
         {confidenceLevel !== undefined && (
           <motion.div
-            className="flex flex-col items-center gap-2"
+            className="flex flex-col items-center gap-2 mb-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-muted text-sm">Confidence:</span>
-              <span className={`font-bold text-lg ${
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm">Confidence:</span>
+              <span className={`font-bold text-lg tracking-tight ${
                 confidenceLevel >= 70 ? 'text-accent' : 
-                confidenceLevel >= 50 ? 'text-yellow-400' : 'text-red-400'
+                confidenceLevel >= 50 ? 'text-amber-600' : 'text-destructive'
               }`}>
                 {confidenceLevel}%
               </span>
             </div>
-            <p className="text-muted/70 text-xs max-w-md text-center">
+            <p className="text-muted-foreground text-xs max-w-md text-center">
               Based on response consistency and score differentiation
             </p>
           </motion.div>
@@ -156,24 +156,24 @@ export function ResultsHero({
         {/* Strategic Rationale */}
         {(strategicRationale || reasoningBullets.length > 0) && (
           <motion.div
-            className="mt-8 pt-8 border-t border-muted/20 max-w-3xl mx-auto"
+            className="mt-8 pt-8 border-t border-border max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
             {strategicRationale && (
-              <p className="text-muted text-sm md:text-base leading-relaxed text-center mb-6">
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed text-center mb-6">
                 {renderBold(strategicRationale)}
               </p>
             )}
             {reasoningBullets.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {reasoningBullets.slice(0, 4).map((bullet, i) => (
-                  <div key={i} className="flex items-start gap-3 text-left">
-                    <span className="h-6 w-6 rounded-full bg-accent/20 text-accent text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  <div key={i} className="flex items-start gap-3 text-left p-3 rounded-xl bg-secondary/50">
+                    <span className="h-6 w-6 rounded-full bg-accent/10 text-accent text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
-                    <p className="text-sm text-muted">{renderBold(bullet)}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{renderBold(bullet)}</p>
                   </div>
                 ))}
               </div>
