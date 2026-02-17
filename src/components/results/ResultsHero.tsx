@@ -19,6 +19,8 @@ interface ResultsHeroProps {
   projectName?: string;
   userDemographics?: string;
   confidenceLevel?: number;
+  strategicRationale?: string;
+  reasoningBullets?: string[];
 }
 
 const paradigmIcons: Record<keyof ParadigmScores, React.ReactNode> = {
@@ -28,6 +30,20 @@ const paradigmIcons: Record<keyof ParadigmScores, React.ReactNode> = {
   spatial: <Glasses className="h-5 w-5" />,
   voice: <Mic className="h-5 w-5" />,
 };
+
+function renderBold(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.*?)\*\*/g;
+  let last = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index));
+    parts.push(<strong key={match.index}>{match[1]}</strong>);
+    last = regex.lastIndex;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
 
 export function ResultsHero({
   primaryParadigm,
@@ -39,6 +55,8 @@ export function ResultsHero({
   projectName,
   userDemographics,
   confidenceLevel,
+  strategicRationale,
+  reasoningBullets = [],
 }: ResultsHeroProps) {
   const subtitle = [projectName, userDemographics]
     .filter(Boolean)
@@ -132,6 +150,34 @@ export function ResultsHero({
             <p className="text-muted/70 text-xs max-w-md text-center">
               Based on response consistency and score differentiation
             </p>
+          </motion.div>
+        )}
+
+        {/* Strategic Rationale */}
+        {(strategicRationale || reasoningBullets.length > 0) && (
+          <motion.div
+            className="mt-8 pt-8 border-t border-muted/20 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            {strategicRationale && (
+              <p className="text-muted text-sm md:text-base leading-relaxed text-center mb-6">
+                {renderBold(strategicRationale)}
+              </p>
+            )}
+            {reasoningBullets.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {reasoningBullets.slice(0, 4).map((bullet, i) => (
+                  <div key={i} className="flex items-start gap-3 text-left">
+                    <span className="h-6 w-6 rounded-full bg-accent/20 text-accent text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
+                    <p className="text-sm text-muted">{renderBold(bullet)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
       </div>
