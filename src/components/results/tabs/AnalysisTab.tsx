@@ -1,13 +1,9 @@
 /**
- * Analysis Tab - Arguments and Research
- * 
- * Contents:
- * - Arguments For/Against with citations (accordion)
- * - Supporting Research & Case Studies (bento grid)
+ * Analysis Tab - Arguments with research citations
  */
 
+import { BentoGrid, BentoBox } from '../bento/BentoGrid';
 import { ArgumentsSection } from '../ArgumentsSection';
-import { SupportingResearchSection } from '../SupportingResearchSection';
 import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment';
 
 interface AnalysisTabProps {
@@ -17,12 +13,10 @@ interface AnalysisTabProps {
 
 export function AnalysisTab({ recommendation, answers }: AnalysisTabProps) {
   return (
-    <div className="space-y-8">
-      {/* Arguments For/Against with Citations */}
-      <ArgumentsSection recommendation={recommendation} answers={answers} />
-
-      {/* Supporting Research & Case Studies */}
-      <SupportingResearchSection />
-    </div>
+    <BentoGrid className="mt-6">
+      <BentoBox size="wide">
+        <ArgumentsSection recommendation={recommendation} answers={answers} />
+      </BentoBox>
+    </BentoGrid>
   );
 }
