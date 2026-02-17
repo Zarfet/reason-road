@@ -119,24 +119,20 @@ function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
     >
       {/* Title Section */}
       <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="flex items-start gap-3 flex-1">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className="h-8 w-8 rounded-xl bg-secondary flex items-center justify-center shrink-0 mt-0.5">
             <IconComponent className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h4 className="font-semibold text-foreground tracking-tight">{flag.title}</h4>
-              <div className="flex gap-1.5">
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider border ${config.badgeClass}`}>
-                  {flag.severity}
-                </span>
-                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-secondary text-muted-foreground border border-border">
-                  {flag.category}
-                </span>
-              </div>
-            </div>
+            <h4 className="font-semibold text-foreground tracking-tight">{flag.title}</h4>
+            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-secondary text-muted-foreground border border-border mt-1">
+              {flag.category}
+            </span>
           </div>
         </div>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider border shrink-0 ${config.badgeClass}`}>
+          {flag.severity}
+        </span>
       </div>
 
       {/* Two-column body */}
