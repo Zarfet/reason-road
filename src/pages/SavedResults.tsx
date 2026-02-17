@@ -32,7 +32,7 @@ import { generatePDFReport } from '@/lib/pdfGenerator';
 // Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
 import { ResultsHero } from '@/components/results/ResultsHero';
-import { OverviewTab } from '@/components/results/tabs/OverviewTab';
+import { generateStrategicRationale } from '@/components/results/tabs/OverviewTab';
 import { AnalysisTab } from '@/components/results/tabs/AnalysisTab';
 import { ImpactTab } from '@/components/results/tabs/ImpactTab';
 import { ResearchTab } from '@/components/results/tabs/ResearchTab';
@@ -184,6 +184,8 @@ export default function SavedResults() {
           projectName={answers.projectName}
           userDemographics={answers.userDemographics}
           confidenceLevel={confidenceLevel}
+          strategicRationale={generateStrategicRationale(recommendation, answers)}
+          reasoningBullets={reasoningBullets}
         />
       </div>
 
@@ -194,11 +196,8 @@ export default function SavedResults() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs defaultValue="analysis" className="w-full">
             <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50">
-              <TabsTrigger value="overview" className="flex-1 sm:flex-none">
-                Overview
-              </TabsTrigger>
               <TabsTrigger value="analysis" className="flex-1 sm:flex-none">
                 Analysis
               </TabsTrigger>
@@ -212,16 +211,6 @@ export default function SavedResults() {
                 Actions
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="overview">
-              <OverviewTab
-                recommendation={recommendation}
-                answers={answers}
-                reasoningBullets={reasoningBullets}
-                redFlags={redFlags}
-                confidenceLevel={confidenceLevel}
-              />
-            </TabsContent>
 
             <TabsContent value="analysis">
               <AnalysisTab
