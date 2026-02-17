@@ -36,6 +36,7 @@ export default function Results() {
   const { recommendation, answers, isComplete, resetAssessment, saveAssessmentToDb } = useAssessment();
   const hasSavedRef = useRef(false);
   const [savedAssessmentId, setSavedAssessmentId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (!isComplete || !recommendation) {
@@ -139,7 +140,7 @@ export default function Results() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Tabs defaultValue="overview" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50 sticky top-[65px] z-30 backdrop-blur-sm">
               <TabsTrigger value="overview" className="flex-1 sm:flex-none">
                 <span className="sm:hidden">📊</span>
@@ -170,6 +171,7 @@ export default function Results() {
                 reasoningBullets={reasoningBullets}
                 redFlags={redFlags}
                 confidenceLevel={confidenceLevel}
+                onTabChange={setActiveTab}
               />
             </TabsContent>
 
