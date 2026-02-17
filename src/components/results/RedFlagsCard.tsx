@@ -142,81 +142,78 @@ function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
         </div>
       </div>
 
-      {/* Description */}
-      <div className="ml-8 space-y-3 text-sm">
-        <div>
-          <p className="font-medium text-foreground mb-1">⚠️ Issue:</p>
-          <p className="text-muted-foreground">{flag.description}</p>
-        </div>
+      {/* Two-column body */}
+      <div className="ml-8 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        {/* LEFT: Issue + Research Evidence */}
+        <div className="space-y-3">
+          <div>
+            <p className="font-medium text-foreground mb-1">⚠️ Issue</p>
+            <p className="text-muted-foreground">{flag.description}</p>
+          </div>
 
-        {/* Impact */}
-        <div>
-          <p className="font-medium text-foreground mb-1">💥 Impact if Ignored:</p>
-          <p className="text-muted-foreground">{flag.impact}</p>
-        </div>
+          <div>
+            <p className="font-medium text-foreground mb-1">💥 Impact if Ignored</p>
+            <p className="text-muted-foreground">{flag.impact}</p>
+          </div>
 
-        {/* Research Citation */}
-        {flag.citation && (
-          <div className="p-3 rounded-lg bg-muted/50 border border-border">
-            <p className="font-medium text-foreground mb-2 text-xs uppercase tracking-wider">📊 Research Evidence</p>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground text-sm">{flag.citation.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {flag.citation.authors} ({flag.citation.year})
-                </p>
-                <p className="text-xs text-muted-foreground italic mt-1">
-                  "{flag.citation.keyFinding}"
-                </p>
+          {flag.citation && (
+            <div className="p-3 rounded-lg bg-muted/50 border border-border">
+              <p className="font-medium text-foreground mb-2 text-xs uppercase tracking-wider">📊 Research Evidence</p>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground text-sm">{flag.citation.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {flag.citation.authors} ({flag.citation.year})
+                  </p>
+                  <p className="text-xs text-muted-foreground italic mt-1">
+                    "{flag.citation.keyFinding}"
+                  </p>
+                </div>
+                {flag.citation.url && (
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" asChild>
+                    <a href={flag.citation.url} target="_blank" rel="noopener noreferrer" title="View source">
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </Button>
+                )}
               </div>
-              {flag.citation.url && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0"
-                  asChild
-                >
-                  <a href={flag.citation.url} target="_blank" rel="noopener noreferrer" title="View source">
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                </Button>
-              )}
+            </div>
+          )}
+
+          {flag.evidence && !flag.citation && (
+            <div className="p-3 rounded-lg bg-muted/50">
+              <p className="font-medium text-foreground mb-1 text-xs uppercase tracking-wider">📊 Research Evidence</p>
+              <p className="text-xs text-muted-foreground italic">{flag.evidence}</p>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT: Affects + Mitigations */}
+        <div className="space-y-3">
+          <div>
+            <p className="font-medium text-foreground mb-1">Affects</p>
+            <div className="flex flex-wrap gap-1">
+              {flag.affectedParadigms.map(p => (
+                <Badge key={p} variant="outline" className="text-xs capitalize">
+                  {p.replace(/_/g, ' ')}
+                </Badge>
+              ))}
             </div>
           </div>
-        )}
 
-        {/* Evidence without citation */}
-        {flag.evidence && !flag.citation && (
-          <div className="p-3 rounded-lg bg-muted/50">
-            <p className="text-xs text-muted-foreground italic">📊 {flag.evidence}</p>
+          <div>
+            <p className="font-medium text-foreground mb-2">✅ Required Mitigations</p>
+            <ul className="space-y-1.5">
+              {flag.mitigation.map((step, stepIdx) => (
+                <li key={stepIdx} className="flex gap-2 text-muted-foreground">
+                  <span className="text-accent font-bold shrink-0">•</span>
+                  <span className={step.includes('REQUIRED') ? 'font-semibold text-foreground' : ''}>
+                    {step}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
-
-        {/* Affected Paradigms */}
-        <div>
-          <p className="font-medium text-foreground mb-1">Affects:</p>
-          <div className="flex flex-wrap gap-1">
-            {flag.affectedParadigms.map(paradigm => (
-              <Badge key={paradigm} variant="outline" className="text-xs capitalize">
-                {paradigm.replace('_', ' ')}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Mitigation Steps */}
-        <div>
-          <p className="font-medium text-foreground mb-2">✅ Required Mitigations:</p>
-          <ul className="space-y-1.5">
-            {flag.mitigation.map((step, stepIdx) => (
-              <li key={stepIdx} className="flex gap-2 text-muted-foreground">
-                <span className="text-accent font-bold shrink-0">•</span>
-                <span className={step.includes('REQUIRED') ? 'font-semibold text-foreground' : ''}>
-                  {step}
-                </span>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </motion.div>

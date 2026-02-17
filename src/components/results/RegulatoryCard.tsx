@@ -134,77 +134,71 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
             </AccordionTrigger>
             
             <AccordionContent>
-              <div className="space-y-4 pt-2 pb-4">
-                {/* Description */}
-                <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <p className="text-sm text-muted-foreground">{req.description}</p>
-                </div>
-                
-                {/* Legal Citation */}
-                <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
-                  <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 pb-4">
+                {/* LEFT: Description + Citation */}
+                <div className="space-y-3">
+                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Description</p>
+                    <p className="text-sm text-muted-foreground">{req.description}</p>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Legal Source</p>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <p className="font-semibold text-foreground text-sm">
-                          {req.citation.title}
-                        </p>
+                        <p className="font-semibold text-foreground text-sm">{req.citation.title}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {req.citation.authors || req.citation.source} • {req.citation.year}
                         </p>
                         {req.citation.section && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {req.citation.section}
-                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">{req.citation.section}</p>
                         )}
+                        <p className="text-sm text-muted-foreground italic mt-2">
+                          "{req.citation.keyRequirement}"
+                        </p>
                       </div>
                       {req.citation.url && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => window.open(req.citation.url, '_blank')}
-                          className="text-accent hover:bg-accent/10"
+                          className="text-accent hover:bg-accent/10 shrink-0"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground italic mt-2">
-                      "{req.citation.keyRequirement}"
-                    </p>
                   </div>
                 </div>
-                
-                {/* Applies to */}
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Applies to:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {req.applicableParadigms.map((paradigm, pIdx) => (
-                      <Badge key={pIdx} variant="secondary" className="text-xs">
-                        {getParadigmDisplayName(paradigm)}
-                      </Badge>
-                    ))}
+
+                {/* RIGHT: Applies to + Required Actions */}
+                <div className="space-y-3">
+                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Applies to</p>
+                    <div className="flex flex-wrap gap-2">
+                      {req.applicableParadigms.map((paradigm, pIdx) => (
+                        <Badge key={pIdx} variant="secondary" className="text-xs">
+                          {getParadigmDisplayName(paradigm)}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                
-                {/* Mitigation Steps */}
-                <div className="space-y-2">
-                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                     Required Actions:
-                   </p>
-                   <ul className="space-y-1.5">
-                     {req.mitigationSteps.map((step, stepIdx) => (
-                       <li key={stepIdx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                         {step.startsWith('REQUIRED:') ? (
-                           <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                         ) : (
-                           <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-                         )}
-                         <span>{step}</span>
-                       </li>
-                     ))}
-                   </ul>
+
+                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Required Actions</p>
+                    <ul className="space-y-1.5">
+                      {req.mitigationSteps.map((step, stepIdx) => (
+                        <li key={stepIdx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          {step.startsWith('REQUIRED:') ? (
+                            <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                          )}
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </AccordionContent>
