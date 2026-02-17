@@ -23,9 +23,9 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
             <AlertTriangle className="h-5 w-5 text-destructive" />
           </div>
           <div>
@@ -38,25 +38,23 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Summary Badges */}
-      <div className="flex flex-wrap gap-2">
-        {report.criticalCount > 0 && (
-          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20">
-            {report.criticalCount} Critical
-          </span>
-        )}
-        {report.highCount > 0 && (
-          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            {report.highCount} High
-          </span>
-        )}
-        {report.mediumCount > 0 && (
-          <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-secondary text-muted-foreground border border-border">
-            {report.mediumCount} Medium
-          </span>
-        )}
+        <div className="flex flex-wrap gap-1.5 shrink-0">
+          {report.criticalCount > 0 && (
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20">
+              {report.criticalCount} Critical
+            </span>
+          )}
+          {report.highCount > 0 && (
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+              {report.highCount} High
+            </span>
+          )}
+          {report.mediumCount > 0 && (
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-secondary text-muted-foreground border border-border">
+              {report.mediumCount} Medium
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Red Flags List */}
