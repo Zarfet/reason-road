@@ -2,6 +2,7 @@
  * Impact Tab - Regulatory, Environmental, and Risk Analysis
  */
 
+import { BentoGrid } from '../bento/BentoGrid';
 import { RegulatoryCard } from '../RegulatoryCard';
 import { SustainabilityCard } from '../SustainabilityCard';
 import { RedFlagsCard } from '../RedFlagsCard';
@@ -15,19 +16,14 @@ interface ImpactTabProps {
 
 export function ImpactTab({ recommendation, answers }: ImpactTabProps) {
   const regulatoryAnalysis = generateRegulatoryAnalysis(answers, recommendation);
-  
+
   return (
-    <div className="space-y-8">
-      {/* Regulatory Impact Analysis - Conditional (EU/Global only) */}
+    <BentoGrid className="mt-6">
       {regulatoryAnalysis && (
         <RegulatoryCard analysis={regulatoryAnalysis} />
       )}
-
-      {/* Sustainability Report - Conditional */}
       <SustainabilityCard recommendation={recommendation} answers={answers} />
-      
-      {/* Red Flags - Conditional (only if flags detected) */}
       <RedFlagsCard recommendation={recommendation} answers={answers} />
-    </div>
+    </BentoGrid>
   );
 }
