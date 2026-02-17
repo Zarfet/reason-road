@@ -52,7 +52,7 @@ function renderBold(text: string): ReactNode[] {
 // CONTEXT-SPECIFIC GENERATORS
 // ================================================
 
-function generateStrategicRationale(rec: RecommendationResult, answers: AssessmentAnswers): string {
+export function generateStrategicRationale(rec: RecommendationResult, answers: AssessmentAnswers): string {
   const primary = PARADIGM_LABELS[rec.primary.paradigm];
   const secondary = PARADIGM_LABELS[rec.secondary.paradigm];
   const demographics = answers.userDemographics || 'your users';

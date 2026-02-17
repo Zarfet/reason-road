@@ -24,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 // Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
 import { ResultsHero } from '@/components/results/ResultsHero';
-import { OverviewTab } from '@/components/results/tabs/OverviewTab';
+import { generateStrategicRationale } from '@/components/results/tabs/OverviewTab';
 import { AnalysisTab } from '@/components/results/tabs/AnalysisTab';
 import { ImpactTab } from '@/components/results/tabs/ImpactTab';
 import { ResearchTab } from '@/components/results/tabs/ResearchTab';
@@ -36,7 +36,7 @@ export default function Results() {
   const { recommendation, answers, isComplete, resetAssessment, saveAssessmentToDb } = useAssessment();
   const hasSavedRef = useRef(false);
   const [savedAssessmentId, setSavedAssessmentId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('analysis');
 
   useEffect(() => {
     if (!isComplete || !recommendation) {
@@ -130,6 +130,8 @@ export default function Results() {
           projectName={answers.projectName}
           userDemographics={answers.userDemographics}
           confidenceLevel={confidenceLevel}
+          strategicRationale={generateStrategicRationale(recommendation, answers)}
+          reasoningBullets={reasoningBullets}
         />
       </div>
 
@@ -142,10 +144,6 @@ export default function Results() {
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1 bg-muted/50 sticky top-[65px] z-30 backdrop-blur-sm">
-              <TabsTrigger value="overview" className="flex-1 sm:flex-none">
-                <span className="sm:hidden">📊</span>
-                <span className="hidden sm:inline">Overview</span>
-              </TabsTrigger>
               <TabsTrigger value="analysis" className="flex-1 sm:flex-none">
                 <span className="sm:hidden">📈</span>
                 <span className="hidden sm:inline">Analysis</span>
@@ -163,17 +161,6 @@ export default function Results() {
                 <span className="hidden sm:inline">Actions</span>
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="overview">
-              <OverviewTab
-                recommendation={recommendation}
-                answers={answers}
-                reasoningBullets={reasoningBullets}
-                redFlags={redFlags}
-                confidenceLevel={confidenceLevel}
-                onTabChange={setActiveTab}
-              />
-            </TabsContent>
 
             <TabsContent value="analysis">
               <AnalysisTab
