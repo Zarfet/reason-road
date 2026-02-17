@@ -2,11 +2,12 @@
  * PDF Report Generator for NEXUS Assessment Results
  * Full multi-page report covering all tabs.
  *
- * Pages:
+ * Sections:
  *   1  — Cover: strategy card, score bars, rationale, bullets 2×2
  *   2+ — Analysis: per interface type FOR / AGAINST side-by-side
  *   ?  — Regulatory (EU / Global only)
  *   ?  — Sustainability (conditional)
+ *   ?  — Research (only if user visited tab → localStorage cache exists)
  *   ?  — Red Flags (conditional)
  *
  * Every page has a footer with page number.
@@ -41,6 +42,7 @@ const FOR_BG: [number, number, number]     = [240, 253, 244]; // green-50
 const AGAINST_BG: [number, number, number] = [255, 247, 237]; // amber-50
 const FLAG_BG: [number, number, number]    = [254, 242, 242]; // red-50
 const REG_BG: [number, number, number]     = [239, 246, 255]; // blue-50
+const RESEARCH_BG: [number, number, number] = [245, 243, 255]; // violet-50
 
 const MARGIN = 14;
 const PAGE_W = 210; // A4
@@ -56,19 +58,18 @@ const INTERFACE_LABELS: Record<string, string> = {
 };
 
 // ─── Safe text helper ─────────────────────────────────────────────────────────
-/** Strip markdown bold, replace non-ASCII that jsPDF can't render */
 function safeText(s: string): string {
   return s
     .replace(/\*\*/g, '')
     .replace(/CO₂/g, 'CO2')
-    .replace(/\u2019/g, "'")   // curly right quote
-    .replace(/\u2018/g, "'")   // curly left quote
+    .replace(/\u2019/g, "'")
+    .replace(/\u2018/g, "'")
     .replace(/\u201C/g, '"')
     .replace(/\u201D/g, '"')
-    .replace(/\u2013/g, '-')   // en-dash
-    .replace(/\u2014/g, '--')  // em-dash
+    .replace(/\u2013/g, '-')
+    .replace(/\u2014/g, '--')
     .replace(/\u2026/g, '...')
-    .replace(/\u00B2/g, '2')   // superscript 2
+    .replace(/\u00B2/g, '2')
     .replace(/\u00BC/g, '1/4')
     .replace(/\u00BD/g, '1/2')
     .replace(/\u00BE/g, '3/4')
@@ -76,7 +77,58 @@ function safeText(s: string): string {
     .replace(/✅/g, '+')
     .replace(/⚠️/g, '!')
     .replace(/🚨/g, '!!')
-    .replace(/[^\x00-\x7F]/g, ''); // remove any remaining non-ASCII
+    .replace(/[^\x00-\x7F]/g, '');
+}
+
+// ─── LocalStorage readers for Research tab data ──────────────────────────────
+
+interface ResearchPaper {
+  title: string;
+  authors: string;
+  year: number;
+  venue: string;
+  abstract: string;
+  relevance: string;
+}
+
+interface CaseStudy {
+  name: string;
+  company: string;
+  year: number;
+  outcome: 'success' | 'failure';
+  description: string;
+  keyFactors: string[];
+  lessonsLearned: string;
+}
+
+const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+
+function getCachedResearchPapers(paradigm: string, userDemographics?: string): ResearchPaper[] | null {
+  try {
+    const demographics = userDemographics?.trim() || 'general';
+    const key = `nexus_research_${paradigm}_${demographics}`.toLowerCase().replace(/\s+/g, '_');
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    const data = JSON.parse(cached);
+    if (Date.now() - data.timestamp > CACHE_DURATION_MS) return null;
+    return data.papers || null;
+  } catch {
+    return null;
+  }
+}
+
+function getCachedCaseStudies(paradigm: string, userDemographics?: string): CaseStudy[] | null {
+  try {
+    const demographics = userDemographics?.trim() || 'general';
+    const key = `nexus_case_studies_${paradigm}_${demographics}`.toLowerCase().replace(/\s+/g, '_');
+    const cached = localStorage.getItem(key);
+    if (!cached) return null;
+    const data = JSON.parse(cached);
+    if (Date.now() - data.timestamp > CACHE_DURATION_MS) return null;
+    return data.cases || null;
+  } catch {
+    return null;
+  }
 }
 
 // ─── Helper class ─────────────────────────────────────────────────────────────
@@ -91,7 +143,6 @@ class PDFBuilder {
     this.page = 1;
   }
 
-  // ── Overflow guard ──────────────────────────────────────────────────────────
   needSpace(h: number): void {
     if (this.y + h > PAGE_H - MARGIN - 8) {
       this.addFooter();
@@ -102,7 +153,6 @@ class PDFBuilder {
     }
   }
 
-  // ── Typography helpers ──────────────────────────────────────────────────────
   h2(text: string, color: [number, number, number] = ACCENT): void {
     this.doc.setTextColor(...color);
     this.doc.setFontSize(11);
@@ -160,7 +210,6 @@ class PDFBuilder {
     this.doc.text(safeText(text).toUpperCase(), x, y);
   }
 
-  // ── Page header (continuation pages) ────────────────────────────────────────
   addPageHeader(): void {
     this.doc.setFillColor(...ACCENT);
     this.doc.rect(0, 0, PAGE_W, 8, 'F');
@@ -171,7 +220,6 @@ class PDFBuilder {
     this.y = 14;
   }
 
-  // ── Footer ──────────────────────────────────────────────────────────────────
   addFooter(): void {
     const fy = PAGE_H - 7;
     this.doc.setTextColor(...MUTED);
@@ -181,7 +229,6 @@ class PDFBuilder {
     this.doc.text(`Page ${this.page}`, PAGE_W - MARGIN, fy, { align: 'right' });
   }
 
-  // ── New page shortcut ───────────────────────────────────────────────────────
   newPage(): void {
     this.addFooter();
     this.doc.addPage();
@@ -204,7 +251,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
   // PAGE 1 — COVER / HERO
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Green header bar
   doc.setFillColor(...ACCENT);
   doc.rect(0, 0, PAGE_W, 40, 'F');
   doc.setTextColor(255, 255, 255);
@@ -218,7 +264,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
 
   b.y = 50;
 
-  // Project context
   if (answers.projectName || answers.userDemographics) {
     const ctx: string[] = [];
     if (answers.projectName) ctx.push(`Project: ${answers.projectName}`);
@@ -357,7 +402,7 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
     doc.text(safeText(`${typeName}  --  ${Math.round(pArg.percentage)}%`), MARGIN + 3, b.y + 4.5);
     b.y += 12;
 
-    // FOR / AGAINST column headers (ASCII text only)
+    // FOR / AGAINST column headers
     doc.setFillColor(...FOR_BG);
     doc.roundedRect(MARGIN, b.y - 1, colW2, 6, 1, 1, 'F');
     doc.setTextColor(...ACCENT);
@@ -371,7 +416,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
     doc.text('AGAINST', rightX + 2, b.y + 3.5);
     b.y += 10;
 
-    // Render args side by side
     const maxArgs = Math.max(pArg.argumentsFor.length, pArg.argumentsAgainst.length);
     for (let i = 0; i < maxArgs; i++) {
       const forArg = pArg.argumentsFor[i];
@@ -448,7 +492,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
   if (regAnalysis && regAnalysis.applicable && regAnalysis.requirements.length > 0) {
     b.newPage();
 
-    // Risk badge
     const riskColor: [number, number, number] =
       regAnalysis.overallRiskLevel === 'critical' ? [185, 28, 28] :
       regAnalysis.overallRiskLevel === 'high'     ? [194, 65, 12] :
@@ -473,7 +516,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
     for (const req of regAnalysis.requirements) {
       b.needSpace(30);
 
-      // Requirement header bar
       const impColor: [number, number, number] =
         req.impactLevel === 'critical' ? [185, 28, 28] :
         req.impactLevel === 'high'     ? [194, 65, 12] :
@@ -481,7 +523,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
                                           ACCENT;
 
       doc.setFillColor(...REG_BG);
-      // Estimate card height
       const descLines = doc.splitTextToSize(safeText(req.description), halfW - 4);
       const citLines = doc.splitTextToSize(safeText(`${req.citation.regulation} - ${req.citation.title}`), halfW - 4);
       const appliesText = safeText(req.applicableParadigms.map(p => INTERFACE_LABELS[p] ?? p).join(', '));
@@ -658,7 +699,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
     b.divider();
     b.h3('Environmental Impact by Interface Type');
 
-    // Table header
     doc.setFillColor(...ACCENT);
     doc.rect(MARGIN, b.y, CONTENT_W, 7, 'F');
     doc.setTextColor(255, 255, 255);
@@ -693,6 +733,169 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // CONDITIONAL — RESEARCH (only if user visited the tab → cache exists)
+  // ═══════════════════════════════════════════════════════════════════════════
+  const cachedPapers = getCachedResearchPapers(
+    recommendation.primary.paradigm,
+    answers.userDemographics
+  );
+  const cachedCases = getCachedCaseStudies(
+    recommendation.primary.paradigm,
+    answers.userDemographics
+  );
+
+  const hasPapers = cachedPapers && cachedPapers.length > 0;
+  const hasCases = cachedCases && cachedCases.length > 0;
+
+  if (hasPapers || hasCases) {
+    b.newPage();
+
+    b.h2('Supporting Research & Case Studies', [109, 40, 217]); // violet-700
+    b.muted('AI-generated suggestions based on your paradigm context. Verify citations independently.');
+    b.gap(4);
+
+    // ── Papers ──
+    if (hasPapers && cachedPapers) {
+      b.h3('Academic Papers');
+      b.gap(2);
+
+      for (const paper of cachedPapers) {
+        const titleLines = doc.splitTextToSize(safeText(paper.title), CONTENT_W - 10);
+        const abstractLines = doc.splitTextToSize(safeText(paper.abstract), CONTENT_W - 10);
+        const relevanceLines = doc.splitTextToSize(safeText(paper.relevance), CONTENT_W - 10);
+        const cardH = (titleLines.length + abstractLines.length + relevanceLines.length) * 4 + 20;
+
+        b.needSpace(cardH + 4);
+
+        doc.setFillColor(...RESEARCH_BG);
+        doc.roundedRect(MARGIN, b.y, CONTENT_W, cardH, 2, 2, 'F');
+
+        // Title
+        doc.setTextColor(...FG);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text(titleLines, MARGIN + 4, b.y + 5);
+
+        // Authors + year + venue
+        const metaY = b.y + 5 + titleLines.length * 4 + 1;
+        doc.setTextColor(...MUTED);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(safeText(`${paper.authors} | ${paper.year} | ${paper.venue}`), MARGIN + 4, metaY);
+
+        // Abstract
+        const absY = metaY + 5;
+        doc.setTextColor(...FG);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(abstractLines, MARGIN + 4, absY);
+
+        // Relevance
+        const relY = absY + abstractLines.length * 4 + 2;
+        doc.setTextColor(109, 40, 217); // violet
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(doc.splitTextToSize(safeText(`-> ${paper.relevance}`), CONTENT_W - 10), MARGIN + 4, relY);
+
+        b.y += cardH + 4;
+      }
+
+      b.gap(4);
+    }
+
+    // ── Case Studies ──
+    if (hasCases && cachedCases) {
+      b.divider();
+      b.h3('Real-World Case Studies');
+      b.gap(2);
+
+      const caseHalfW = (CONTENT_W - 6) / 2;
+      const caseRightX = MARGIN + caseHalfW + 6;
+
+      for (const cs of cachedCases) {
+        const isSuccess = cs.outcome === 'success';
+        const outcomeColor: [number, number, number] = isSuccess ? ACCENT : [185, 28, 28];
+        const outcomeBg: [number, number, number] = isSuccess ? FOR_BG : FLAG_BG;
+
+        // Estimate height
+        const descLines = doc.splitTextToSize(safeText(cs.description), caseHalfW - 6);
+        const lessonLines = doc.splitTextToSize(safeText(cs.lessonsLearned), caseHalfW - 6);
+        const factorsH = cs.keyFactors.reduce((a, f) => a + doc.splitTextToSize(safeText(f), caseHalfW - 8).length * 3.5 + 1.5, 0);
+        const leftH = (descLines.length + lessonLines.length) * 4 + 16;
+        const rightH = factorsH + 10;
+        const cardH = Math.max(leftH, rightH) + 8;
+
+        b.needSpace(cardH + 4);
+
+        // Card bg
+        doc.setFillColor(...outcomeBg);
+        doc.roundedRect(MARGIN, b.y, CONTENT_W, cardH, 2, 2, 'F');
+
+        // Outcome pill
+        doc.setFillColor(...outcomeColor);
+        const outcomeLabel = isSuccess ? 'SUCCESS' : 'FAILURE';
+        const oPillW = doc.getTextWidth(outcomeLabel) + 5;
+        doc.roundedRect(MARGIN + 3, b.y + 3, oPillW, 4.5, 1, 1, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(6);
+        doc.setFont('helvetica', 'bold');
+        doc.text(outcomeLabel, MARGIN + 5, b.y + 6);
+
+        // Name + company + year
+        doc.setTextColor(...FG);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(safeText(cs.name), MARGIN + oPillW + 8, b.y + 6.5);
+        doc.setTextColor(...MUTED);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(safeText(`${cs.company} | ${cs.year}`), MARGIN + 3, b.y + 12);
+
+        const contentY = b.y + 17;
+
+        // LEFT: Description + Lesson
+        doc.setTextColor(...MUTED);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DESCRIPTION', MARGIN + 3, contentY);
+        doc.setTextColor(...FG);
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(descLines, MARGIN + 3, contentY + 4);
+
+        const lessonY = contentY + descLines.length * 4 + 6;
+        doc.setTextColor(...MUTED);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'bold');
+        doc.text('LESSON LEARNED', MARGIN + 3, lessonY);
+        doc.setTextColor(...outcomeColor);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(lessonLines, MARGIN + 3, lessonY + 4);
+
+        // RIGHT: Key Factors
+        doc.setTextColor(...MUTED);
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'bold');
+        doc.text('KEY FACTORS', caseRightX, contentY);
+        let fy = contentY + 4;
+        for (const factor of cs.keyFactors) {
+          doc.setTextColor(...FG);
+          doc.setFontSize(7);
+          doc.setFont('helvetica', 'normal');
+          const fLines = doc.splitTextToSize(safeText(`- ${factor}`), caseHalfW - 8);
+          doc.text(fLines, caseRightX, fy);
+          fy += fLines.length * 3.5 + 1.5;
+        }
+
+        b.y += cardH + 4;
+      }
+    }
+
+    b.addFooter();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // CONDITIONAL — RED FLAGS
   // ═══════════════════════════════════════════════════════════════════════════
   const flagsReport = detectRedFlags(answers, recommendation);
@@ -718,7 +921,6 @@ export function generatePDFReport({ answers, recommendation, createdAt }: PDFGen
         flag.severity === 'high'     ? [255, 247, 237] :
                                        [255, 251, 235];
 
-      // Estimate card height
       const halfW = (CONTENT_W - 6) / 2;
       const descLines = doc.splitTextToSize(safeText(flag.description), halfW - 4).length;
       const impactLines = doc.splitTextToSize(safeText(flag.impact), halfW - 4).length;
