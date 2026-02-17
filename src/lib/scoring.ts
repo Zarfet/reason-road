@@ -568,7 +568,7 @@ export function getRedFlags(answers: AssessmentAnswers, recommendation: Recommen
     flags.push({
       text: '⚠️ Invisible automation with high-stakes errors needs confirmation checkpoints',
       source: 'Error Consequence + Paradigm',
-      description: 'Automation in high-stakes contexts requires explicit confirmation to prevent costly errors. Studies show 23% of automation failures occur due to lack of user verification.',
+      description: 'Automation in high-stakes contexts requires explicit confirmation to prevent costly errors. Research on automation complacency shows users systematically over-trust automated systems, especially when errors are rare.',
       reference: {
         title: 'Parasuraman, R. (2010). Complacency and Bias in Human Use of Automation',
         url: 'https://doi.org/10.1518/001872010X12829369036556'
@@ -596,9 +596,9 @@ export function getRedFlags(answers: AssessmentAnswers, recommendation: Recommen
     flags.push({
       text: '⚠️ Voice interfaces may be inappropriate in public—add silent alternatives',
       source: 'Context of Use + Voice Score',
-      description: 'Privacy concerns and social norms limit voice interface adoption in public. 74% of users prefer silent input methods when around others.',
+      description: 'Privacy concerns and social norms significantly limit voice interface adoption in public and shared contexts. Users consistently report preferring silent alternatives when around others.',
       reference: {
-        title: 'Luger, E. & Sellen, A. (2016). Like Having a Really Bad PA',
+        title: 'Luger, E. & Sellen, A. (2016). Like Having a Really Bad PA: The Gulf Between User Expectation and the Reality of Conversational Agents',
         url: 'https://doi.org/10.1145/2858036.2858288'
       }
     });
@@ -608,11 +608,11 @@ export function getRedFlags(answers: AssessmentAnswers, recommendation: Recommen
   // All invisible/automated systems need escape hatches
   if (recommendation.primary.paradigm === 'invisible' || recommendation.secondary.paradigm === 'invisible') {
     flags.push({
-      text: '⚠️ Ensure override mechanism accessible in <3 seconds',
+      text: '⚠️ Ensure override mechanism is always immediately accessible',
       source: 'Invisible Paradigm in Top 2',
-      description: 'Users need immediate access to manual controls when automation fails. The 3-second threshold is based on reaction time research for safe handoff.',
+      description: 'Users need immediate access to manual controls when automation fails. SAE automation standards establish that human takeover must be achievable within a defined, minimal timeframe to ensure safe and trusted handoff.',
       reference: {
-        title: 'SAE International (2021). Taxonomy of Automated Driving',
+        title: 'SAE International (2021). Taxonomy and Definitions for Terms Related to Driving Automation Systems',
         url: 'https://www.sae.org/standards/content/j3016_202104/'
       }
     });
