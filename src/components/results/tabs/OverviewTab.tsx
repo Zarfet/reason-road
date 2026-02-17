@@ -261,13 +261,13 @@ export function OverviewTab({ recommendation, answers, reasoningBullets, redFlag
       </BentoBox>
 
       {/* Top 3 Strengths - LARGE */}
-      <BentoBox size="large">
+      <BentoBox size="wide">
         <BentoHeader
           title="Key Strengths"
           subtitle="Personalized to your context"
           icon={<CheckCircle className="h-5 w-5 text-accent" />}
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {strengths.map((s, i) => (
             <motion.div
               key={i}
@@ -297,7 +297,7 @@ export function OverviewTab({ recommendation, answers, reasoningBullets, redFlag
       </BentoBox>
 
       {/* Top 3 Risks - LARGE */}
-      <BentoBox size="large">
+      <BentoBox size="wide">
         <BentoHeader
           title="Risks to Watch"
           subtitle="With recommended mitigations"
