@@ -126,8 +126,8 @@ export default function SavedResults() {
   const redFlags = getRedFlags(answers, recommendation);
   const confidenceLevel = calculateConfidenceLevel(answers, recommendation);
 
-  const handleDownloadPDF = () => {
-    generatePDFReport({ 
+  const handleDownloadPDF = async () => {
+    await generatePDFReport({ 
       answers, 
       recommendation, 
       createdAt: assessment.created_at 

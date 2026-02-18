@@ -70,8 +70,8 @@ export default function Results() {
     navigate('/');
   };
 
-  const handleDownloadPDF = () => {
-    generatePDFReport({ answers, recommendation });
+  const handleDownloadPDF = async () => {
+    await generatePDFReport({ answers, recommendation });
     toast({
       title: "PDF Generated",
       description: "Your report has been downloaded.",

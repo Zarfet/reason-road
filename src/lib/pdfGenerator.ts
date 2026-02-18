@@ -6,6 +6,18 @@
  */
 
 import type { AssessmentAnswers, RecommendationResult } from '@/types/assessment';
+import nexusLogoUrl from '@/assets/nexus-logo.png';
+
+// Convert image URL to base64 data URL for iframe embedding
+async function toBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+}
 import { PARADIGM_LABELS } from '@/types/assessment';
 import { getReasoningBullets } from '@/lib/scoring';
 import { generateStrategicRationale } from '@/components/results/tabs/OverviewTab';
@@ -49,17 +61,18 @@ function esc(s: string): string {
 }
 
 // ─── Section header (replaces pageWrapper) ────────────────────────────────────
-function sectionHeader(title: string): string {
+function sectionHeader(title: string, logoBase64: string): string {
   return `
   <div class="section-divider">
-    <div class="section-number-title">
+    <div class="section-header-row">
+      <img src="${logoBase64}" class="section-logo" alt="" />
       <span class="section-title">${esc(title)}</span>
     </div>
   </div>`;
 }
 
 // ─── Cover ────────────────────────────────────────────────────────────────────
-function buildCover(answers: AssessmentAnswers, recommendation: RecommendationResult, dateStr: string): string {
+function buildCover(answers: AssessmentAnswers, recommendation: RecommendationResult, dateStr: string, logoBase64: string): string {
   const diff = recommendation.primary.pct - recommendation.secondary.pct;
   const confLabel = diff >= 30 ? 'STRONG' : diff >= 15 ? 'MODERATE' : 'LOW';
   const bullets = getReasoningBullets(answers, recommendation).slice(0, 4);
@@ -73,10 +86,12 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
   <div class="cover-section">
     <div class="cover-header">
       <div>
-        <div class="nexus-logo">
-          <svg width="80" height="20" viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <text x="0" y="16" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#000">NEXUS</text>
-          </svg>
+        <div class="nexus-branding">
+          <img src="${logoBase64}" class="nexus-logo-img" alt="NEXUS" />
+          <div class="nexus-text">
+            <div class="nexus-title">NEXUS</div>
+            <div class="nexus-tagline">EVIDENCE-BASED INTERFACE SELECTION FRAMEWORK</div>
+          </div>
         </div>
         <div class="cover-title">${esc(answers.projectName || 'NEXUS Assessment')}</div>
       </div>
@@ -100,7 +115,7 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
 }
 
 // ─── Analysis ─────────────────────────────────────────────────────────────────
-function buildAnalysis(answers: AssessmentAnswers, recommendation: RecommendationResult): string {
+function buildAnalysis(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string {
   const allArgs = generateAllArguments(answers, recommendation);
 
   const sections = allArgs.map(pArg => {
@@ -142,13 +157,13 @@ function buildAnalysis(answers: AssessmentAnswers, recommendation: Recommendatio
   }).join('');
 
   return `
-  ${sectionHeader('02. ANALYSIS — ARGUMENTS FOR & AGAINST')}
+  ${sectionHeader('02. ANALYSIS — ARGUMENTS FOR & AGAINST', logoBase64)}
   <div class="page-subtitle">Arguments for and against each interface type, weighted by your context.</div>
   ${sections}`;
 }
 
 // ─── Regulatory ──────────────────────────────────────────────────────────────
-function buildRegulatory(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+function buildRegulatory(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
   const reg = generateRegulatoryAnalysis(answers, recommendation);
   if (!reg || !reg.applicable || reg.requirements.length === 0) return null;
 
@@ -192,7 +207,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
   }).join('');
 
   return `
-  ${sectionHeader('03. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK')}
+  ${sectionHeader('03. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK', logoBase64)}
   <div class="section-meta">Region: ${esc(reg.region)}</div>
   ${riskSummary}
   <div class="reg-list">${reqs}</div>
@@ -200,7 +215,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
 }
 
 // ─── Sustainability ──────────────────────────────────────────────────────────
-function buildSustainability(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+function buildSustainability(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
   const sust = generateSustainabilityReport(recommendation, answers.valuesRanking ?? [], answers.geography);
   if (!sust.applicable) return null;
 
@@ -282,12 +297,12 @@ function buildSustainability(answers: AssessmentAnswers, recommendation: Recomme
     <div class="disclaimer-text">${esc(clean(sust.disclaimer))}</div>`;
 
   return `
-  ${sectionHeader('04. SUSTAINABILITY REPORT')}
+  ${sectionHeader('04. SUSTAINABILITY REPORT', logoBase64)}
   ${content}`;
 }
 
 // ─── Red Flags ───────────────────────────────────────────────────────────────
-function buildRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+function buildRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
   const flags = detectRedFlags(answers, recommendation);
   if (!flags.hasFlags) return null;
 
@@ -332,13 +347,13 @@ function buildRedFlags(answers: AssessmentAnswers, recommendation: Recommendatio
   }).join('');
 
   return `
-  ${sectionHeader('05. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)')}
+  ${sectionHeader('05. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)', logoBase64)}
   <div class="flag-summary ${flags.criticalCount > 0 ? 'flag-summary-critical' : ''}">${esc(summary)}</div>
   ${cards}`;
 }
 
 // ─── Research ────────────────────────────────────────────────────────────────
-function buildResearch(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
+function buildResearch(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
   const demo = (answers.userDemographics?.trim() || 'general').toLowerCase().replace(/\s+/g, '_');
   const paradigm = recommendation.primary.paradigm;
   const rKey = `nexus_research_${paradigm}_${demo}`;
@@ -391,7 +406,7 @@ function buildResearch(answers: AssessmentAnswers, recommendation: Recommendatio
   }
 
   return `
-  ${sectionHeader('06. RESEARCH & CASE STUDIES')}
+  ${sectionHeader('06. RESEARCH & CASE STUDIES', logoBase64)}
   ${papers.length > 0 ? `
   <div class="section-title">Supporting Academic Research</div>
   <ul class="research-list">${paperItems}</ul>` : ''}
@@ -442,6 +457,49 @@ const CSS = `
   .cover-header {
     display: flex; justify-content: space-between; align-items: flex-end;
     border-bottom: 2px solid #000; padding-bottom: 14px;
+  }
+  .nexus-branding {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .nexus-logo-img {
+    height: 28px;
+    width: 28px;
+    object-fit: contain;
+  }
+  .nexus-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .nexus-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: #000;
+  }
+  .nexus-tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.42rem;
+    color: #888;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .section-header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-logo {
+    height: 16px;
+    width: 16px;
+    object-fit: contain;
+    opacity: 0.6;
   }
   .nexus-logo { margin-bottom: 6px; }
   .confidence-detail { font-size: 0.65rem; color: #666; margin-top: 2px; }
@@ -585,7 +643,7 @@ const CSS = `
 `;
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export function generatePDFReport({
+export async function generatePDFReport({
   answers,
   recommendation,
   createdAt,
@@ -593,20 +651,22 @@ export function generatePDFReport({
   answers: AssessmentAnswers;
   recommendation: RecommendationResult;
   createdAt?: string;
-}): void {
+}): Promise<void> {
+  const logoBase64 = await toBase64(nexusLogoUrl);
+  
   const dateStr = createdAt
     ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
     : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   // Build all sections
   const sections: string[] = [];
-  sections.push(buildCover(answers, recommendation, dateStr));
-  sections.push(buildAnalysis(answers, recommendation));
+  sections.push(buildCover(answers, recommendation, dateStr, logoBase64));
+  sections.push(buildAnalysis(answers, recommendation, logoBase64));
 
-  const regSection = buildRegulatory(answers, recommendation);
-  const sustSection = buildSustainability(answers, recommendation);
-  const flagsSection = buildRedFlags(answers, recommendation);
-  const resSection = buildResearch(answers, recommendation);
+  const regSection = buildRegulatory(answers, recommendation, logoBase64);
+  const sustSection = buildSustainability(answers, recommendation, logoBase64);
+  const flagsSection = buildRedFlags(answers, recommendation, logoBase64);
+  const resSection = buildResearch(answers, recommendation, logoBase64);
 
   if (regSection) sections.push(regSection);
   if (sustSection) sections.push(sustSection);
