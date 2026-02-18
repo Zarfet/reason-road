@@ -5,7 +5,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, ArrowLeft, User, Calendar, LogOut, FileText, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Calendar, LogOut, FileText, Loader2, Trash2 } from 'lucide-react';
+import { NexusLogo } from '@/components/layout/NexusLogo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -107,11 +108,8 @@ export default function Profile() {
     <div className="min-h-screen bg-background">
       <header className="nexus-container py-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-70 transition-opacity">
-            <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-              <Target className="h-4 w-4 text-background" />
-            </div>
-            <span className="font-semibold text-lg tracking-tight text-foreground">NEXUS</span>
+          <Link to="/" className="hover:opacity-70 transition-opacity">
+            <NexusLogo />
           </Link>
           <Link to="/assessment">
             <Button variant="ghost" size="sm" className="gap-2">

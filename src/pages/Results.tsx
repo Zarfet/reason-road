@@ -5,7 +5,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft, User } from 'lucide-react';
+import { NexusLogo } from '@/components/layout/NexusLogo';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAssessment } from '@/context/AssessmentContext';
@@ -83,12 +84,7 @@ export default function Results() {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-                <Target className="h-4 w-4 text-background" />
-              </div>
-              <span className="font-semibold text-lg tracking-tight text-foreground">NEXUS</span>
-            </div>
+            <NexusLogo iconSize={28} />
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className="text-muted-foreground hover:text-foreground">
                 <User className="h-4 w-4 mr-2" />
