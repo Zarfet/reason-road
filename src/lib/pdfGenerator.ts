@@ -48,50 +48,29 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ─── Page wrapper ─────────────────────────────────────────────────────────────
-function pageWrapper(num: number, title: string, rightMeta: string, content: string): string {
+// ─── Section header (replaces pageWrapper) ────────────────────────────────────
+function sectionHeader(title: string): string {
   return `
-  <div class="a4-page">
-    <div class="page-header">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <svg width="50" height="14" viewBox="0 0 50 14" fill="none"><text x="0" y="11" font-family="system-ui" font-size="11" font-weight="600" fill="#888">NEXUS</text></svg>
-        <span class="page-title">${esc(title)}</span>
-      </div>
-      <div class="mono">${esc(rightMeta)}</div>
+  <div class="section-divider">
+    <div class="section-number-title">
+      <span class="section-title">${esc(title)}</span>
     </div>
-    ${content}
   </div>`;
 }
 
-// ─── PAGE 1: Cover ────────────────────────────────────────────────────────────
+// ─── Cover ────────────────────────────────────────────────────────────────────
 function buildCover(answers: AssessmentAnswers, recommendation: RecommendationResult, dateStr: string): string {
   const diff = recommendation.primary.pct - recommendation.secondary.pct;
   const confLabel = diff >= 30 ? 'STRONG' : diff >= 15 ? 'MODERATE' : 'LOW';
   const bullets = getReasoningBullets(answers, recommendation).slice(0, 4);
   const rationale = clean(generateStrategicRationale(recommendation, answers));
 
-  const sortedScores = Object.entries(recommendation.allScores)
-    .sort(([, a], [, b]) => (b as number) - (a as number));
-
-  const scoreBars = sortedScores.map(([key, score]) => {
-    const pct = score as number;
-    const isPrimary = key === recommendation.primary.paradigm;
-    return `
-    <div class="score-row ${isPrimary ? 'score-primary' : ''}">
-      <div class="score-header">
-        <div class="score-label">${esc(iLabel(key).toUpperCase())}</div>
-        <div class="score-pct">${Math.round(pct)}%</div>
-      </div>
-      <div class="bar-container"><div class="bar-fill" style="width:${pct}%;background:${isPrimary ? '#000' : '#aaa'}"></div></div>
-    </div>`;
-  }).join('');
-
   const bulletItems = bullets.map((b, i) =>
     `<li>${i + 1}. ${esc(clean(b))}</li>`
   ).join('');
 
   return `
-  <div class="a4-page">
+  <div class="cover-section">
     <div class="cover-header">
       <div>
         <div class="nexus-logo">
@@ -100,7 +79,6 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
           </svg>
         </div>
         <div class="cover-title">${esc(answers.projectName || 'NEXUS Assessment')}</div>
-        ${answers.userDemographics ? `<div class="cover-sub">User: ${esc(answers.userDemographics)}</div>` : ''}
       </div>
       <div class="cover-meta">
         <div class="mono">CONFIDENCE: ${confLabel}</div>
@@ -109,29 +87,21 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
       </div>
     </div>
 
-    <div class="cover-grid">
-      <div class="strategy-card">
-        <div class="badge">Recommended Strategy</div>
-        <div class="strategy-name">
-          ${esc(iLabel(recommendation.primary.paradigm))}
-          <span class="strategy-secondary"> + ${esc(iLabel(recommendation.secondary.paradigm))}</span>
-        </div>
-        <div class="strategy-rationale">${esc(rationale)}</div>
-        <ul class="reasoning-list">${bulletItems}</ul>
+    <div class="strategy-card">
+      <div class="badge">Recommended Strategy</div>
+      <div class="strategy-name">
+        ${esc(iLabel(recommendation.primary.paradigm))}
+        <span class="strategy-secondary"> + ${esc(iLabel(recommendation.secondary.paradigm))}</span>
       </div>
-
-      <div class="scores-panel">
-        ${scoreBars}
-      </div>
+      <div class="strategy-rationale">${esc(rationale)}</div>
+      <ul class="reasoning-list">${bulletItems}</ul>
     </div>
-
   </div>`;
 }
 
-// ─── PAGE 2: Analysis ─────────────────────────────────────────────────────────
+// ─── Analysis ─────────────────────────────────────────────────────────────────
 function buildAnalysis(answers: AssessmentAnswers, recommendation: RecommendationResult): string {
   const allArgs = generateAllArguments(answers, recommendation);
-  const diff = recommendation.primary.pct - recommendation.secondary.pct;
 
   const sections = allArgs.map(pArg => {
     const forItems = pArg.argumentsFor.map(a => `
@@ -171,14 +141,13 @@ function buildAnalysis(answers: AssessmentAnswers, recommendation: Recommendatio
     </div>`;
   }).join('');
 
-  const content = `
-    <div class="page-subtitle">Arguments for and against each interface type, weighted by your context.</div>
-    ${sections}`;
-
-  return pageWrapper(2, '02. Analysis — Arguments For & Against', `CONFIDENCE GAP: ${diff}%`, content);
+  return `
+  ${sectionHeader('02. ANALYSIS — ARGUMENTS FOR & AGAINST')}
+  <div class="page-subtitle">Arguments for and against each interface type, weighted by your context.</div>
+  ${sections}`;
 }
 
-// ─── PAGE 3: Regulatory ──────────────────────────────────────────────────────
+// ─── Regulatory ──────────────────────────────────────────────────────────────
 function buildRegulatory(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const reg = generateRegulatoryAnalysis(answers, recommendation);
   if (!reg || !reg.applicable || reg.requirements.length === 0) return null;
@@ -222,21 +191,15 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
     </div>`;
   }).join('');
 
-  const content = `
-    <div class="reg-overview">
-      <div>
-        <span>Overall risk: </span><span class="risk-badge ${riskClass}">${esc(reg.overallRiskLevel.toUpperCase())} RISK</span>
-        <span class="mono" style="margin-left:12px">Region: ${esc(reg.region)}</span>
-      </div>
-    </div>
-    ${riskSummary}
-    <div class="reg-list">${reqs}</div>
-    <div class="legal-disclaimer">Legal Disclaimer: ${esc(clean(reg.disclaimer))}</div>`;
-
-  return pageWrapper(3, '03. Regulatory Audit', 'STATUS: ACTION REQUIRED', content);
+  return `
+  ${sectionHeader('03. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK')}
+  <div class="section-meta">Region: ${esc(reg.region)}</div>
+  ${riskSummary}
+  <div class="reg-list">${reqs}</div>
+  <div class="legal-disclaimer">Legal Disclaimer: ${esc(clean(reg.disclaimer))}</div>`;
 }
 
-// ─── PAGE 4: Sustainability ──────────────────────────────────────────────────
+// ─── Sustainability ──────────────────────────────────────────────────────────
 function buildSustainability(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const sust = generateSustainabilityReport(recommendation, answers.valuesRanking ?? [], answers.geography);
   if (!sust.applicable) return null;
@@ -318,10 +281,12 @@ function buildSustainability(answers: AssessmentAnswers, recommendation: Recomme
 
     <div class="disclaimer-text">${esc(clean(sust.disclaimer))}</div>`;
 
-  return pageWrapper(4, '04. Sustainability Report', 'ENV. IMPACT', content);
+  return `
+  ${sectionHeader('04. SUSTAINABILITY REPORT')}
+  ${content}`;
 }
 
-// ─── PAGE 5: Red Flags ───────────────────────────────────────────────────────
+// ─── Red Flags ───────────────────────────────────────────────────────────────
 function buildRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const flags = detectRedFlags(answers, recommendation);
   if (!flags.hasFlags) return null;
@@ -366,14 +331,13 @@ function buildRedFlags(answers: AssessmentAnswers, recommendation: Recommendatio
     </div>`;
   }).join('');
 
-  const content = `
-    <div class="flag-summary ${flags.criticalCount > 0 ? 'flag-summary-critical' : ''}">${esc(summary)}</div>
-    ${cards}`;
-
-  return pageWrapper(5, '05. Red Flags & Critical Considerations', `${flags.totalFlags} ISSUE(S)`, content);
+  return `
+  ${sectionHeader('05. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)')}
+  <div class="flag-summary ${flags.criticalCount > 0 ? 'flag-summary-critical' : ''}">${esc(summary)}</div>
+  ${cards}`;
 }
 
-// ─── PAGE 6: Research ────────────────────────────────────────────────────────
+// ─── Research ────────────────────────────────────────────────────────────────
 function buildResearch(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const demo = (answers.userDemographics?.trim() || 'general').toLowerCase().replace(/\s+/g, '_');
   const paradigm = recommendation.primary.paradigm;
@@ -426,16 +390,15 @@ function buildResearch(answers: AssessmentAnswers, recommendation: Recommendatio
     return `<div class="case-group ${cls}"><div class="case-group-title">${esc(label)}</div>${items}</div>`;
   }
 
-  const content = `
-    ${papers.length > 0 ? `
-    <div class="section-title">Supporting Academic Research</div>
-    <ul class="research-list">${paperItems}</ul>` : ''}
-    ${(successes.length > 0 || failures.length > 0) ? `
-    <div class="section-title">Real-World Case Studies</div>
-    ${caseGroup(successes, 'Successes', 'group-success')}
-    ${caseGroup(failures, 'Failures', 'group-failure')}` : ''}`;
-
-  return pageWrapper(6, '06. Research & Case Studies', 'SOURCE MATERIAL', content);
+  return `
+  ${sectionHeader('06. RESEARCH & CASE STUDIES')}
+  ${papers.length > 0 ? `
+  <div class="section-title">Supporting Academic Research</div>
+  <ul class="research-list">${paperItems}</ul>` : ''}
+  ${(successes.length > 0 || failures.length > 0) ? `
+  <div class="section-title">Real-World Case Studies</div>
+  ${caseGroup(successes, 'Successes', 'group-success')}
+  ${caseGroup(failures, 'Failures', 'group-failure')}` : ''}`;
 }
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -445,23 +408,37 @@ const CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', sans-serif; background: #e5e5e5; }
 
-  .a4-page {
-    background: white; width: 210mm; min-height: 297mm; padding: 15mm;
-    position: relative; color: #111; display: flex; flex-direction: column; gap: 16px;
-    page-break-after: always;
+  .pdf-document {
+    background: white; width: 210mm; padding: 15mm;
+    color: #111; display: flex; flex-direction: column; gap: 0;
   }
 
   .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: -0.02em; }
   .text-xs { font-size: 0.72rem; line-height: 1.5; color: #444; }
   .mt-2 { display: block; margin-top: 8px; }
 
-  .page-header {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    border-bottom: 1px solid #ccc; padding-bottom: 8px; margin-bottom: 4px;
+  .section-divider {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    border-top: 3px solid #000;
+    padding-top: 8px;
   }
-  .page-title { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
+  .section-title-main {
+    font-size: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .section-meta {
+    font-size: 0.7rem;
+    color: #666;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
   .page-subtitle { font-size: 0.72rem; color: #666; font-style: italic; margin-bottom: 8px; }
 
+  .cover-section { margin-bottom: 0; }
   .cover-header {
     display: flex; justify-content: space-between; align-items: flex-end;
     border-bottom: 2px solid #000; padding-bottom: 14px;
@@ -469,12 +446,16 @@ const CSS = `
   .nexus-logo { margin-bottom: 6px; }
   .confidence-detail { font-size: 0.65rem; color: #666; margin-top: 2px; }
   .cover-title { font-size: 2.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
-  .cover-sub { font-size: 0.78rem; color: #555; margin-top: 4px; }
   .cover-meta { text-align: right; }
   .cover-meta div { margin-bottom: 2px; }
-  .cover-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
 
-  .strategy-card { border: 2px solid #000; padding: 16px; }
+  .strategy-card {
+    margin-top: 20px;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    border-radius: 4px;
+  }
   .badge {
     display: inline-block; background: #000; color: #fff;
     font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
@@ -485,17 +466,6 @@ const CSS = `
   .strategy-rationale { font-size: 0.72rem; color: #444; line-height: 1.5; margin-bottom: 10px; }
   .reasoning-list { list-style: none; font-size: 0.72rem; display: flex; flex-direction: column; gap: 6px; }
   .reasoning-list li { padding-left: 4px; border-left: 3px solid #000; line-height: 1.4; }
-
-  .scores-panel { border: 1px solid #ccc; padding: 14px; background: #fafafa; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
-  .score-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
-  .score-header { display: flex; justify-content: space-between; align-items: center; }
-  .score-label { font-size: 0.65rem; font-weight: 700; }
-  .bar-container { height: 10px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 2px; overflow: hidden; }
-  .bar-fill { height: 100%; }
-  .score-pct { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: #666; }
-  .score-primary .score-label { font-weight: 800; }
-  .score-primary .score-pct { color: #000; font-weight: 700; }
-  .score-row:not(.score-primary) { opacity: 0.5; }
 
   .paradigm-section { margin-bottom: 14px; }
   .paradigm-bar {
@@ -545,8 +515,6 @@ const CSS = `
   .reg-impact-medium { color: #a16207; }
   .reg-impact-low { color: #166534; }
   .reg-body { display: flex; flex-direction: column; gap: 6px; }
-  .reg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .citation-row { display: flex; gap: 8px; align-items: center; }
   .legal-disclaimer {
     margin-top: 12px; border: 1px solid #000; padding: 8px 12px;
     font-size: 0.65rem; background: #fafafa;
@@ -612,7 +580,7 @@ const CSS = `
 
   @media print {
     body { background: none; }
-    .a4-page { box-shadow: none; width: 100%; margin: 0; }
+    .pdf-document { box-shadow: none; width: 100%; margin: 0; }
   }
 `;
 
@@ -630,22 +598,22 @@ export function generatePDFReport({
     ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
     : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-  // Build all pages
-  const pages: string[] = [];
-  pages.push(buildCover(answers, recommendation, dateStr));
-  pages.push(buildAnalysis(answers, recommendation));
+  // Build all sections
+  const sections: string[] = [];
+  sections.push(buildCover(answers, recommendation, dateStr));
+  sections.push(buildAnalysis(answers, recommendation));
 
-  const regPage = buildRegulatory(answers, recommendation);
-  const sustPage = buildSustainability(answers, recommendation);
-  const flagsPage = buildRedFlags(answers, recommendation);
-  const resPage = buildResearch(answers, recommendation);
+  const regSection = buildRegulatory(answers, recommendation);
+  const sustSection = buildSustainability(answers, recommendation);
+  const flagsSection = buildRedFlags(answers, recommendation);
+  const resSection = buildResearch(answers, recommendation);
 
-  if (regPage) pages.push(regPage);
-  if (sustPage) pages.push(sustPage);
-  if (flagsPage) pages.push(flagsPage);
-  if (resPage) pages.push(resPage);
+  if (regSection) sections.push(regSection);
+  if (sustSection) sections.push(sustSection);
+  if (flagsSection) sections.push(flagsSection);
+  if (resSection) sections.push(resSection);
 
-  const html = pages.join('\n');
+  const html = `<div class="pdf-document">${sections.join('\n')}</div>`;
 
   // Inject into hidden iframe and trigger print
   const iframe = document.createElement('iframe');
