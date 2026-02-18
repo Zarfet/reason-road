@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { NexusLogo } from '@/components/layout/NexusLogo';
 import { Button } from '@/components/ui/button';
 import { WizardProgress } from '@/components/wizard/WizardProgress';
 import { WizardNavigation } from '@/components/wizard/WizardNavigation';
@@ -55,12 +56,7 @@ export default function Assessment() {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-                <Target className="h-4 w-4 text-background" />
-              </div>
-              <span className="font-semibold text-lg tracking-tight text-foreground">NEXUS</span>
-            </div>
+            <NexusLogo iconSize={28} />
             <Button 
               variant="outline" 
               size="sm" 
