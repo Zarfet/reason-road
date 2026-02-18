@@ -138,11 +138,11 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
     return sustainabilityRank >= 0 && sustainabilityRank <= 2;
   };
 
-  // Helper: Check if regulatory impact shown
+  // Helper: Check if regulatory impact shown (now all geographies get regulatory)
   const hasRegulatoryImpact = (assessment: AssessmentRow) => {
     const r = (assessment.responses || {}) as Record<string, unknown>;
     const geography = r.geography as string | undefined;
-    return geography === 'Primarily Europe' || geography === 'Global (multiple regions)';
+    return !!geography; // All geographies now get regulatory analysis
   };
 
   // Filtered & Sorted Data
@@ -175,15 +175,14 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
 
     if (filterSustainabilityImpact !== 'all') {
       filtered = filtered.filter((a) => {
-        const r = (a.responses || {}) as Record<string, unknown>;
-        const valuesRanking = r.valuesRanking as string[] | undefined;
-        const sustainabilityRank = valuesRanking?.indexOf('Sustainability') ?? -1;
-        const hasSustainability = sustainabilityRank >= 0 && sustainabilityRank <= 2;
-        if (!hasSustainability && filterSustainabilityImpact === 'none') return true;
-        if (!hasSustainability) return false;
         const pr = (a.paradigm_results || {}) as Record<string, unknown>;
         const sustainability = pr.sustainability as { weightedCO2?: number } | undefined;
-        const co2 = sustainability?.weightedCO2 || 0;
+
+        if (!sustainability || sustainability.weightedCO2 === undefined) {
+          return filterSustainabilityImpact === 'none';
+        }
+
+        const co2 = sustainability.weightedCO2;
         if (filterSustainabilityImpact === 'low') return co2 < 30;
         if (filterSustainabilityImpact === 'medium') return co2 >= 30 && co2 < 50;
         if (filterSustainabilityImpact === 'high') return co2 >= 50;
@@ -193,14 +192,14 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
 
     if (filterRegulatoryRisk !== 'all') {
       filtered = filtered.filter((a) => {
-        const r = (a.responses || {}) as Record<string, unknown>;
-        const geography = r.geography as string | undefined;
-        if (geography !== 'Primarily Europe' && geography !== 'Global (multiple regions)') {
-          return filterRegulatoryRisk === 'none';
-        }
         const pr = (a.paradigm_results || {}) as Record<string, unknown>;
         const regulatory = pr.regulatory as { overallRiskLevel?: string } | undefined;
-        const riskLevel = regulatory?.overallRiskLevel?.toLowerCase() || 'low';
+
+        if (!regulatory || !regulatory.overallRiskLevel) {
+          return filterRegulatoryRisk === 'none';
+        }
+
+        const riskLevel = regulatory.overallRiskLevel.toLowerCase();
         return filterRegulatoryRisk === riskLevel;
       });
     }
