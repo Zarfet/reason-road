@@ -31,6 +31,17 @@ export interface RegulatoryAnalysis {
   applicable: boolean;
   requirements: RegulatoryRequirement[];
   overallRiskLevel: 'low' | 'medium' | 'high' | 'critical';
+  riskRationale: string;
+  complianceCategories: {
+    procedural: string[];
+    technical: string[];
+    organizational: string[];
+  };
+  preLaunchBlockers: string[];
+  officialGuidance: {
+    title: string;
+    url: string;
+  }[];
   recommendations: string[];
   disclaimer: string;
 }
@@ -300,24 +311,124 @@ export function generateRegulatoryAnalysis(
      highCount > 2 ? 'high' :
      highCount > 0 ? 'medium' : 'low';
    
+   // Generate academic risk rationale
+   let riskRationale = '';
+   const complianceCategories = {
+     procedural: [] as string[],
+     technical: [] as string[],
+     organizational: [] as string[]
+   };
+   const preLaunchBlockers: string[] = [];
+   const officialGuidance: { title: string; url: string }[] = [];
+
+   if (overallRiskLevel === 'critical') {
+     riskRationale = `Your design qualifies as a high-risk AI system under EU AI Act Annex III due to ${Math.round((percentages as any).ai_vectorial)}% AI usage in covered sectors. Article 43 requires third-party conformity assessment by notified bodies before market placement.`;
+     complianceCategories.procedural = [
+       'Conformity assessment (EU AI Act Art. 43)',
+       'Technical documentation (Annex IV)',
+       'EU Database registration (Art. 60)'
+     ];
+     complianceCategories.technical = [
+       'Risk management system (Art. 9)',
+       'Data governance measures (Art. 10)',
+       'Human oversight mechanisms (Art. 14)'
+     ];
+     complianceCategories.organizational = [
+       'Quality management system (Art. 17)',
+       'Post-market monitoring (Art. 72)'
+     ];
+     preLaunchBlockers.push(
+       'Conformity assessment by notified body (EU AI Act Art. 43)',
+       'CE marking affixation (Art. 49)',
+       'EU Database registration (Art. 60)'
+     );
+     officialGuidance.push(
+       { title: 'EU AI Act - Official Text', url: 'https://eur-lex.europa.eu/eli/reg/2024/1689' },
+       { title: 'Commission Implementing Regulation - Conformity Assessment', url: 'https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai' }
+     );
+   } else if (overallRiskLevel === 'high') {
+     const hasAI = (percentages as any).ai_vectorial > 20;
+     const hasInvisible = (percentages as any).invisible > 25;
+     if (hasAI && hasInvisible) {
+       riskRationale = `Your design combines automated decision-making (${Math.round((percentages as any).ai_vectorial)}% AI, GDPR Art. 22) with invisible automation (${Math.round((percentages as any).invisible)}% ambient). This triggers GDPR Art. 35 DPIA requirements for large-scale automated profiling.`;
+     } else if (hasAI) {
+       riskRationale = `AI systems (${Math.round((percentages as any).ai_vectorial)}%) processing personal data require GDPR Chapter V safeguards for international transfers and EU AI Act transparency obligations (Art. 13).`;
+     } else {
+       riskRationale = `Invisible automation (${Math.round((percentages as any).invisible)}%) making decisions about users requires GDPR Art. 22 safeguards: right to human intervention and explanation.`;
+     }
+     complianceCategories.procedural = [
+       'Data Protection Impact Assessment (GDPR Art. 35)',
+       'Standard Contractual Clauses with processors (Art. 28)',
+       'Records of Processing Activities (Art. 30)'
+     ];
+     complianceCategories.technical = [
+       'Audit logging for automated decisions',
+       'Explanation mechanisms (GDPR Art. 22)',
+       'Data encryption and pseudonymization (Art. 32)'
+     ];
+     complianceCategories.organizational = [
+       'Data Protection Officer appointment (if required, Art. 37)',
+       'Regular compliance audits'
+     ];
+     preLaunchBlockers.push(
+       'Completed DPIA with DPO review (GDPR Art. 35)',
+       'Signed SCCs with all processors (Art. 46)'
+     );
+     officialGuidance.push(
+       { title: 'ICO - Guide to GDPR', url: 'https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/' },
+       { title: 'EDPB - DPIA Guidelines', url: 'https://edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-32017-data-protection-impact-assessment-dpia_en' }
+     );
+   } else if (overallRiskLevel === 'medium') {
+     riskRationale = `Standard GDPR compliance applies. ${(percentages as any).ai_vectorial > 0 ? `Limited AI usage (${Math.round((percentages as any).ai_vectorial)}%) requires transparency disclosures per EU AI Act Art. 52.` : 'Traditional screen interfaces require cookie consent (ePrivacy Directive Art. 5.3) and privacy policies (GDPR Art. 13).'}`;
+     complianceCategories.procedural = [
+       'Privacy policy (GDPR Art. 13)',
+       'Cookie consent mechanism (ePrivacy Dir. Art. 5.3)',
+       'Data processing register (Art. 30)'
+     ];
+     complianceCategories.technical = [
+       'Cookie consent banner implementation',
+       'Privacy-by-design principles (Art. 25)'
+     ];
+     complianceCategories.organizational = [
+       'Staff training on data protection',
+       'Incident response procedures (Art. 33-34)'
+     ];
+     preLaunchBlockers.push(
+       'Published privacy policy (GDPR Art. 13)',
+       'Cookie consent mechanism (if web-based)'
+     );
+     officialGuidance.push(
+       { title: 'GDPR - Official Text', url: 'https://eur-lex.europa.eu/eli/reg/2016/679' },
+       { title: 'ePrivacy Directive', url: 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32002L0058' }
+     );
+   } else {
+     riskRationale = 'Minimal regulatory burden. Standard terms of service and basic privacy practices satisfy legal requirements for non-AI, non-automated interfaces.';
+     complianceCategories.procedural = ['Terms of Service', 'Privacy Policy'];
+     complianceCategories.technical = ['Standard security practices'];
+     complianceCategories.organizational = [];
+     officialGuidance.push(
+       { title: 'GDPR - Official Text', url: 'https://eur-lex.europa.eu/eli/reg/2016/679' }
+     );
+   }
+
    const recommendations = [
-     'Budget regulatory compliance costs from project start',
-     'Engage Data Protection Officer (DPO) or external DPA in design phase',
-     'Conduct legal review of platform before production launch',
-     criticalCount > 0 ? '🚨 CRITICAL: High-risk AI classification requires specialized legal counsel and CE marking' : null,
-     'Plan for quarterly compliance audits and regulatory updates',
-     'Maintain comprehensive documentation for regulatory inspections and audits',
-     'Document all data processing activities in Records of Processing Activities (ROPA)',
-     'Test bias and fairness of automated systems regularly'
-   ].filter(Boolean) as string[];
-   
+     'Review official guidance documents for your specific use case',
+     'Consult qualified data protection counsel for production deployment',
+     'Implement privacy-by-design principles from project inception (GDPR Art. 25)',
+     'Document all design decisions and compliance measures for audit trail'
+   ];
+
    return {
      region: geography === 'Primarily Europe' ? 'European Union' : 'Global (EU standards apply)',
      applicable: true,
      requirements,
      overallRiskLevel,
+     riskRationale,
+     complianceCategories,
+     preLaunchBlockers,
+     officialGuidance,
      recommendations,
-     disclaimer: '⚠️ COMPLIANCE DISCLAIMER: Regulatory requirements and implementation approaches vary by jurisdiction, organizational context, and legal interpretation. This assessment identifies potentially applicable regulations but does not constitute legal advice. For production systems, consult qualified legal counsel and data protection officers. Compliance costs and timelines are highly variable and context-dependent.'
+     disclaimer: '⚠️ ACADEMIC FRAMEWORK DISCLAIMER: This analysis identifies potentially applicable regulations based on interface design patterns and regulatory text. It does NOT constitute legal advice, cost estimates, or implementation timelines. Actual compliance requirements vary by jurisdiction, organizational context, data processing activities, and legal interpretation. Consult qualified legal counsel and data protection officers for production systems.'
    };
 }
 

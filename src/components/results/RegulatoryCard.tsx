@@ -51,12 +51,109 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
         </Badge>
       </div>
       
+      {/* Regulatory Context */}
+      <div className={`mb-6 p-5 rounded-lg border ${
+        analysis.overallRiskLevel === 'critical' ? 'bg-risk-muted border-risk-border' :
+        analysis.overallRiskLevel === 'high' ? 'bg-warning-muted border-warning-border' :
+        'bg-muted border-border'
+      }`}>
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Regulatory Classification
+            </p>
+            <p className="text-sm text-foreground leading-relaxed">
+              {analysis.riskRationale}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {analysis.complianceCategories.procedural.length > 0 && (
+              <div>
+                <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Procedural
+                </p>
+                <ul className="space-y-1">
+                  {analysis.complianceCategories.procedural.map((item, idx) => (
+                    <li key={idx} className="text-xs text-foreground leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {analysis.complianceCategories.technical.length > 0 && (
+              <div>
+                <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Technical
+                </p>
+                <ul className="space-y-1">
+                  {analysis.complianceCategories.technical.map((item, idx) => (
+                    <li key={idx} className="text-xs text-foreground leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {analysis.complianceCategories.organizational.length > 0 && (
+              <div>
+                <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Organizational
+                </p>
+                <ul className="space-y-1">
+                  {analysis.complianceCategories.organizational.map((item, idx) => (
+                    <li key={idx} className="text-xs text-foreground leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {analysis.preLaunchBlockers && analysis.preLaunchBlockers.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Pre-Launch Requirements
+              </p>
+              <ul className="space-y-1.5">
+                {analysis.preLaunchBlockers.map((blocker, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm">
+                    <AlertTriangle className={`h-4 w-4 shrink-0 mt-0.5 ${
+                      analysis.overallRiskLevel === 'critical' ? 'text-risk' : 'text-warning'
+                    }`} />
+                    <span className="text-foreground">{blocker}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.officialGuidance && analysis.officialGuidance.length > 0 && (
+            <div className="pt-3 border-t border-border">
+              <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Official Guidance
+              </p>
+              <div className="space-y-1.5">
+                {analysis.officialGuidance.map((guide, idx) => (
+                  <a
+                    key={idx}
+                    href={guide.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span>{guide.title}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 mb-6">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="p-4 rounded-lg border border-border bg-secondary/50">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <FileText className="h-4 w-4" />
-            <span className="text-xs font-mono uppercase tracking-wider">Requirements</span>
+            <span className="text-xs font-mono uppercase tracking-wider">Detailed Requirements</span>
           </div>
           <p className="text-lg font-mono font-bold text-foreground">{analysis.requirements.length}</p>
         </motion.div>
