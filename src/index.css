@@ -1,115 +1,118 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* NEXUS Design System — Modern Eco-Executive / Swiss Style */
+/* NEXUS Design System — Tech-Minimalist / Vercel-Linear Aesthetic */
 
 @layer base {
   :root {
-    /* Core Colors — Slate-based, never pure black */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Core Colors — Pure monochrome */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
 
     /* Cards & Surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 0 0% 9%;
 
-    /* Primary — Slate 900 */
-    --primary: 215 25% 15%;
-    --primary-foreground: 210 20% 98%;
+    /* Primary — Pure Black */
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
 
-    /* Secondary — Slate 100 */
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 215 20% 25%;
+    /* Secondary — Zinc 100 */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 32%;
 
-    /* Muted — Slate 100/500 */
-    --muted: 210 18% 96%;
-    --muted-foreground: 215 14% 46%;
+    /* Muted — Zinc 100/500 */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Accent — Emerald 600 (sparingly) */
-    --accent: 160 84% 29%;
+    /* Accent — Electric Orange (single accent, used sparingly) */
+    --accent: 24 95% 53%;
     --accent-foreground: 0 0% 100%;
 
     /* Destructive */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders & Inputs — Slate 200 */
-    --border: 214 20% 89%;
-    --input: 214 20% 89%;
-    --ring: 160 84% 39%;
+    /* Borders & Inputs — Zinc 200 */
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 9%;
 
     --radius: 0.75rem;
 
-    /* Custom NEXUS tokens */
-    --nexus-emerald: 160 84% 39%;
-    --nexus-emerald-light: 152 76% 96%;
-    --nexus-slate: 215 25% 15%;
-    --nexus-warm-gray: 210 20% 97%;
-    --nexus-gold: 45 93% 47%;
-    --nexus-gold-light: 48 96% 96%;
+    /* Custom NEXUS tokens — monochrome */
+    --nexus-emerald: 0 0% 9%;
+    --nexus-emerald-light: 0 0% 96%;
+    --nexus-slate: 0 0% 9%;
+    --nexus-warm-gray: 0 0% 98%;
+    --nexus-gold: 0 0% 45%;
+    --nexus-gold-light: 0 0% 96%;
 
-    /* Shadows — very soft */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    /* Active border for selected elements */
+    --border-active: 0 0% 15%;
+
+    /* Shadows — minimal */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
     --shadow-md: 0 2px 8px -2px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 4px 16px -4px rgba(0, 0, 0, 0.08);
     --shadow-xl: 0 8px 24px -6px rgba(0, 0, 0, 0.1);
-    --shadow-emerald: 0 4px 14px -4px hsla(160, 84%, 39%, 0.15);
-    --shadow-card: 0 2px 10px -4px rgba(0, 0, 0, 0.05);
+    --shadow-emerald: none;
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 
     /* Sidebar */
-    --sidebar-background: 210 20% 98%;
-    --sidebar-foreground: 215 14% 35%;
-    --sidebar-primary: 215 25% 15%;
-    --sidebar-primary-foreground: 210 20% 98%;
-    --sidebar-accent: 210 20% 96%;
-    --sidebar-accent-foreground: 215 25% 15%;
-    --sidebar-border: 214 20% 89%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 45%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 0% 9%;
   }
 
   .dark {
-    --background: 220 15% 8%;
-    --foreground: 210 20% 95%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
 
-    --card: 220 15% 11%;
-    --card-foreground: 210 20% 95%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 220 15% 11%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 210 20% 95%;
-    --primary-foreground: 220 15% 8%;
+    --primary: 0 0% 95%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 220 12% 16%;
-    --secondary-foreground: 210 20% 95%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 220 12% 16%;
-    --muted-foreground: 215 14% 55%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 55%;
 
-    --accent: 160 84% 40%;
+    --accent: 24 95% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 12% 18%;
-    --input: 220 12% 18%;
-    --ring: 160 84% 40%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 95%;
 
-    --sidebar-background: 220 15% 8%;
-    --sidebar-foreground: 215 14% 75%;
-    --sidebar-primary: 160 84% 40%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 12% 16%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 220 12% 18%;
-    --sidebar-ring: 160 84% 40%;
+    --border-active: 0 0% 85%;
+
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 75%;
+    --sidebar-primary: 0 0% 95%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 0 0% 95%;
   }
 }
 
@@ -120,28 +123,32 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
   }
 
-  /* Typography Scale — tracking-tight on headings, relaxed body */
+  /* Typography Scale — Inter headings, tight tracking */
   h1 {
-    @apply text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl;
+    @apply text-4xl font-medium tracking-tight md:text-5xl lg:text-6xl;
     color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
   }
 
   h2 {
-    @apply text-3xl font-semibold tracking-tight md:text-4xl;
+    @apply text-3xl font-medium tracking-tight md:text-4xl;
     color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
   }
 
   h3 {
-    @apply text-2xl font-semibold tracking-tight;
+    @apply text-2xl font-medium tracking-tight;
     color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
   }
 
   h4 {
     @apply text-xl font-medium tracking-tight;
     color: hsl(var(--foreground));
+    font-family: 'Inter', sans-serif;
   }
 
   p, li, span {
@@ -150,77 +157,84 @@
 }
 
 @layer components {
-  /* NEXUS Custom Components */
+  /* NEXUS Custom Components — Tech-Minimalist */
   .nexus-container {
     @apply mx-auto w-full max-w-[1200px] px-4 md:px-6 lg:px-8;
   }
 
   .nexus-card {
-    @apply rounded-2xl border border-border bg-card p-6 md:p-8 transition-all duration-200;
+    @apply rounded-xl border border-border bg-card p-6 md:p-8 transition-all duration-200;
     box-shadow: var(--shadow-card);
   }
 
   .nexus-card-hover {
-    @apply nexus-card hover:shadow-lg hover:border-accent/20;
+    @apply nexus-card hover:border-foreground/20;
   }
 
   .nexus-badge {
-    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium tracking-wide;
+    font-family: 'JetBrains Mono', monospace;
   }
 
   .nexus-badge-success {
-    @apply nexus-badge bg-nexus-emerald-light text-accent;
+    @apply nexus-badge bg-secondary text-foreground border border-border;
   }
 
   .nexus-badge-warning {
-    @apply nexus-badge bg-nexus-gold-light text-amber-700;
+    @apply nexus-badge bg-secondary text-muted-foreground border border-border;
   }
 
   /* Question Card Styles */
   .question-card {
-    @apply nexus-card border-2 cursor-pointer transition-all duration-200;
+    @apply nexus-card border cursor-pointer transition-all duration-200;
   }
 
   .question-card-selected {
-    @apply question-card border-accent bg-nexus-emerald-light/50;
+    @apply question-card border-foreground bg-card;
   }
 
   .question-card-hover {
-    @apply question-card hover:border-accent/40 hover:shadow-md;
+    @apply question-card hover:border-foreground/40;
   }
 
   /* Progress Bar */
   .nexus-progress-track {
-    @apply h-1.5 w-full rounded-full bg-secondary;
+    @apply h-1 w-full rounded-full bg-secondary;
   }
 
   .nexus-progress-fill {
-    @apply h-full rounded-full bg-accent transition-all duration-500 ease-out;
+    @apply h-full rounded-full bg-foreground transition-all duration-500 ease-out;
   }
 
   /* Draggable Value Cards */
   .value-card {
-    @apply flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 transition-all duration-200;
+    @apply flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all duration-200;
     box-shadow: var(--shadow-sm);
   }
 
   .value-card-dragging {
-    @apply value-card border-accent shadow-lg scale-105 z-50;
-    box-shadow: var(--shadow-emerald);
+    @apply value-card border-foreground shadow-lg scale-[1.02] z-50;
   }
 
   .value-card-rank {
-    @apply flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground text-sm font-bold;
+    @apply flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background text-sm font-bold;
+    font-family: 'JetBrains Mono', monospace;
   }
 
   /* Results Section */
   .results-primary {
-    @apply rounded-2xl border border-border bg-card p-8;
+    @apply rounded-xl border border-border bg-card p-8;
     box-shadow: var(--shadow-md);
   }
 
   .results-secondary {
-    @apply rounded-2xl border border-border bg-card p-6;
+    @apply rounded-xl border border-border bg-card p-6;
+  }
+
+  /* Monospace utility */
+  .font-mono-data {
+    font-family: 'JetBrains Mono', monospace;
+    @apply text-sm tracking-tight;
   }
 
   /* Animations */
@@ -240,11 +254,12 @@
 @layer utilities {
   /* NEXUS Utility Classes */
   .text-gradient-emerald {
-    @apply bg-gradient-to-r from-accent to-teal-500 bg-clip-text text-transparent;
+    @apply text-foreground;
+    font-family: 'JetBrains Mono', monospace;
   }
 
   .text-gradient-dark {
-    @apply bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent;
+    @apply text-foreground;
   }
 
   /* Custom Background Colors */
@@ -262,7 +277,8 @@
 
   /* Stat highlight */
   .stat-highlight {
-    @apply text-4xl font-bold text-accent;
+    @apply text-4xl font-bold text-foreground;
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 

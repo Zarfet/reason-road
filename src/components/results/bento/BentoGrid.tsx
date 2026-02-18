@@ -1,6 +1,6 @@
 /**
- * Bento Grid Layout System — Modern Eco-Executive
- * Clean white cards, rounded-2xl, generous padding
+ * Bento Grid Layout System — Tech-Minimalist
+ * White cards, rounded-xl, clean borders
  */
 
 import { cn } from '@/lib/utils';
@@ -44,7 +44,7 @@ export function BentoBox({ children, size = 'medium', className }: BentoBoxProps
   return (
     <div
       className={cn(
-        'rounded-2xl border border-border bg-card p-6 md:p-8',
+        'rounded-xl border border-border bg-card p-6 md:p-8',
         'transition-all duration-200',
         'shadow-nexus-card',
         sizeClasses[size],
@@ -66,12 +66,12 @@ export function BentoHeader({ title, subtitle, icon }: BentoHeaderProps) {
   return (
     <div className="flex items-start gap-3 mb-4">
       {icon && (
-        <div className="shrink-0 h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center">
+        <div className="shrink-0 h-10 w-10 rounded-xl border border-border flex items-center justify-center text-foreground">
           {icon}
         </div>
       )}
       <div>
-        <h3 className="text-lg font-semibold tracking-tight text-foreground">{title}</h3>
+        <h3 className="text-lg font-medium tracking-tight text-foreground">{title}</h3>
         {subtitle && (
           <p className="text-sm text-muted-foreground leading-relaxed">{subtitle}</p>
         )}

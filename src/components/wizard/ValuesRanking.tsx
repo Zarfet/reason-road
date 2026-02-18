@@ -1,19 +1,9 @@
 import { useState } from 'react';
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
+  arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
@@ -28,14 +18,7 @@ interface SortableValueCardProps {
 }
 
 function SortableValueCard({ value, description, rank }: SortableValueCardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: value });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: value });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -47,10 +30,10 @@ function SortableValueCard({ value, description, rank }: SortableValueCardProps)
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center gap-4 rounded-xl border-2 bg-card p-4 transition-all duration-200',
+        'flex items-center gap-4 rounded-xl border bg-card p-4 transition-all duration-200',
         isDragging 
-          ? 'border-accent shadow-lg scale-[1.02] z-50 bg-nexus-emerald-light' 
-          : 'border-border hover:border-accent/30 hover:shadow-md'
+          ? 'border-foreground shadow-lg scale-[1.02] z-50' 
+          : 'border-border hover:border-foreground/30'
       )}
     >
       <button
@@ -62,7 +45,7 @@ function SortableValueCard({ value, description, rank }: SortableValueCardProps)
         <GripVertical className="h-5 w-5 text-muted-foreground" />
       </button>
       
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background text-sm font-mono font-bold">
         {rank}
       </div>
       
@@ -81,19 +64,12 @@ interface ValuesRankingProps {
 
 export function ValuesRanking({ values, onChange }: ValuesRankingProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (over && active.id !== over.id) {
       const oldIndex = values.indexOf(active.id as DesignValue);
       const newIndex = values.indexOf(over.id as DesignValue);
@@ -106,20 +82,11 @@ export function ValuesRanking({ values, onChange }: ValuesRankingProps) {
   };
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={values} strategy={verticalListSortingStrategy}>
         <div className="space-y-3">
           {values.map((value, index) => (
-            <SortableValueCard
-              key={value}
-              value={value}
-              description={getDescription(value)}
-              rank={index + 1}
-            />
+            <SortableValueCard key={value} value={value} description={getDescription(value)} rank={index + 1} />
           ))}
         </div>
       </SortableContext>

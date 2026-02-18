@@ -1,13 +1,5 @@
 /**
- * NEXUS - Results Page (Bento Grid Layout)
- * 
- * Purpose: Display results of a freshly completed assessment
- * 
- * Features:
- * - Fixed hero section with paradigm breakdown
- * - Tabbed content area with 5 tabs
- * - Bento grid layout within each tab
- * - Auto-save assessment to database
+ * NEXUS - Results Page — Tech-Minimalist
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -21,7 +13,6 @@ import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/li
 import { generatePDFReport } from '@/lib/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 
-// Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
 import { ResultsHero } from '@/components/results/ResultsHero';
 import { generateStrategicRationale } from '@/components/results/tabs/OverviewTab';
@@ -44,7 +35,6 @@ export default function Results() {
     }
   }, [isComplete, recommendation, navigate]);
 
-  // Save assessment to database when results are shown
   useEffect(() => {
     const saveAssessment = async () => {
       if (isComplete && recommendation && !hasSavedRef.current) {
@@ -94,17 +84,17 @@ export default function Results() {
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
-                <Target className="h-4 w-4 text-accent-foreground" />
+              <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
+                <Target className="h-4 w-4 text-background" />
               </div>
-              <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
+              <span className="font-semibold text-lg tracking-tight text-foreground">NEXUS</span>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => navigate('/profile')} className="text-muted-foreground hover:text-foreground">
                 <User className="h-4 w-4 mr-2" />
                 My Assessments
               </Button>
-              <Button variant="outline" size="sm" onClick={handleStartOver} className="rounded-xl">
+              <Button variant="outline" size="sm" onClick={handleStartOver} className="rounded-lg border-border hover:bg-secondary">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Start Over
               </Button>
@@ -113,12 +103,10 @@ export default function Results() {
         </div>
       </header>
 
-      {/* Step Indicator */}
       <div className="nexus-container">
         <StepIndicator currentStep={5} />
       </div>
 
-      {/* Hero Section */}
       <div className="nexus-container">
         <ResultsHero
           primaryParadigm={recommendation.primary.paradigm}
@@ -135,7 +123,6 @@ export default function Results() {
         />
       </div>
 
-      {/* Tabbed Content Area */}
       <main className="nexus-container py-8 pb-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -143,52 +130,36 @@ export default function Results() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1.5 bg-secondary/60 rounded-xl sticky top-[65px] z-30 backdrop-blur-sm border border-border">
-              <TabsTrigger value="analysis" className="flex-1 sm:flex-none">
+            <TabsList className="w-full flex flex-wrap justify-start gap-1 h-auto p-1.5 bg-secondary/60 rounded-lg sticky top-[65px] z-30 backdrop-blur-sm border border-border">
+              <TabsTrigger value="analysis" className="flex-1 sm:flex-none font-mono text-xs">
                 <span className="sm:hidden">📈</span>
                 <span className="hidden sm:inline">Analysis</span>
               </TabsTrigger>
-              <TabsTrigger value="implementation" className="flex-1 sm:flex-none">
+              <TabsTrigger value="implementation" className="flex-1 sm:flex-none font-mono text-xs">
                 <span className="sm:hidden">📊</span>
                 <span className="hidden sm:inline">Impact</span>
               </TabsTrigger>
-              <TabsTrigger value="research" className="flex-1 sm:flex-none">
+              <TabsTrigger value="research" className="flex-1 sm:flex-none font-mono text-xs">
                 <span className="sm:hidden">📚</span>
                 <span className="hidden sm:inline">Research</span>
               </TabsTrigger>
-              <TabsTrigger value="actions" className="flex-1 sm:flex-none">
+              <TabsTrigger value="actions" className="flex-1 sm:flex-none font-mono text-xs">
                 <span className="sm:hidden">🎯</span>
                 <span className="hidden sm:inline">Actions</span>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="analysis">
-              <AnalysisTab
-                recommendation={recommendation}
-                answers={answers}
-              />
+              <AnalysisTab recommendation={recommendation} answers={answers} />
             </TabsContent>
-
             <TabsContent value="implementation">
-              <ImpactTab
-                recommendation={recommendation}
-                answers={answers}
-              />
+              <ImpactTab recommendation={recommendation} answers={answers} />
             </TabsContent>
-
             <TabsContent value="research">
-              <ResearchTab
-                paradigm={recommendation.primary.paradigm}
-                userDemographics={answers.userDemographics}
-              />
+              <ResearchTab paradigm={recommendation.primary.paradigm} userDemographics={answers.userDemographics} />
             </TabsContent>
-
             <TabsContent value="actions">
-              <ActionsTab
-                onDownloadPDF={handleDownloadPDF}
-                onStartOver={handleStartOver}
-                savedAssessmentId={savedAssessmentId}
-              />
+              <ActionsTab onDownloadPDF={handleDownloadPDF} onStartOver={handleStartOver} savedAssessmentId={savedAssessmentId} />
             </TabsContent>
           </Tabs>
         </motion.div>

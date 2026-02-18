@@ -40,7 +40,7 @@ export function WizardNavigation({ onComplete }: WizardNavigationProps) {
         variant="outline"
         onClick={goToPreviousStep}
         disabled={isFirstStep}
-        className="gap-2"
+        className="gap-2 border-border hover:bg-secondary"
       >
         <ChevronLeft className="h-4 w-4" />
         Back
@@ -49,7 +49,7 @@ export function WizardNavigation({ onComplete }: WizardNavigationProps) {
       <Button
         onClick={handleNext}
         disabled={!canProceed}
-        className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+        className="gap-2 bg-foreground text-background hover:bg-foreground/80"
       >
         {isLastStep ? (
           <>

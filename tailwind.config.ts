@@ -57,7 +57,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // NEXUS Custom Colors
+        // NEXUS Custom Colors — monochrome
         nexus: {
           emerald: "hsl(var(--nexus-emerald))",
           "emerald-light": "hsl(var(--nexus-emerald-light))",
@@ -76,7 +76,6 @@ export default {
       },
       fontFamily: {
         sans: [
-          "Plus Jakarta Sans",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
@@ -84,9 +83,15 @@ export default {
           "Roboto",
           "sans-serif",
         ],
+        mono: [
+          "JetBrains Mono",
+          "ui-monospace",
+          "SFMono-Regular",
+          "monospace",
+        ],
       },
       fontSize: {
-        "question": ["1.75rem", { lineHeight: "2.25rem", fontWeight: "600" }],
+        "question": ["1.75rem", { lineHeight: "2.25rem", fontWeight: "500" }],
         "answer": ["1rem", { lineHeight: "1.75rem" }],
       },
       boxShadow: {
@@ -94,7 +99,7 @@ export default {
         "nexus-md": "var(--shadow-md)",
         "nexus-lg": "var(--shadow-lg)",
         "nexus-xl": "var(--shadow-xl)",
-        "nexus-emerald": "var(--shadow-emerald)",
+        "nexus-emerald": "none",
         "nexus-card": "var(--shadow-card)",
       },
       keyframes: {

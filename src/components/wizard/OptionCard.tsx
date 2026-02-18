@@ -15,23 +15,23 @@ export function OptionCard({ label, description, selected, onClick }: OptionCard
       type="button"
       onClick={onClick}
       className={cn(
-        'w-full text-left p-5 rounded-xl border-2 transition-all duration-200',
-        'hover:shadow-md hover:border-accent/50',
+        'w-full text-left p-5 rounded-xl border transition-all duration-200',
+        'hover:border-foreground/40',
         selected 
-          ? 'border-accent bg-nexus-emerald-light shadow-md' 
+          ? 'border-foreground bg-card shadow-sm' 
           : 'border-border bg-card hover:bg-secondary/50'
       )}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+      whileHover={{ scale: 1.005 }}
+      whileTap={{ scale: 0.995 }}
     >
       <div className="flex items-start gap-4">
         <div className={cn(
           'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
           selected 
-            ? 'border-accent bg-accent' 
+            ? 'border-foreground bg-foreground' 
             : 'border-muted-foreground/30'
         )}>
-          {selected && <Check className="h-3 w-3 text-accent-foreground" />}
+          {selected && <Check className="h-3 w-3 text-background" />}
         </div>
         
         <div className="space-y-1">
