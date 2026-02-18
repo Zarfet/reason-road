@@ -99,7 +99,7 @@ export function Navbar() {
               </Button>
               <Button
                 size="sm"
-                className="bg-foreground text-background hover:bg-foreground/80 rounded-lg"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
                 onClick={() => navigate('/auth')}
               >
                 Sign Up

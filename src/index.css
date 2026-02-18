@@ -2,117 +2,143 @@
 @tailwind components;
 @tailwind utilities;
 
-/* NEXUS Design System — Tech-Minimalist / Vercel-Linear Aesthetic */
+/* NEXUS Design System — 90/10 Monochrome + Electric Accents */
 
 @layer base {
   :root {
-    /* Core Colors — Pure monochrome */
-    --background: 0 0% 98%;
-    --foreground: 0 0% 9%;
+    /* Core Colors — Clean white/zinc base */
+    --background: 240 5% 96%;
+    --foreground: 240 6% 10%;
 
-    /* Cards & Surfaces */
+    /* Cards & Surfaces — Pure white */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 240 6% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 240 6% 10%;
 
-    /* Primary — Pure Black */
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary — Electric Indigo (CTA only) */
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary — Zinc 100 */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 32%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 4% 16%;
 
     /* Muted — Zinc 100/500 */
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    /* Accent — Electric Orange (single accent, used sparingly) */
-    --accent: 24 95% 53%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent — Indigo subtle (for hover/active states) */
+    --accent: 239 84% 97%;
+    --accent-foreground: 239 84% 67%;
 
-    /* Destructive */
-    --destructive: 0 72% 51%;
+    /* Destructive — Rose */
+    --destructive: 347 77% 50%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Success tokens */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --success-muted: 152 76% 96%;
+    --success-muted-foreground: 160 84% 30%;
+    --success-border: 152 69% 85%;
+
+    /* Risk/Alert tokens */
+    --risk: 347 77% 50%;
+    --risk-foreground: 0 0% 100%;
+    --risk-muted: 350 100% 97%;
+    --risk-muted-foreground: 347 77% 40%;
+    --risk-border: 347 77% 88%;
+
     /* Borders & Inputs — Zinc 200 */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 9%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 239 84% 67%;
 
     --radius: 0.75rem;
 
-    /* Custom NEXUS tokens — monochrome */
-    --nexus-emerald: 0 0% 9%;
-    --nexus-emerald-light: 0 0% 96%;
-    --nexus-slate: 0 0% 9%;
-    --nexus-warm-gray: 0 0% 98%;
-    --nexus-gold: 0 0% 45%;
-    --nexus-gold-light: 0 0% 96%;
+    /* Legacy NEXUS tokens mapped to new system */
+    --nexus-emerald: 239 84% 67%;
+    --nexus-emerald-light: 239 84% 97%;
+    --nexus-slate: 240 6% 10%;
+    --nexus-warm-gray: 240 5% 96%;
+    --nexus-gold: 240 4% 46%;
+    --nexus-gold-light: 240 5% 96%;
 
-    /* Active border for selected elements */
-    --border-active: 0 0% 15%;
+    /* Active border */
+    --border-active: 239 84% 67%;
 
-    /* Shadows — minimal */
+    /* Shadows — minimal with optional indigo glow */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
     --shadow-md: 0 2px 8px -2px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 4px 16px -4px rgba(0, 0, 0, 0.08);
     --shadow-xl: 0 8px 24px -6px rgba(0, 0, 0, 0.1);
-    --shadow-emerald: none;
+    --shadow-glow: 0 4px 20px -4px rgba(99, 102, 241, 0.12);
     --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 45%;
-    --sidebar-primary: 0 0% 9%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 9%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 4% 46%;
+    --sidebar-primary: 239 84% 67%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 6% 10%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 239 84% 67%;
   }
 
   .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 95%;
+    --background: 240 6% 6%;
+    --foreground: 240 5% 96%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
+    --card: 240 5% 9%;
+    --card-foreground: 240 5% 96%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 240 5% 9%;
+    --popover-foreground: 240 5% 96%;
 
-    --primary: 0 0% 95%;
-    --primary-foreground: 0 0% 5%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 240 5% 96%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 240 4% 14%;
+    --muted-foreground: 240 4% 55%;
 
-    --accent: 24 95% 53%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 239 84% 15%;
+    --accent-foreground: 239 84% 67%;
 
-    --destructive: 0 62% 50%;
+    --destructive: 347 77% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 0 0% 95%;
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --success-muted: 160 50% 12%;
+    --success-muted-foreground: 160 60% 60%;
+    --success-border: 160 40% 20%;
 
-    --border-active: 0 0% 85%;
+    --risk: 347 77% 50%;
+    --risk-foreground: 0 0% 100%;
+    --risk-muted: 347 50% 12%;
+    --risk-muted-foreground: 347 60% 60%;
+    --risk-border: 347 40% 20%;
 
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 75%;
-    --sidebar-primary: 0 0% 95%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 0 0% 95%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 239 84% 67%;
+
+    --border-active: 239 84% 67%;
+
+    --sidebar-background: 240 6% 6%;
+    --sidebar-foreground: 240 4% 65%;
+    --sidebar-primary: 239 84% 67%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 14%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 239 84% 67%;
   }
 }
 
@@ -157,7 +183,7 @@
 }
 
 @layer components {
-  /* NEXUS Custom Components — Tech-Minimalist */
+  /* NEXUS Custom Components */
   .nexus-container {
     @apply mx-auto w-full max-w-[1200px] px-4 md:px-6 lg:px-8;
   }
@@ -168,7 +194,12 @@
   }
 
   .nexus-card-hover {
-    @apply nexus-card hover:border-foreground/20;
+    @apply nexus-card hover:border-primary/30;
+  }
+
+  .nexus-card-glow {
+    @apply nexus-card;
+    box-shadow: var(--shadow-glow);
   }
 
   .nexus-badge {
@@ -177,11 +208,17 @@
   }
 
   .nexus-badge-success {
-    @apply nexus-badge bg-secondary text-foreground border border-border;
+    @apply nexus-badge border;
+    background-color: hsl(var(--success-muted));
+    color: hsl(var(--success-muted-foreground));
+    border-color: hsl(var(--success-border));
   }
 
   .nexus-badge-warning {
-    @apply nexus-badge bg-secondary text-muted-foreground border border-border;
+    @apply nexus-badge border;
+    background-color: hsl(var(--risk-muted));
+    color: hsl(var(--risk-muted-foreground));
+    border-color: hsl(var(--risk-border));
   }
 
   /* Question Card Styles */
@@ -190,11 +227,13 @@
   }
 
   .question-card-selected {
-    @apply question-card border-foreground bg-card;
+    @apply question-card bg-card;
+    border-color: hsl(var(--primary));
+    box-shadow: var(--shadow-glow);
   }
 
   .question-card-hover {
-    @apply question-card hover:border-foreground/40;
+    @apply question-card hover:border-primary/40;
   }
 
   /* Progress Bar */
@@ -203,7 +242,8 @@
   }
 
   .nexus-progress-fill {
-    @apply h-full rounded-full bg-foreground transition-all duration-500 ease-out;
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    background-color: hsl(var(--primary));
   }
 
   /* Draggable Value Cards */
@@ -213,11 +253,14 @@
   }
 
   .value-card-dragging {
-    @apply value-card border-foreground shadow-lg scale-[1.02] z-50;
+    @apply value-card shadow-lg scale-[1.02] z-50;
+    border-color: hsl(var(--primary));
   }
 
   .value-card-rank {
-    @apply flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background text-sm font-bold;
+    @apply flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
     font-family: 'JetBrains Mono', monospace;
   }
 
@@ -262,23 +305,16 @@
     @apply text-foreground;
   }
 
-  /* Custom Background Colors */
-  .bg-nexus-emerald-light {
-    background-color: hsl(var(--nexus-emerald-light));
-  }
-
-  .bg-nexus-gold-light {
-    background-color: hsl(var(--nexus-gold-light));
-  }
-
-  .bg-nexus-warm-gray {
-    background-color: hsl(var(--nexus-warm-gray));
-  }
-
   /* Stat highlight */
   .stat-highlight {
-    @apply text-4xl font-bold text-foreground;
+    @apply text-4xl font-bold;
+    color: hsl(var(--primary));
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Glow shadow utility */
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
   }
 }
 

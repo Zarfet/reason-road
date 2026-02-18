@@ -38,12 +38,12 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
         </div>
         <div className="flex flex-wrap gap-1.5 shrink-0">
           {report.criticalCount > 0 && (
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold bg-foreground text-background">
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold bg-risk text-risk-foreground">
               {report.criticalCount} Critical
             </span>
           )}
           {report.highCount > 0 && (
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold border border-foreground text-foreground">
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold border border-risk-border text-risk-muted-foreground bg-risk-muted">
               {report.highCount} High
             </span>
           )}
@@ -67,11 +67,11 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-5 rounded-xl border border-foreground bg-card"
+          className="p-5 rounded-xl border border-risk-border bg-risk-muted"
         >
           <div className="flex gap-3">
-            <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center shrink-0">
-              <AlertOctagon className="h-4 w-4 text-background" />
+            <div className="h-8 w-8 rounded-lg bg-risk flex items-center justify-center shrink-0">
+              <AlertOctagon className="h-4 w-4 text-risk-foreground" />
             </div>
             <div>
               <h4 className="font-medium text-foreground text-sm tracking-tight">Action Required Before Implementation</h4>
@@ -90,11 +90,11 @@ function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
   const severityConfig = {
     critical: {
       icon: AlertOctagon,
-      badgeClass: 'bg-foreground text-background',
+      badgeClass: 'bg-risk text-risk-foreground',
     },
     high: {
       icon: AlertTriangle,
-      badgeClass: 'border border-foreground text-foreground',
+      badgeClass: 'border border-risk-border text-risk-muted-foreground bg-risk-muted',
     },
     medium: {
       icon: Info,

@@ -57,7 +57,22 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // NEXUS Custom Colors — monochrome
+        // Functional accent colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+          muted: "hsl(var(--success-muted))",
+          "muted-foreground": "hsl(var(--success-muted-foreground))",
+          border: "hsl(var(--success-border))",
+        },
+        risk: {
+          DEFAULT: "hsl(var(--risk))",
+          foreground: "hsl(var(--risk-foreground))",
+          muted: "hsl(var(--risk-muted))",
+          "muted-foreground": "hsl(var(--risk-muted-foreground))",
+          border: "hsl(var(--risk-border))",
+        },
+        // Legacy NEXUS tokens
         nexus: {
           emerald: "hsl(var(--nexus-emerald))",
           "emerald-light": "hsl(var(--nexus-emerald-light))",
@@ -99,7 +114,7 @@ export default {
         "nexus-md": "var(--shadow-md)",
         "nexus-lg": "var(--shadow-lg)",
         "nexus-xl": "var(--shadow-xl)",
-        "nexus-emerald": "none",
+        "nexus-glow": "var(--shadow-glow)",
         "nexus-card": "var(--shadow-card)",
       },
       keyframes: {

@@ -32,7 +32,7 @@ function SortableValueCard({ value, description, rank }: SortableValueCardProps)
       className={cn(
         'flex items-center gap-4 rounded-xl border bg-card p-4 transition-all duration-200',
         isDragging 
-          ? 'border-foreground shadow-lg scale-[1.02] z-50' 
+          ? 'border-primary shadow-lg scale-[1.02] z-50' 
           : 'border-border hover:border-foreground/30'
       )}
     >
@@ -45,7 +45,7 @@ function SortableValueCard({ value, description, rank }: SortableValueCardProps)
         <GripVertical className="h-5 w-5 text-muted-foreground" />
       </button>
       
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-foreground text-background text-sm font-mono font-bold">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-mono font-bold">
         {rank}
       </div>
       
