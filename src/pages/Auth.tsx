@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Mail, Lock, Loader2 } from 'lucide-react';
+import { NexusLogo } from '@/components/layout/NexusLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -84,17 +85,8 @@ export default function Auth() {
     <div className="min-h-screen bg-background">
       <header className="nexus-container py-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 hover:opacity-70 transition-opacity">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-foreground flex-shrink-0">
-              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 7L12 12L22 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 12L7 14.5M12 12L17 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tighter text-foreground leading-none">NEXUS</span>
-              <span className="font-mono text-[10px] text-muted-foreground tracking-wider leading-none mt-0.5">INTERFACE FRAMEWORK</span>
-            </div>
+          <Link to="/" className="hover:opacity-70 transition-opacity">
+            <NexusLogo />
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm" className="gap-2">
