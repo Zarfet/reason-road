@@ -18,7 +18,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, Loader2 } from 'lucide-react';
+import { Loader2, Target } from 'lucide-react';
+import { NexusLogo } from '@/components/layout/NexusLogo';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -136,11 +137,8 @@ export default function SharedResults() {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-              <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
-                <Target className="h-4 w-4 text-accent-foreground" />
-              </div>
-              <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
+            <Link to="/" className="hover:opacity-70 transition-opacity">
+              <NexusLogo iconSize={28} />
             </Link>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-full font-medium">
