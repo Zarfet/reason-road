@@ -61,11 +61,10 @@ function esc(s: string): string {
 }
 
 // ─── Section header (replaces pageWrapper) ────────────────────────────────────
-function sectionHeader(title: string, logoBase64: string): string {
+function sectionHeader(title: string): string {
   return `
   <div class="section-divider">
     <div class="section-header-row">
-      <img src="${logoBase64}" class="section-logo" alt="" />
       <span class="section-title">${esc(title)}</span>
     </div>
   </div>`;
@@ -115,7 +114,7 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
 }
 
 // ─── Analysis ─────────────────────────────────────────────────────────────────
-function buildAnalysis(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string {
+function buildAnalysis(answers: AssessmentAnswers, recommendation: RecommendationResult): string {
   const allArgs = generateAllArguments(answers, recommendation);
 
   const sections = allArgs.map(pArg => {
@@ -157,13 +156,13 @@ function buildAnalysis(answers: AssessmentAnswers, recommendation: Recommendatio
   }).join('');
 
   return `
-  ${sectionHeader('02. ANALYSIS — ARGUMENTS FOR & AGAINST', logoBase64)}
+  ${sectionHeader('02. ANALYSIS — ARGUMENTS FOR & AGAINST')}
   <div class="page-subtitle">Arguments for and against each interface type, weighted by your context.</div>
   ${sections}`;
 }
 
 // ─── Regulatory ──────────────────────────────────────────────────────────────
-function buildRegulatory(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
+function buildRegulatory(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const reg = generateRegulatoryAnalysis(answers, recommendation);
   if (!reg || !reg.applicable || reg.requirements.length === 0) return null;
 
@@ -207,7 +206,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
   }).join('');
 
   return `
-  ${sectionHeader('03. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK', logoBase64)}
+  ${sectionHeader('03. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK')}
   <div class="section-meta">Region: ${esc(reg.region)}</div>
   ${riskSummary}
   <div class="reg-list">${reqs}</div>
@@ -215,7 +214,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
 }
 
 // ─── Sustainability ──────────────────────────────────────────────────────────
-function buildSustainability(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
+function buildSustainability(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const sust = generateSustainabilityReport(recommendation, answers.valuesRanking ?? [], answers.geography);
   if (!sust.applicable) return null;
 
@@ -297,12 +296,12 @@ function buildSustainability(answers: AssessmentAnswers, recommendation: Recomme
     <div class="disclaimer-text">${esc(clean(sust.disclaimer))}</div>`;
 
   return `
-  ${sectionHeader('04. SUSTAINABILITY REPORT', logoBase64)}
+  ${sectionHeader('04. SUSTAINABILITY REPORT')}
   ${content}`;
 }
 
 // ─── Red Flags ───────────────────────────────────────────────────────────────
-function buildRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
+function buildRedFlags(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const flags = detectRedFlags(answers, recommendation);
   if (!flags.hasFlags) return null;
 
@@ -347,13 +346,13 @@ function buildRedFlags(answers: AssessmentAnswers, recommendation: Recommendatio
   }).join('');
 
   return `
-  ${sectionHeader('05. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)', logoBase64)}
+  ${sectionHeader('05. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)')}
   <div class="flag-summary ${flags.criticalCount > 0 ? 'flag-summary-critical' : ''}">${esc(summary)}</div>
   ${cards}`;
 }
 
 // ─── Research ────────────────────────────────────────────────────────────────
-function buildResearch(answers: AssessmentAnswers, recommendation: RecommendationResult, logoBase64: string): string | null {
+function buildResearch(answers: AssessmentAnswers, recommendation: RecommendationResult): string | null {
   const demo = (answers.userDemographics?.trim() || 'general').toLowerCase().replace(/\s+/g, '_');
   const paradigm = recommendation.primary.paradigm;
   const rKey = `nexus_research_${paradigm}_${demo}`;
@@ -406,7 +405,7 @@ function buildResearch(answers: AssessmentAnswers, recommendation: Recommendatio
   }
 
   return `
-  ${sectionHeader('06. RESEARCH & CASE STUDIES', logoBase64)}
+  ${sectionHeader('06. RESEARCH & CASE STUDIES')}
   ${papers.length > 0 ? `
   <div class="section-title">Supporting Academic Research</div>
   <ul class="research-list">${paperItems}</ul>` : ''}
@@ -661,12 +660,12 @@ export async function generatePDFReport({
   // Build all sections
   const sections: string[] = [];
   sections.push(buildCover(answers, recommendation, dateStr, logoBase64));
-  sections.push(buildAnalysis(answers, recommendation, logoBase64));
+  sections.push(buildAnalysis(answers, recommendation));
 
-  const regSection = buildRegulatory(answers, recommendation, logoBase64);
-  const sustSection = buildSustainability(answers, recommendation, logoBase64);
-  const flagsSection = buildRedFlags(answers, recommendation, logoBase64);
-  const resSection = buildResearch(answers, recommendation, logoBase64);
+  const regSection = buildRegulatory(answers, recommendation);
+  const sustSection = buildSustainability(answers, recommendation);
+  const flagsSection = buildRedFlags(answers, recommendation);
+  const resSection = buildResearch(answers, recommendation);
 
   if (regSection) sections.push(regSection);
   if (sustSection) sections.push(sustSection);
