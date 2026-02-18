@@ -184,9 +184,9 @@ function generateRisks(rec: RecommendationResult, answers: AssessmentAnswers, re
 }
 
 const severityColor: Record<string, string> = {
-  High: 'bg-destructive/10 text-destructive border-destructive/20',
-  Medium: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  Low: 'bg-accent/10 text-accent border-accent/20',
+  High: 'bg-risk-muted text-risk-muted-foreground border-risk-border',
+  Medium: 'bg-warning-muted text-warning-muted-foreground border-warning-border',
+  Low: 'bg-muted text-muted-foreground border border-border',
 };
 
 // ================================================
@@ -238,7 +238,7 @@ export function OverviewTab({ recommendation, answers, reasoningBullets, redFlag
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span className="text-muted-foreground">Recommendation Confidence</span>
-              <span className={`font-bold ${confidenceLevel >= 70 ? 'text-accent' : confidenceLevel >= 50 ? 'text-amber-600' : 'text-destructive'}`}>
+              <span className={`font-bold ${confidenceLevel >= 70 ? 'text-success' : confidenceLevel >= 50 ? 'text-warning' : 'text-risk'}`}>
                 {confidenceLevel >= 70 ? 'Strong' : confidenceLevel >= 50 ? 'Moderate' : 'Weak'}
               </span>
             </div>

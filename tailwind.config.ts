@@ -65,6 +65,13 @@ export default {
           "muted-foreground": "hsl(var(--success-muted-foreground))",
           border: "hsl(var(--success-border))",
         },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+          muted: "hsl(var(--warning-muted))",
+          "muted-foreground": "hsl(var(--warning-muted-foreground))",
+          border: "hsl(var(--warning-border))",
+        },
         risk: {
           DEFAULT: "hsl(var(--risk))",
           foreground: "hsl(var(--risk-foreground))",

@@ -73,7 +73,7 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
                   <BentoBox size="medium" className="border-border">
                     <div className="flex items-center gap-2 mb-5">
                       <div className="h-6 w-6 rounded-full border border-border flex items-center justify-center">
-                        <CheckCircle className="h-3.5 w-3.5 text-foreground" />
+                        <CheckCircle className="h-3.5 w-3.5 text-success" />
                       </div>
                       <span className="font-medium text-sm text-foreground tracking-tight">Arguments For</span>
                     </div>
@@ -87,7 +87,7 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
                   <BentoBox size="medium" className="border-border">
                     <div className="flex items-center gap-2 mb-5">
                       <div className="h-6 w-6 rounded-full border border-border flex items-center justify-center">
-                        <XCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                        <XCircle className="h-3.5 w-3.5 text-risk" />
                       </div>
                       <span className="font-medium text-sm text-foreground tracking-tight">Arguments Against</span>
                     </div>
@@ -117,9 +117,9 @@ function CitationTypeIcon({ type }: { type: Citation['type'] }) {
 
 function ArgumentCard({ argument, type }: { argument: Argument; type: 'for' | 'against' }) {
   const impactStyles = {
-    high: 'bg-foreground text-background font-semibold',
-    medium: 'bg-secondary text-muted-foreground border border-border font-medium',
-    low: 'bg-secondary text-muted-foreground/70 border border-border font-medium',
+    high: 'bg-risk text-risk-foreground font-semibold',
+    medium: 'bg-warning text-warning-foreground font-medium',
+    low: 'bg-muted text-muted-foreground border border-border font-medium',
   };
 
   return (

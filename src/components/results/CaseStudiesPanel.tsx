@@ -237,7 +237,7 @@ export function CaseStudiesPanel({
 
               {/* Successes Column - Right */}
               <div>
-                <h3 className="text-sm font-medium text-green-600 dark:text-green-400 flex items-center gap-2 mb-3">
+                <h3 className="text-sm font-medium text-success flex items-center gap-2 mb-3">
                   <ThumbsUp className="h-4 w-4" />
                   Success Stories
                 </h3>
@@ -272,7 +272,7 @@ function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
     <motion.div
       className={`p-4 rounded-lg border transition-colors ${
         study.outcome === 'success' 
-          ? 'bg-green-500/5 border-green-500/20 hover:border-green-500/40' 
+          ? 'bg-success-muted border-success-border hover:border-success' 
           : 'bg-destructive/5 border-destructive/20 hover:border-destructive/40'
       }`}
       initial={{ opacity: 0, x: -10 }}

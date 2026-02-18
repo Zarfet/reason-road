@@ -17,8 +17,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 6% 10%;
 
-    /* Primary — Electric Indigo (CTA only) */
-    --primary: 239 84% 67%;
+    /* Primary — Deep Professional Blue (NOT indigo) */
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary — Zinc 100 */
@@ -29,22 +29,31 @@
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
 
-    /* Accent — Indigo subtle (for hover/active states) */
-    --accent: 239 84% 97%;
-    --accent-foreground: 239 84% 67%;
+    /* Accent — Blue subtle hover state */
+    --accent: 221 83% 97%;
+    --accent-foreground: 221 83% 53%;
 
     /* Destructive — Rose */
     --destructive: 347 77% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success tokens */
-    --success: 160 84% 39%;
+    /* ── SEMANTIC TOKENS (functional meaning) ── */
+
+    /* Success — Green for positive signals */
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     --success-muted: 152 76% 96%;
-    --success-muted-foreground: 160 84% 30%;
-    --success-border: 152 69% 85%;
+    --success-muted-foreground: 142 71% 35%;
+    --success-border: 142 71% 85%;
 
-    /* Risk/Alert tokens */
+    /* Warning — Amber for medium-risk alerts */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 48 100% 96%;
+    --warning-muted-foreground: 38 92% 40%;
+    --warning-border: 38 92% 85%;
+
+    /* Risk/Danger — Red for critical/high-risk */
     --risk: 347 77% 50%;
     --risk-foreground: 0 0% 100%;
     --risk-muted: 350 100% 97%;
@@ -54,38 +63,38 @@
     /* Borders & Inputs — Zinc 200 */
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 239 84% 67%;
+    --ring: 221 83% 53%;
 
     --radius: 0.75rem;
 
-    /* Legacy NEXUS tokens mapped to new system */
-    --nexus-emerald: 239 84% 67%;
-    --nexus-emerald-light: 239 84% 97%;
+    /* Legacy NEXUS tokens mapped to new blue */
+    --nexus-emerald: 221 83% 53%;
+    --nexus-emerald-light: 221 83% 97%;
     --nexus-slate: 240 6% 10%;
     --nexus-warm-gray: 240 5% 96%;
     --nexus-gold: 240 4% 46%;
     --nexus-gold-light: 240 5% 96%;
 
     /* Active border */
-    --border-active: 239 84% 67%;
+    --border-active: 221 83% 53%;
 
-    /* Shadows — minimal with optional indigo glow */
+    /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
     --shadow-md: 0 2px 8px -2px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 4px 16px -4px rgba(0, 0, 0, 0.08);
     --shadow-xl: 0 8px 24px -6px rgba(0, 0, 0, 0.1);
-    --shadow-glow: 0 4px 20px -4px rgba(99, 102, 241, 0.12);
+    --shadow-glow: 0 4px 20px -4px rgba(37, 99, 235, 0.12);
     --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 4% 46%;
-    --sidebar-primary: 239 84% 67%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 5% 96%;
     --sidebar-accent-foreground: 240 6% 10%;
     --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 239 84% 67%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   .dark {
@@ -98,7 +107,7 @@
     --popover: 240 5% 9%;
     --popover-foreground: 240 5% 96%;
 
-    --primary: 239 84% 67%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 4% 14%;
@@ -107,17 +116,23 @@
     --muted: 240 4% 14%;
     --muted-foreground: 240 4% 55%;
 
-    --accent: 239 84% 15%;
-    --accent-foreground: 239 84% 67%;
+    --accent: 221 83% 15%;
+    --accent-foreground: 221 83% 67%;
 
     --destructive: 347 77% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 160 84% 39%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    --success-muted: 160 50% 12%;
-    --success-muted-foreground: 160 60% 60%;
-    --success-border: 160 40% 20%;
+    --success-muted: 142 50% 12%;
+    --success-muted-foreground: 142 60% 60%;
+    --success-border: 142 40% 20%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 38 50% 12%;
+    --warning-muted-foreground: 38 60% 60%;
+    --warning-border: 38 40% 20%;
 
     --risk: 347 77% 50%;
     --risk-foreground: 0 0% 100%;
@@ -127,18 +142,18 @@
 
     --border: 240 4% 16%;
     --input: 240 4% 16%;
-    --ring: 239 84% 67%;
+    --ring: 221 83% 53%;
 
-    --border-active: 239 84% 67%;
+    --border-active: 221 83% 53%;
 
     --sidebar-background: 240 6% 6%;
     --sidebar-foreground: 240 4% 65%;
-    --sidebar-primary: 239 84% 67%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4% 14%;
     --sidebar-accent-foreground: 240 5% 96%;
     --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 239 84% 67%;
+    --sidebar-ring: 221 83% 53%;
   }
 }
 
@@ -216,9 +231,9 @@
 
   .nexus-badge-warning {
     @apply nexus-badge border;
-    background-color: hsl(var(--risk-muted));
-    color: hsl(var(--risk-muted-foreground));
-    border-color: hsl(var(--risk-border));
+    background-color: hsl(var(--warning-muted));
+    color: hsl(var(--warning-muted-foreground));
+    border-color: hsl(var(--warning-border));
   }
 
   /* Question Card Styles */

@@ -305,11 +305,11 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
           <span>Abandoned</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <AlertTriangle className="h-4 w-4" style={{ color: 'hsl(38, 92%, 50%)' }} />
+          <AlertTriangle className="h-4 w-4 text-warning" />
           <span>Warnings</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Leaf className="h-4 w-4" style={{ color: 'hsl(142, 71%, 45%)' }} />
+          <Leaf className="h-4 w-4 text-success" />
           <span>Sustainability</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -404,7 +404,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                         </div>
                         {hasSustainability && (
                           <div title="Sustainability Report">
-                            <Leaf className="h-4 w-4" style={{ color: 'hsl(142, 71%, 45%)' }} />
+                            <Leaf className="h-4 w-4 text-success" />
                           </div>
                         )}
                         {hasRegulatory && (
