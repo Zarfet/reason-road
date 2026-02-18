@@ -85,7 +85,7 @@ export type ControlPreference = 'Automatic' | 'Supervised' | 'Full control';
  * Geographic deployment region
  * Affects regulatory requirements
  */
-export type GeographicDeployment = 'Primarily Europe' | 'Primarily US' | 'Global' | 'Internal tool';
+export type GeographicDeployment = 'Primarily Europe' | 'Primarily US' | 'Primarily United States' | 'Global' | 'Global (multiple regions)' | 'Internal tool' | 'Internal Only';
 
 // ============================================
 // 2. ASSESSMENT STATE
