@@ -15,7 +15,7 @@ export function NexusLogo({ iconSize = 36 }: NexusLogoProps) {
       />
       <div className="flex flex-col">
         <span className="font-extrabold text-xl tracking-tighter text-foreground leading-none">NEXUS</span>
-        <span className="font-mono text-[10px] text-muted-foreground tracking-wider leading-none mt-0.5">INTERFACE FRAMEWORK</span>
+        <span className="font-mono text-[9px] text-muted-foreground tracking-wider leading-none mt-0.5">EVIDENCE-BASED INTERFACE SELECTION FRAMEWORK</span>
       </div>
     </div>
   );
