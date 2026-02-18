@@ -4,7 +4,7 @@
  */
 
 import { Link, useNavigate } from 'react-router-dom';
-import { Target, User, LogOut } from 'lucide-react';
+import { Hexagon, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -43,15 +43,13 @@ export function Navbar() {
   return (
     <header className="nexus-container py-6">
       <div className="flex items-center justify-between">
-        {/* Logo — pure black */}
+        {/* Logo — flat geometric */}
         <Link 
           to="/" 
-          className="flex items-center gap-2.5 hover:opacity-70 transition-opacity"
+          className="flex items-center gap-2 hover:opacity-70 transition-opacity"
         >
-          <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-            <Target className="h-4 w-4 text-background" />
-          </div>
-          <span className="font-semibold text-lg tracking-tight text-foreground">NEXUS</span>
+          <Hexagon className="h-7 w-7 text-foreground" strokeWidth={2.5} />
+          <span className="font-semibold text-xl tracking-tighter text-foreground">NEXUS</span>
         </Link>
 
         {/* Auth Section */}

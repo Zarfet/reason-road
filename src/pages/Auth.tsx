@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Target, ArrowLeft, Mail, Lock, Loader2 } from 'lucide-react';
+import { Hexagon, ArrowLeft, Mail, Lock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -84,11 +84,9 @@ export default function Auth() {
     <div className="min-h-screen bg-background">
       <header className="nexus-container py-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-70 transition-opacity">
-            <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-              <Target className="h-4 w-4 text-background" />
-            </div>
-            <span className="font-semibold text-lg tracking-tight text-foreground">NEXUS</span>
+          <Link to="/" className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+            <Hexagon className="h-7 w-7 text-foreground" strokeWidth={2.5} />
+            <span className="font-semibold text-xl tracking-tighter text-foreground">NEXUS</span>
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm" className="gap-2">
