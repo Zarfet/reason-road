@@ -2,6 +2,7 @@
  * Sustainability Report Card — Tech-Minimalist
  */
 
+import { type ReactNode } from 'react';
 import { Leaf, Zap, Recycle, TrendingDown, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
 import { BentoBox, BentoHeader } from './bento/BentoGrid';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,20 @@ import type { RecommendationResult, AssessmentAnswers } from '@/types/assessment
 interface SustainabilityCardProps {
   recommendation: RecommendationResult;
   answers: AssessmentAnswers;
+}
+
+function renderBoldMarkdown(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const regex = /\*\*(.*?)\*\*/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    parts.push(<strong key={match.index}>{match[1]}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts;
 }
 
 function renderReason(reason: string) {
@@ -128,16 +143,8 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
               </div>
               
               {report.comparisonVsPureScreen.explanation && (
-                <div className="text-sm text-foreground leading-relaxed space-y-1">
-                  {report.comparisonVsPureScreen.explanation.split('. ').map((sentence, i) => {
-                    const [label, ...rest] = sentence.split(': ');
-                    if (!rest.length) return <p key={i}>{sentence}</p>;
-                    return (
-                      <p key={i}>
-                        <strong className="font-semibold">{label}:</strong> {rest.join(': ')}
-                      </p>
-                    );
-                  })}
+                <div className="text-sm text-foreground leading-relaxed">
+                  {renderBoldMarkdown(report.comparisonVsPureScreen.explanation)}
                 </div>
               )}
               
