@@ -148,10 +148,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           return answers.controlPreference !== null;
         case 'geography':
           return answers.geography !== null;
-        case 'review': {
-          const reviewReport = detectContradictions(answers);
-          return reviewReport.errorCount === 0;
-        }
+        case 'review':
+          return true; // Allow proceeding even with contradictions
         default:
           return false;
       }
