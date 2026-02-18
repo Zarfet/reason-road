@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PARADIGM_LABELS, type ParadigmScores } from '@/types/assessment';
 import { Button } from '@/components/ui/button';
 import {
@@ -544,23 +545,46 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                     {/* Flags */}
                     <TableCell>
                       <div className="flex gap-1.5 flex-wrap">
-                        <div title={assessment.is_completed ? "Completed" : "Abandoned"}>
-                          {assessment.is_completed ? (
-                            <CheckCircle className="h-4 w-4 text-success" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-destructive" />
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div>
+                                {assessment.is_completed ? (
+                                  <CheckCircle className="h-4 w-4 text-success" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 text-destructive" />
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="bg-card border-l-4 border-l-primary px-3 py-2 shadow-lg">
+                              <p className="text-sm">{assessment.is_completed ? 'Assessment completed' : 'Assessment abandoned'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          {hasSustainability && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <Leaf className="h-4 w-4 text-success" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-card border-l-4 border-l-primary px-3 py-2 shadow-lg">
+                                <p className="text-sm">Sustainability report included</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
-                        </div>
-                        {hasSustainability && (
-                          <div title="Sustainability Report">
-                            <Leaf className="h-4 w-4 text-success" />
-                          </div>
-                        )}
-                        {hasRegulatory && (
-                          <div title="Regulatory Impact">
-                            <Globe className="h-4 w-4 text-primary" />
-                          </div>
-                        )}
+                          {hasRegulatory && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <Globe className="h-4 w-4 text-primary" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-card border-l-4 border-l-primary px-3 py-2 shadow-lg">
+                                <p className="text-sm">Regulatory impact analysis</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </TooltipProvider>
                       </div>
                     </TableCell>
 
