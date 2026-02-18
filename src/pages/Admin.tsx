@@ -391,33 +391,34 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ── Paradigm + Values side by side ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {Object.keys(stats.paradigmCounts).length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Primary Interface Type Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  {Object.entries(stats.paradigmCounts)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([paradigm, count]) => (
-                      <div key={paradigm} className="flex items-center gap-2 rounded-lg border bg-card p-3">
-                        <span className="text-sm font-medium text-foreground">
-                          {PARADIGM_LABELS[paradigm as keyof ParadigmScores] || paradigm}
-                        </span>
-                        <Badge variant="secondary">{count}</Badge>
-                        <span className="text-xs text-muted-foreground">
-                          ({stats.total > 0 ? Math.round((count / stats.total) * 100) : 0}%)
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+        {/* ── Paradigm distribution (full width) ── */}
+        {Object.keys(stats.paradigmCounts).length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg">Primary Interface Type Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                {Object.entries(stats.paradigmCounts)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([paradigm, count]) => (
+                    <div key={paradigm} className="flex items-center gap-2 rounded-lg border bg-card p-3">
+                      <span className="text-sm font-medium text-foreground">
+                        {PARADIGM_LABELS[paradigm as keyof ParadigmScores] || paradigm}
+                      </span>
+                      <Badge variant="secondary">{count}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        ({stats.total > 0 ? Math.round((count / stats.total) * 100) : 0}%)
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
+        {/* ── Top Values + Agreement side by side ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {Object.keys(stats.valueCounts).length > 0 && (
             <Card>
               <CardHeader>
@@ -449,47 +450,47 @@ export default function Admin() {
               </CardContent>
             </Card>
           )}
-        </div>
 
-        {/* ── Agreement vs Confidence (thesis validation) ── */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Agreement Rate by Confidence Level
-            </CardTitle>
-            <CardDescription>
-              Does higher algorithmic confidence (score gap) correlate with user agreement? — Thesis validation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {assessments.filter(a => a.agreement_rating !== null).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No agreement ratings collected yet.</p>
-            ) : (
-              <div className="grid grid-cols-3 gap-4 text-center">
-                {(
-                  [
-                    { key: 'high', label: 'High Confidence', sub: '≥30pt gap' },
-                    { key: 'med',  label: 'Moderate',        sub: '15–29pt gap' },
-                    { key: 'low',  label: 'Low Confidence',  sub: '<15pt gap' },
-                  ] as const
-                ).map(({ key, label, sub }) => {
-                  const b = stats.agreementByConfidence[key];
-                  const rate = b.total > 0 ? Math.round((b.agree / b.total) * 100) : null;
-                  const color = key === 'high' ? 'text-success' : key === 'med' ? 'text-warning' : 'text-risk';
-                  return (
-                    <div key={key} className="p-4 rounded-lg border bg-card">
-                      <p className={`text-3xl font-bold ${color}`}>{rate !== null ? `${rate}%` : '—'}</p>
-                      <p className="text-sm font-medium text-foreground mt-1">{label}</p>
-                      <p className="text-xs text-muted-foreground">{sub}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{b.total} assessments</p>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {/* ── Agreement vs Confidence (thesis validation) ── */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Agreement Rate by Confidence Level
+              </CardTitle>
+              <CardDescription>
+                Does higher algorithmic confidence (score gap) correlate with user agreement? — Thesis validation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {assessments.filter(a => a.agreement_rating !== null).length === 0 ? (
+                <p className="text-sm text-muted-foreground">No agreement ratings collected yet.</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  {(
+                    [
+                      { key: 'high', label: 'High Confidence', sub: '≥30pt gap' },
+                      { key: 'med',  label: 'Moderate',        sub: '15–29pt gap' },
+                      { key: 'low',  label: 'Low Confidence',  sub: '<15pt gap' },
+                    ] as const
+                  ).map(({ key, label, sub }) => {
+                    const b = stats.agreementByConfidence[key];
+                    const rate = b.total > 0 ? Math.round((b.agree / b.total) * 100) : null;
+                    const color = key === 'high' ? 'text-success' : key === 'med' ? 'text-warning' : 'text-risk';
+                    return (
+                      <div key={key} className="p-4 rounded-lg border bg-card">
+                        <p className={`text-3xl font-bold ${color}`}>{rate !== null ? `${rate}%` : '—'}</p>
+                        <p className="text-sm font-medium text-foreground mt-1">{label}</p>
+                        <p className="text-xs text-muted-foreground">{sub}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{b.total} assessments</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* ── Feedback comments ── */}
         {feedbackWithText.length > 0 && (
