@@ -453,10 +453,10 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                           size="sm"
                           disabled={!assessment.is_completed || !assessment.responses || !assessment.paradigm_results}
                           title={assessment.is_completed ? "Download PDF report" : "Assessment incomplete"}
-                          onClick={() => {
+                          onClick={async () => {
                             if (assessment.responses && assessment.paradigm_results) {
                               try {
-                                generatePDFReport({
+                                await generatePDFReport({
                                   answers: assessment.responses as any,
                                   recommendation: assessment.paradigm_results as any,
                                 });
