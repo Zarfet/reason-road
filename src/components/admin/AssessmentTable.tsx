@@ -35,6 +35,7 @@ import {
   Search,
   ArrowUpDown,
   Eye,
+  FileDown,
   CheckCircle,
   XCircle,
   AlertTriangle,
@@ -44,6 +45,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { generatePDFReport } from '@/lib/pdfGenerator';
 
 interface AssessmentRow {
   id: string;
@@ -445,6 +447,26 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                           title="Toggle details"
                         >
                           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!assessment.is_completed || !assessment.responses || !assessment.paradigm_results}
+                          title={assessment.is_completed ? "Download PDF report" : "Assessment incomplete"}
+                          onClick={() => {
+                            if (assessment.responses && assessment.paradigm_results) {
+                              try {
+                                generatePDFReport({
+                                  answers: assessment.responses as any,
+                                  recommendation: assessment.paradigm_results as any,
+                                });
+                              } catch (error) {
+                                console.error('PDF generation failed:', error);
+                              }
+                            }
+                          }}
+                        >
+                          <FileDown className="h-4 w-4" /> PDF
                         </Button>
                         <Dialog>
                           <DialogTrigger asChild>
