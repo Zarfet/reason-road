@@ -29,9 +29,9 @@ function getImpactIcon(level: RegulatoryRequirement['impactLevel']) {
 
 function getRiskBadgeClassName(level: RegulatoryAnalysis['overallRiskLevel']) {
   switch (level) {
-    case 'critical': return 'bg-foreground text-background';
-    case 'high': return 'bg-foreground text-background';
-    case 'medium': return 'border border-foreground text-foreground';
+    case 'critical': return 'bg-risk text-risk-foreground';
+    case 'high': return 'bg-risk text-risk-foreground';
+    case 'medium': return 'bg-warning text-warning-foreground';
     case 'low': return 'border border-border text-muted-foreground';
     default: return '';
   }
