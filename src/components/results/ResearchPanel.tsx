@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
+import { ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -146,16 +146,13 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
       transition={{ delay: 0.4 }}
     >
       <Card className="nexus-card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-accent" />
-            Supporting Research
-            {!loading && papers.length > 0 && (
-              <span className="text-sm font-normal text-muted-foreground">
-                ({papers.length} retrieved{fromCache ? ', cached' : ''})
-              </span>
-            )}
-          </h2>
+        <div className="flex items-center justify-between mb-4">
+          {!loading && papers.length > 0 && (
+            <span className="text-sm text-muted-foreground">
+              {papers.length} retrieved{fromCache ? ', cached' : ''}
+            </span>
+          )}
+          {!loading && papers.length === 0 && <span />}
           {!loading && (
             <Button
               variant="ghost"

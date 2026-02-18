@@ -3,8 +3,8 @@
  */
 
 import { type ReactNode } from 'react';
-import { Leaf, Zap, Recycle, TrendingDown, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
-import { BentoBox, BentoHeader } from './bento/BentoGrid';
+import { Zap, Recycle, TrendingDown, AlertCircle, CheckCircle, ExternalLink } from 'lucide-react';
+import { BentoBox } from './bento/BentoGrid';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { generateSustainabilityReport } from '@/lib/sustainabilityAnalysis';
@@ -48,7 +48,7 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
   
   return (
     <BentoBox size="wide">
-      <BentoHeader title="Sustainability Report" icon={<Leaf className="h-5 w-5" />} />
+      
       <p className="text-sm text-muted-foreground -mt-2 mb-4">{renderReason(report.reason)}</p>
       
       {/* Energy and CO₂ Metrics */}

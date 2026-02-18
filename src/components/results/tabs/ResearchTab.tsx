@@ -28,10 +28,10 @@ export function ResearchTab({ paradigm, userDemographics }: ResearchTabProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground">Supporting Research</p>
-                <p className="text-xs text-muted-foreground font-mono">AI-generated academic paper suggestions</p>
+                <p className="text-xs text-muted-foreground font-mono">Peer-reviewed papers curated by AI</p>
               </div>
               <Badge variant="outline" className="text-[10px] font-mono font-semibold uppercase tracking-wider mr-2 border-border text-muted-foreground">
-                AI Generated
+                AI Curated
               </Badge>
             </div>
           </AccordionTrigger>
@@ -50,10 +50,10 @@ export function ResearchTab({ paradigm, userDemographics }: ResearchTabProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground">Real-World Case Studies</p>
-                <p className="text-xs text-muted-foreground font-mono">Success stories and lessons from failures</p>
+                <p className="text-xs text-muted-foreground font-mono">Real implementations curated by AI</p>
               </div>
               <Badge variant="outline" className="text-[10px] font-mono font-semibold uppercase tracking-wider mr-2 border-border text-muted-foreground">
-                AI Generated
+                AI Curated
               </Badge>
             </div>
           </AccordionTrigger>

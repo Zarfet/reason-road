@@ -21,38 +21,12 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
   
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center shrink-0">
-            <AlertTriangle className="h-5 w-5 text-foreground" />
-          </div>
-          <div>
-            <h3 className="text-lg font-medium tracking-tight">Red Flags & Critical Considerations</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {report.criticalCount > 0 
-                ? `${report.criticalCount} CRITICAL issue(s) require immediate attention`
-                : `${report.totalFlags} issue(s) detected that should be addressed`}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-1.5 shrink-0">
-          {report.criticalCount > 0 && (
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold bg-risk text-risk-foreground">
-              {report.criticalCount} Critical
-            </span>
-          )}
-          {report.highCount > 0 && (
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold border border-risk-border text-risk-muted-foreground bg-risk-muted">
-              {report.highCount} High
-            </span>
-          )}
-          {report.mediumCount > 0 && (
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold bg-warning text-warning-foreground">
-              {report.mediumCount} Medium
-            </span>
-          )}
-        </div>
+      <div className="mb-5">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {report.criticalCount > 0 
+            ? `${report.criticalCount} CRITICAL issue(s) require immediate attention`
+            : `${report.totalFlags} issue(s) detected that should be addressed`}
+        </p>
       </div>
 
       {/* Red Flags List */}
