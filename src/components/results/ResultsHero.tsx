@@ -67,7 +67,7 @@ export function ResultsHero({
 
   return (
     <div className="py-8 md:py-12">
-      <div className="nexus-card max-w-5xl mx-auto">
+      <div className="nexus-card-glow max-w-5xl mx-auto">
         {/* Badge */}
         <motion.div
           className="flex justify-center mb-6"
@@ -75,8 +75,8 @@ export function ResultsHero({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-foreground text-xs font-mono font-semibold tracking-wider uppercase text-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+          <span className="nexus-badge-success px-4 py-1.5 text-xs font-semibold tracking-wider uppercase">
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
             Recommended Strategy
           </span>
         </motion.div>
@@ -114,12 +114,12 @@ export function ResultsHero({
         >
           {breakdownItems.map((item, index) => (
             <div key={item.paradigm} className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center text-foreground">
+              <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center text-primary">
                 {paradigmIcons[item.paradigm]}
               </div>
               <div>
                 <p className="text-2xl font-mono font-bold text-foreground tracking-tight">
-                  {index === 0 && <span className="text-accent">{item.pct}%</span>}
+                  {index === 0 && <span className="text-primary">{item.pct}%</span>}
                   {index !== 0 && <>{item.pct}%</>}
                 </p>
                 <p className="text-sm text-muted-foreground font-mono">{PARADIGM_LABELS[item.paradigm]}</p>
@@ -169,7 +169,7 @@ export function ResultsHero({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {reasoningBullets.slice(0, 4).map((bullet, i) => (
                   <div key={i} className="flex items-start gap-3 text-left p-3 rounded-xl border border-border bg-secondary/50">
-                    <span className="h-6 w-6 rounded-full bg-foreground text-background text-xs font-mono font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-mono font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <p className="text-sm text-muted-foreground leading-relaxed">{renderBold(bullet)}</p>

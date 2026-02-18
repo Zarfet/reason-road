@@ -98,7 +98,7 @@ export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: Ac
           </p>
           <Button 
             onClick={onStartOver}
-            className="w-full gap-2 bg-foreground text-background hover:bg-foreground/80"
+            className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <RefreshCw className="h-4 w-4" />
             Run Another Assessment

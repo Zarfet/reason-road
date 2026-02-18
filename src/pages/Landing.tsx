@@ -37,7 +37,7 @@ export default function Landing() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               Evidence-based interface selection
             </motion.div>
 
@@ -71,7 +71,7 @@ export default function Landing() {
             >
               <Button 
                 size="lg" 
-                className="gap-2 px-8 py-6 text-lg bg-foreground text-background hover:bg-foreground/90 rounded-xl"
+                className="gap-2 px-8 py-6 text-lg bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-nexus-glow"
                 onClick={handleStartAssessment}
                 disabled={loading}
               >
@@ -156,7 +156,7 @@ function FeatureCard({
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center text-foreground">
+      <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center text-primary">
         {icon}
       </div>
       <h3 className="text-lg font-medium text-foreground tracking-tight">{title}</h3>
@@ -176,7 +176,7 @@ function StepCard({
 }) {
   return (
     <div className="text-center space-y-3">
-      <div className="mx-auto h-10 w-10 rounded-full bg-foreground text-background flex items-center justify-center font-mono font-bold text-sm">
+      <div className="mx-auto h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-mono font-bold text-sm">
         {number}
       </div>
       <h3 className="font-medium text-foreground tracking-tight">{title}</h3>

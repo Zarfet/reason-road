@@ -163,7 +163,7 @@ export default function Profile() {
                   <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                   <h3 className="font-medium text-foreground mb-2">No assessments yet</h3>
                   <p className="text-muted-foreground mb-4">Start your first assessment to get paradigm recommendations</p>
-                  <Button onClick={() => navigate('/assessment')} className="bg-foreground text-background hover:bg-foreground/80">
+                  <Button onClick={() => navigate('/assessment')} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     Start Assessment
                   </Button>
                 </CardContent>
@@ -216,7 +216,7 @@ export default function Profile() {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteAssessment(assessment.id)} className="bg-foreground text-background hover:bg-foreground/80">
+                                <AlertDialogAction onClick={() => handleDeleteAssessment(assessment.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>

@@ -138,7 +138,7 @@ export default function Auth() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-foreground text-background hover:bg-foreground/80"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

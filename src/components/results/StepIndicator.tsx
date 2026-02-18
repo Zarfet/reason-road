@@ -36,7 +36,7 @@ export function StepIndicator({ currentStep = 5 }: StepIndicatorProps) {
               className={`
                 h-7 w-7 rounded-full flex items-center justify-center text-xs font-mono font-semibold transition-colors
                 ${isCompleted || isCurrent
-                  ? 'bg-foreground text-background'
+                  ? 'bg-primary text-primary-foreground'
                   : 'bg-secondary text-muted-foreground border border-border'
                 }
               `}

@@ -49,7 +49,7 @@ export function WizardNavigation({ onComplete }: WizardNavigationProps) {
       <Button
         onClick={handleNext}
         disabled={!canProceed}
-        className="gap-2 bg-foreground text-background hover:bg-foreground/80"
+        className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
       >
         {isLastStep ? (
           <>
