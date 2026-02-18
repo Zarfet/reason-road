@@ -3,12 +3,12 @@
  */
 
 import { motion } from 'framer-motion';
-import { Shield, AlertTriangle, CheckCircle, Info, FileText, ExternalLink } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, CheckCircle, Info, FileText, ExternalLink } from 'lucide-react';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
-import { BentoBox, BentoHeader } from './bento/BentoGrid';
+import { BentoBox } from './bento/BentoGrid';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { RegulatoryAnalysis, RegulatoryRequirement } from '@/lib/regulatoryAnalysis';
 import { getParadigmDisplayName } from '@/lib/regulatoryAnalysis';
@@ -40,16 +40,9 @@ function getRiskBadgeClassName(level: RegulatoryAnalysis['overallRiskLevel']) {
 export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
   return (
     <BentoBox size="wide">
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <BentoHeader 
-          title="Regulatory Impact Analysis" 
-          subtitle={`${analysis.region} deployment - GDPR + EU AI Act compliance`}
-          icon={<Shield className="h-5 w-5" />}
-        />
-        <Badge variant="outline" className={cn("uppercase font-mono font-bold text-xs shrink-0", getRiskBadgeClassName(analysis.overallRiskLevel))}>
-          {analysis.overallRiskLevel} Risk
-        </Badge>
-      </div>
+      <p className="text-sm text-muted-foreground mb-6">
+        {analysis.region} deployment — GDPR + EU AI Act compliance
+      </p>
       
       {/* Regulatory Context */}
       <div className={`mb-6 p-5 rounded-lg border ${

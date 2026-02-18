@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Lightbulb, ThumbsUp, ThumbsDown, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -165,16 +165,13 @@ export function CaseStudiesPanel({
       transition={{ delay: 0.5 }}
     >
       <Card className="nexus-card">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-accent" />
-            Real-World Case Studies
-            {!loading && cases.length > 0 && (
-              <span className="text-sm font-normal text-muted-foreground">
-                ({cases.length} retrieved{fromCache ? ', cached' : ''})
-              </span>
-            )}
-          </h2>
+        <div className="flex items-center justify-between mb-4">
+          {!loading && cases.length > 0 && (
+            <span className="text-sm text-muted-foreground">
+              {cases.length} retrieved{fromCache ? ', cached' : ''}
+            </span>
+          )}
+          {!loading && cases.length === 0 && <span />}
           {!loading && (
             <Button
               variant="ghost"
