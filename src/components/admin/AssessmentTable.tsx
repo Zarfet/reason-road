@@ -38,11 +38,6 @@ import {
   ArrowUpDown,
   Eye,
   FileDown,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Globe,
-  Leaf,
   X,
   ChevronDown,
   ChevronUp,
@@ -129,21 +124,6 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
     return { name: 'N/A', pct: 0 };
   };
 
-  // Helper: Check if sustainability report shown
-  const hasSustainabilityReport = (assessment: AssessmentRow) => {
-    const r = (assessment.responses || {}) as Record<string, unknown>;
-    const valuesRanking = r.valuesRanking as string[] | undefined;
-    if (!valuesRanking) return false;
-    const sustainabilityRank = valuesRanking.indexOf('Sustainability');
-    return sustainabilityRank >= 0 && sustainabilityRank <= 2;
-  };
-
-  // Helper: Check if regulatory impact shown (now all geographies get regulatory)
-  const hasRegulatoryImpact = (assessment: AssessmentRow) => {
-    const r = (assessment.responses || {}) as Record<string, unknown>;
-    const geography = r.geography as string | undefined;
-    return !!geography; // All geographies now get regulatory analysis
-  };
 
   // Filtered & Sorted Data
   const processedData = useMemo(() => {
@@ -377,7 +357,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                   Primary Type <SortIcon field="primary_paradigm" />
                 </button>
               </TableHead>
-              <TableHead>Flags</TableHead>
+              
               <TableHead>
                 <button onClick={() => toggleSort('completion_time')} className="flex items-center gap-1.5 font-semibold hover:text-foreground">
                   Time <SortIcon field="completion_time" />
@@ -393,8 +373,6 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
               const r = (assessment.responses || {}) as Record<string, unknown>;
               const primary = getPrimaryParadigm(assessment.paradigm_results);
               const demographics = String(r.userDemographics || 'N/A');
-              const hasSustainability = hasSustainabilityReport(assessment);
-              const hasRegulatory = hasRegulatoryImpact(assessment);
               const isExpanded = expandedId === assessment.id;
 
               return (
@@ -541,51 +519,6 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                       )}
                     </TableCell>
 
-                    {/* Flags */}
-                    <TableCell>
-                      <div className="flex gap-1.5 flex-wrap">
-                        <TooltipProvider delayDuration={200}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div>
-                                {assessment.is_completed ? (
-                                  <CheckCircle className="h-4 w-4 text-success" />
-                                ) : (
-                                  <XCircle className="h-4 w-4 text-destructive" />
-                                )}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="bg-card border-l-4 border-l-primary px-3 py-2 shadow-lg">
-                              <p className="text-sm">{assessment.is_completed ? 'Assessment completed' : 'Assessment abandoned'}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          {hasSustainability && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div>
-                                  <Leaf className="h-4 w-4 text-success" />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-card border-l-4 border-l-primary px-3 py-2 shadow-lg">
-                                <p className="text-sm">Sustainability report included</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                          {hasRegulatory && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div>
-                                  <Globe className="h-4 w-4 text-primary" />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-card border-l-4 border-l-primary px-3 py-2 shadow-lg">
-                                <p className="text-sm">Regulatory impact analysis</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
 
                     {/* Completion Time */}
                     <TableCell className="text-sm">
@@ -650,7 +583,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                   {/* Expandable detail row */}
                   {isExpanded && (
                     <TableRow key={`${assessment.id}-detail`}>
-                      <TableCell colSpan={8} className="bg-muted/30 p-4">
+                      <TableCell colSpan={7} className="bg-muted/30 p-4">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-sm">
                           {[
                             ['Geography',      String(r.geography        || '—')],
@@ -681,7 +614,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
 
             {paginatedData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   {processedData.length === 0
                     ? 'No assessments match your filters.'
                     : 'No results on this page.'}
