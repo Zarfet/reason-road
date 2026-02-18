@@ -76,7 +76,7 @@ export function StepReview() {
           className="p-4 rounded-lg border bg-card"
         >
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             <span className="text-sm font-medium text-muted-foreground">Warnings</span>
           </div>
           <div className="text-3xl font-bold">{report.warningCount}</div>
@@ -131,7 +131,7 @@ export function StepReview() {
               className={`p-3 rounded-lg border ${
                 contradiction.severity === 'error'
                   ? 'border-destructive/30 bg-destructive/5'
-                  : 'border-amber-300/30 bg-amber-50/30'
+                  : 'border-warning-border bg-warning-muted/30'
               }`}
             >
               {/* Title and Severity */}
@@ -203,9 +203,9 @@ export function StepReview() {
 
       {/* Proceed with Warnings Disclaimer */}
       {report.warningCount > 0 && report.errorCount === 0 && (
-        <Alert className="bg-amber-50 border-amber-200">
-          <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-900 text-sm">
+        <Alert className="bg-warning-muted border-warning-border">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-warning-muted-foreground text-sm">
             <strong>Proceeding with Warnings:</strong> You can proceed despite warnings, but the recommendation may be suboptimal. 
             Consider reviewing the flagged steps to optimize your result.
           </AlertDescription>

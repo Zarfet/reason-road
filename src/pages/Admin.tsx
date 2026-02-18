@@ -475,7 +475,7 @@ export default function Admin() {
                 ).map(({ key, label, sub }) => {
                   const b = stats.agreementByConfidence[key];
                   const rate = b.total > 0 ? Math.round((b.agree / b.total) * 100) : null;
-                  const color = key === 'high' ? 'text-accent' : key === 'med' ? 'text-amber-500' : 'text-destructive';
+                  const color = key === 'high' ? 'text-success' : key === 'med' ? 'text-warning' : 'text-risk';
                   return (
                     <div key={key} className="p-4 rounded-lg border bg-card">
                       <p className={`text-3xl font-bold ${color}`}>{rate !== null ? `${rate}%` : '—'}</p>
@@ -510,7 +510,7 @@ export default function Admin() {
                         <div className="flex items-center gap-2">
                           <div className="flex gap-0.5">
                             {[1,2,3,4,5].map(s => (
-                              <span key={s} className={`text-sm ${s <= r.rating ? 'text-amber-400' : 'text-muted-foreground/30'}`}>★</span>
+                              <span key={s} className={`text-sm ${s <= r.rating ? 'text-warning' : 'text-muted-foreground/30'}`}>★</span>
                             ))}
                           </div>
                           <span className="text-xs text-muted-foreground">

@@ -48,7 +48,7 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
             </span>
           )}
           {report.mediumCount > 0 && (
-            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold border border-border text-muted-foreground">
+            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-mono font-semibold bg-warning text-warning-foreground">
               {report.mediumCount} Medium
             </span>
           )}
@@ -98,7 +98,7 @@ function RedFlagItem({ flag, index }: { flag: RedFlag; index: number }) {
     },
     medium: {
       icon: Info,
-      badgeClass: 'border border-border text-muted-foreground',
+      badgeClass: 'bg-warning text-warning-foreground',
     }
   };
   
