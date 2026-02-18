@@ -60,7 +60,7 @@ function pageWrapper(num: number, title: string, rightMeta: string, content: str
     </div>
     ${content}
     <div class="page-footer">
-      <span>NEXUS Paradigm Assessment</span>
+      <span>NEXUS Assessment</span>
       <span>Page ${num} of ?</span>
     </div>
   </div>`;
@@ -100,7 +100,7 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
         ${answers.userDemographics ? `<div class="cover-sub">User: ${esc(answers.userDemographics)}</div>` : ''}
       </div>
       <div class="cover-meta">
-        <div class="mono">CONFIDENCE: ${confLabel} (${diff}pts split)</div>
+        <div class="mono">CONFIDENCE: ${confLabel} (${diff}% gap)</div>
         <div class="mono">DATE: ${esc(dateStr.toUpperCase())}</div>
       </div>
     </div>
@@ -122,7 +122,7 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
     </div>
 
     <div class="page-footer">
-      <span>NEXUS Paradigm Assessment</span>
+      <span>NEXUS Assessment</span>
       <span>Page 1 of ?</span>
     </div>
   </div>`;
@@ -175,7 +175,7 @@ function buildAnalysis(answers: AssessmentAnswers, recommendation: Recommendatio
     <div class="page-subtitle">Arguments for and against each interface type, weighted by your context.</div>
     ${sections}`;
 
-  return pageWrapper(2, '02. Analysis — Arguments For & Against', `CONFIDENCE GAP: ${diff} PTS`, content);
+  return pageWrapper(2, '02. Analysis — Arguments For & Against', `CONFIDENCE GAP: ${diff}%`, content);
 }
 
 // ─── PAGE 3: Regulatory ──────────────────────────────────────────────────────
@@ -185,12 +185,24 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
 
   const riskClass = `risk-${reg.overallRiskLevel}`;
 
+  const reasonText = reg.overallRiskLevel === 'high' || reg.overallRiskLevel === 'critical'
+    ? 'AI systems and automated decision-making trigger GDPR Article 22 compliance requirements.'
+    : 'Standard EU compliance applies. Cookie consent and privacy policies required.';
+
+  const riskSummary = `
+  <div style="background:#f9fafb;border:1px solid #d1d5db;padding:12px;margin-bottom:12px;border-radius:4px;">
+    <div class="field-label" style="margin-bottom:6px;">Why ${esc(reg.overallRiskLevel.toUpperCase())} Risk?</div>
+    <div style="font-size:0.7rem;line-height:1.4;margin-bottom:8px;">${esc(reasonText)}</div>
+    <div class="field-label" style="margin-bottom:4px;">Applies To</div>
+    <div style="font-size:0.68rem;color:#555;">${esc(reg.region)} deployment — GDPR + EU AI Act compliance</div>
+  </div>`;
+
   const reqs = reg.requirements.map(req => {
-    const affectedLabels = req.applicableParadigms.map((p: string) => iLabel(p)).join(', ');
-    const steps = req.mitigationSteps.slice(0, 4).map((s: string) => {
+    const steps = req.mitigationSteps.slice(0, 3).map((s: string) => {
       const isReq = s.startsWith('REQUIRED');
       return `<li class="${isReq ? 'step-required' : ''}">${esc(clean(s.replace(/^REQUIRED: /, '')))}</li>`;
     }).join('');
+    const hasMore = req.mitigationSteps.length > 3;
 
     return `
     <div class="reg-row">
@@ -200,21 +212,12 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
         <span class="reg-impact reg-impact-${req.impactLevel}">${esc(req.impactLevel.toUpperCase())}</span>
       </div>
       <div class="reg-body">
-        <div class="text-xs">${esc(clean(req.description))}</div>
-        <div class="reg-cols">
-          <div>
-            <span class="field-label">APPLIES TO</span>
-            <div class="text-xs">${esc(affectedLabels)}</div>
-          </div>
-          <div>
-            <span class="field-label">REQUIRED ACTIONS</span>
-            <ul class="steps-list">${steps}</ul>
-          </div>
-        </div>
-        <div class="citation-row">
-          <span class="field-label">SOURCE</span>
-          <span class="text-xs citation-link">${esc(req.citation.title)} (${req.citation.year})</span>
-        </div>
+        <div style="font-size:0.68rem;color:#555;margin-bottom:6px;">${esc(clean(req.description))}</div>
+        <div class="field-label">Key Actions</div>
+        <ul class="steps-list">
+          ${steps}
+          ${hasMore ? `<li style="color:#888;font-style:italic;">+ ${req.mitigationSteps.length - 3} more actions</li>` : ''}
+        </ul>
       </div>
     </div>`;
   }).join('');
@@ -226,6 +229,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
         <span class="mono" style="margin-left:12px">Region: ${esc(reg.region)}</span>
       </div>
     </div>
+    ${riskSummary}
     <div class="reg-list">${reqs}</div>
     <div class="legal-disclaimer">Legal Disclaimer: ${esc(clean(reg.disclaimer))}</div>`;
 
@@ -278,6 +282,23 @@ function buildSustainability(answers: AssessmentAnswers, recommendation: Recomme
         <div class="text-xs">CO2: ${esc(sust.comparisonVsPureVR.co2Savings)}</div>
       </div>
     </div>
+
+    ${(() => {
+      const pureScreenEnergy = 50;
+      const isHigher = sust.weightedAnnualEnergy > pureScreenEnergy;
+      const pctDiff = Math.round(((sust.weightedAnnualEnergy - pureScreenEnergy) / pureScreenEnergy) * 100);
+      if (!isHigher || pctDiff <= 5) return '';
+      const aiPct = Math.round(sust.paradigmBreakdown.find((p: any) => p.paradigm === 'ai_vectorial')?.percentage || 0);
+      const vrPct = Math.round(sust.paradigmBreakdown.find((p: any) => p.paradigm === 'spatial')?.percentage || 0);
+      const deltaKwh = Math.round(sust.weightedAnnualEnergy - pureScreenEnergy);
+      return `
+      <div style="background:#fffbeb;border:1px solid #fbbf24;padding:10px;margin-top:10px;margin-bottom:10px;border-radius:4px;">
+        <div class="field-label" style="margin-bottom:4px;color:#92400e;">Why Higher Energy Consumption?</div>
+        <div style="font-size:0.68rem;line-height:1.4;color:#78350f;">
+          Your interface mix includes compute-intensive types like AI (${aiPct}%) or VR (${vrPct}%) which require more power than traditional screens. This adds ~${deltaKwh} kWh/year per user.
+        </div>
+      </div>`;
+    })()}
 
     ${sust.greenFlags.length > 0 ? `
     <div class="green-flags-section">
@@ -515,7 +536,7 @@ const CSS = `
   .risk-low { background: #f0fdf4; border-color: #166534; color: #166534; }
 
   .reg-list { display: flex; flex-direction: column; gap: 0; }
-  .reg-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid #e5e5e5; }
+  .reg-row { display: grid; grid-template-columns: 100px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid #e5e5e5; }
   .reg-meta { display: flex; flex-direction: column; gap: 4px; }
   .reg-meta strong { font-size: 0.72rem; }
   .reg-law { color: #888; }
@@ -562,7 +583,7 @@ const CSS = `
   .sev-medium { background: #a16207; }
   .cat-badge { font-size: 0.58rem; font-weight: 600; padding: 2px 6px; background: #e5e5e5; color: #555; border-radius: 2px; }
   .flag-title { font-size: 0.78rem; font-weight: 700; }
-  .flag-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+  .flag-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; }
   .flag-col { display: flex; flex-direction: column; gap: 4px; }
 
   .research-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
