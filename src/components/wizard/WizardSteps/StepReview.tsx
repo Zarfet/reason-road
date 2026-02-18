@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { detectContradictions } from '@/lib/contradictionDetector';
 import { useAssessment } from '@/context/AssessmentContext';
-import type { WizardStep } from '@/types/assessment';
+import { WIZARD_STEPS, type WizardStep } from '@/types/assessment';
 
 const STEP_NAMES: Record<WizardStep, string> = {
   'context': 'Project Context',
@@ -162,7 +162,7 @@ export function StepReview() {
                 className="w-full justify-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Go to Step {contradiction.affectedSteps[0] + 1}: {STEP_NAMES[Object.values(require('@/types/assessment').WIZARD_STEPS)[contradiction.affectedSteps[0]] as WizardStep] || 'Step'}
+                Go to Step {contradiction.affectedSteps[0] + 1}: {STEP_NAMES[WIZARD_STEPS[contradiction.affectedSteps[0]]] || 'Step'}
               </Button>
             </motion.div>
           ))}
