@@ -31,9 +31,12 @@ export function ImpactTab({ recommendation, answers }: ImpactTabProps) {
       icon: <Shield className="h-4 w-4 text-foreground" />,
       title: 'Regulatory Impact Analysis',
       subtitle: regulatoryAnalysis ? `${regulatoryAnalysis.requirements.length} requirements identified` : 'Not applicable',
-      badge: regulatoryAnalysis ? regulatoryAnalysis.overallRiskLevel.toUpperCase() : null,
-      badgeClass: regulatoryAnalysis?.overallRiskLevel === 'critical' || regulatoryAnalysis?.overallRiskLevel === 'high'
-        ? 'bg-foreground text-background'
+      badge: regulatoryAnalysis ? `${regulatoryAnalysis.overallRiskLevel.toUpperCase()} RISK` : null,
+      badgeClass: regulatoryAnalysis
+        ? regulatoryAnalysis.overallRiskLevel === 'critical' ? 'bg-risk text-risk-foreground'
+        : regulatoryAnalysis.overallRiskLevel === 'high' ? 'bg-risk text-risk-foreground'
+        : regulatoryAnalysis.overallRiskLevel === 'medium' ? 'bg-warning text-warning-foreground'
+        : 'border border-border text-muted-foreground'
         : 'border border-border text-muted-foreground',
       available: !!regulatoryAnalysis,
       content: regulatoryAnalysis ? <RegulatoryCard analysis={regulatoryAnalysis} /> : null,
@@ -45,8 +48,20 @@ export function ImpactTab({ recommendation, answers }: ImpactTabProps) {
       subtitle: sustainabilityReport.applicable
         ? `${Math.round(sustainabilityReport.weightedAnnualCO2)} kg CO₂/year`
         : 'Not applicable',
-      badge: sustainabilityReport.applicable ? 'ACTIVE' : null,
-      badgeClass: 'border border-border text-muted-foreground',
+      badge: sustainabilityReport.applicable 
+        ? sustainabilityReport.comparisonVsPureScreen.energySavings.includes('higher')
+          ? '⚠️ HIGHER ENERGY'
+          : sustainabilityReport.comparisonVsPureScreen.energySavings.includes('lower')
+          ? '✓ EFFICIENT'
+          : null
+        : null,
+      badgeClass: sustainabilityReport.applicable
+        ? sustainabilityReport.comparisonVsPureScreen.energySavings.includes('higher')
+          ? 'bg-warning text-warning-foreground'
+          : sustainabilityReport.comparisonVsPureScreen.energySavings.includes('lower')
+          ? 'bg-success text-success-foreground'
+          : 'border border-border text-muted-foreground'
+        : 'border border-border text-muted-foreground',
       available: sustainabilityReport.applicable,
       content: <SustainabilityCard recommendation={recommendation} answers={answers} />,
     },
@@ -59,7 +74,9 @@ export function ImpactTab({ recommendation, answers }: ImpactTabProps) {
         : 'No issues detected',
       badge: redFlagsReport.criticalCount > 0 ? `${redFlagsReport.criticalCount} CRITICAL` : redFlagsReport.hasFlags ? `${redFlagsReport.totalFlags} FLAGS` : null,
       badgeClass: redFlagsReport.criticalCount > 0
-        ? 'bg-foreground text-background'
+        ? 'bg-risk text-risk-foreground'
+        : redFlagsReport.hasFlags
+        ? 'bg-warning text-warning-foreground'
         : 'border border-border text-muted-foreground',
       available: redFlagsReport.hasFlags,
       content: <RedFlagsCard recommendation={recommendation} answers={answers} />,
