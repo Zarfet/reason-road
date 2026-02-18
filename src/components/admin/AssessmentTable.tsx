@@ -30,6 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Search,
@@ -44,8 +45,10 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  Trash2,
 } from 'lucide-react';
 import { generatePDFReport } from '@/lib/pdfGenerator';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AssessmentRow {
   id: string;
@@ -88,6 +91,31 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
 
   // Expandable rows
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Delete state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [assessmentToDelete, setAssessmentToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Helper: Delete assessment
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('assessments')
+        .delete()
+        .eq('id', assessmentId);
+      if (error) throw error;
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to delete assessment:', error);
+      alert('Failed to delete assessment. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirmOpen(false);
+      setAssessmentToDelete(null);
+    }
+  };
 
   // Helper: Get primary paradigm
   const getPrimaryParadigm = (paradigmResults: Record<string, unknown> | null) => {
@@ -345,6 +373,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
               </TableHead>
               <TableHead>PDF</TableHead>
               <TableHead>Rating</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -565,12 +594,28 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                       )}
                     </TableCell>
 
+                    {/* Actions */}
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setAssessmentToDelete(assessment.id);
+                          setDeleteConfirmOpen(true);
+                        }}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Delete assessment"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+
                   </TableRow>
 
                   {/* Expandable detail row */}
                   {isExpanded && (
                     <TableRow key={`${assessment.id}-detail`}>
-                      <TableCell colSpan={7} className="bg-muted/30 p-4">
+                      <TableCell colSpan={8} className="bg-muted/30 p-4">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-sm">
                           {[
                             ['Geography',      String(r.geography        || '—')],
@@ -601,7 +646,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
 
             {paginatedData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   {processedData.length === 0
                     ? 'No assessments match your filters.'
                     : 'No results on this page.'}
@@ -628,6 +673,54 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={(open) => {
+        if (!open) {
+          setDeleteConfirmOpen(false);
+          setAssessmentToDelete(null);
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Assessment</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this assessment? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm font-medium text-foreground">
+              {assessmentToDelete && (() => {
+                const assessment = assessments.find(a => a.id === assessmentToDelete);
+                if (!assessment) return 'Assessment not found';
+                const r = (assessment.responses || {}) as Record<string, unknown>;
+                return String(r.projectName || 'Untitled Assessment');
+              })()}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                setAssessmentToDelete(null);
+              }}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (assessmentToDelete) handleDeleteAssessment(assessmentToDelete);
+              }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Assessment'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
