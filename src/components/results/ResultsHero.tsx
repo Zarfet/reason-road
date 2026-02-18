@@ -1,12 +1,10 @@
 /**
- * Hero section for results page — Modern Eco-Executive style
- * Clean white card with emerald accents, no dark background
+ * Hero section for results page — Tech-Minimalist / Precision Instrument
  */
 
 import { motion } from 'framer-motion';
 import { Monitor, Eye, Sparkles, Glasses, Mic, TrendingUp } from 'lucide-react';
 import { PARADIGM_LABELS, type ParadigmScores } from '@/types/assessment';
-import { Badge } from '@/components/ui/badge';
 
 interface ResultsHeroProps {
   primaryParadigm: keyof ParadigmScores;
@@ -77,21 +75,22 @@ export function ResultsHero({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Badge className="bg-accent/10 text-accent border border-accent/20 px-4 py-1.5 text-xs font-semibold tracking-wide uppercase">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-foreground text-xs font-mono font-semibold tracking-wider uppercase text-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             Recommended Strategy
-          </Badge>
+          </span>
         </motion.div>
 
         {/* Main Recommendation */}
         <motion.h1
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3 tracking-tight text-foreground"
+          className="text-3xl md:text-4xl lg:text-5xl font-medium text-center mb-3 tracking-tight text-foreground"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           {PARADIGM_LABELS[primaryParadigm]}
           {secondaryParadigm && secondaryPct > 15 && (
-            <span className="text-muted-foreground font-medium"> + {PARADIGM_LABELS[secondaryParadigm]}</span>
+            <span className="text-muted-foreground font-normal"> + {PARADIGM_LABELS[secondaryParadigm]}</span>
           )}
         </motion.h1>
 
@@ -115,12 +114,15 @@ export function ResultsHero({
         >
           {breakdownItems.map((item, index) => (
             <div key={item.paradigm} className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+              <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center text-foreground">
                 {paradigmIcons[item.paradigm]}
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground tracking-tight">{item.pct}%</p>
-                <p className="text-sm text-muted-foreground">{PARADIGM_LABELS[item.paradigm]}</p>
+                <p className="text-2xl font-mono font-bold text-foreground tracking-tight">
+                  {index === 0 && <span className="text-accent">{item.pct}%</span>}
+                  {index !== 0 && <>{item.pct}%</>}
+                </p>
+                <p className="text-sm text-muted-foreground font-mono">{PARADIGM_LABELS[item.paradigm]}</p>
               </div>
               {index < breakdownItems.length - 1 && (
                 <div className="hidden md:block w-px h-10 bg-border ml-4" />
@@ -139,15 +141,12 @@ export function ResultsHero({
           >
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground text-sm">Confidence:</span>
-              <span className={`font-bold text-lg tracking-tight ${
-                confidenceLevel >= 70 ? 'text-accent' : 
-                confidenceLevel >= 50 ? 'text-amber-600' : 'text-destructive'
-              }`}>
+              <span className="text-muted-foreground text-sm font-mono">Confidence:</span>
+              <span className="font-mono font-bold text-lg tracking-tight text-foreground">
                 {confidenceLevel}%
               </span>
             </div>
-            <p className="text-muted-foreground text-xs max-w-md text-center">
+            <p className="text-muted-foreground text-xs max-w-md text-center font-mono">
               Based on response consistency and score differentiation
             </p>
           </motion.div>
@@ -169,8 +168,8 @@ export function ResultsHero({
             {reasoningBullets.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {reasoningBullets.slice(0, 4).map((bullet, i) => (
-                  <div key={i} className="flex items-start gap-3 text-left p-3 rounded-xl bg-secondary/50">
-                    <span className="h-6 w-6 rounded-full bg-accent/10 text-accent text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  <div key={i} className="flex items-start gap-3 text-left p-3 rounded-xl border border-border bg-secondary/50">
+                    <span className="h-6 w-6 rounded-full bg-foreground text-background text-xs font-mono font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     <p className="text-sm text-muted-foreground leading-relaxed">{renderBold(bullet)}</p>

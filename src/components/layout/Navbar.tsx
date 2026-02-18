@@ -1,6 +1,6 @@
 /**
- * NEXUS - Navigation Bar — Swiss Style / Clean SaaS
- * White/transparent header, slate-900 logo, emerald icon, subtle nav links
+ * NEXUS - Navigation Bar — Tech-Minimalist
+ * Pure white header, black logo, monochrome icons
  */
 
 import { Link, useNavigate } from 'react-router-dom';
@@ -43,15 +43,15 @@ export function Navbar() {
   return (
     <header className="nexus-container py-6">
       <div className="flex items-center justify-between">
-        {/* Logo — dark grey text, emerald icon */}
+        {/* Logo — pure black */}
         <Link 
           to="/" 
-          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2.5 hover:opacity-70 transition-opacity"
         >
-          <div className="h-8 w-8 rounded-xl bg-accent flex items-center justify-center">
-            <Target className="h-4 w-4 text-accent-foreground" />
+          <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
+            <Target className="h-4 w-4 text-background" />
           </div>
-          <span className="font-bold text-lg tracking-tight text-foreground">NEXUS</span>
+          <span className="font-semibold text-lg tracking-tight text-foreground">NEXUS</span>
         </Link>
 
         {/* Auth Section */}
@@ -65,12 +65,12 @@ export function Navbar() {
                   variant="ghost" 
                   className="group flex items-center gap-2 px-2 hover:bg-secondary"
                 >
-                  <Avatar className="h-8 w-8 bg-accent/10">
-                    <AvatarFallback className="text-sm font-medium text-accent">
+                  <Avatar className="h-8 w-8 border border-border">
+                    <AvatarFallback className="text-sm font-mono font-medium text-foreground bg-secondary">
                       {user.email?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  <span className="hidden sm:inline text-sm text-muted-foreground group-hover:text-foreground transition-colors font-mono">
                     {user.email}
                   </span>
                 </Button>
@@ -99,7 +99,7 @@ export function Navbar() {
               </Button>
               <Button
                 size="sm"
-                className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl"
+                className="bg-foreground text-background hover:bg-foreground/80 rounded-lg"
                 onClick={() => navigate('/auth')}
               >
                 Sign Up

@@ -1,5 +1,5 @@
 /**
- * Step indicator — thin elegant line with dots
+ * Step indicator — thin elegant line with dots, monochrome
  */
 
 import { motion } from 'framer-motion';
@@ -34,9 +34,9 @@ export function StepIndicator({ currentStep = 5 }: StepIndicatorProps) {
           >
             <div
               className={`
-                h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors
+                h-7 w-7 rounded-full flex items-center justify-center text-xs font-mono font-semibold transition-colors
                 ${isCompleted || isCurrent
-                  ? 'bg-accent text-accent-foreground'
+                  ? 'bg-foreground text-background'
                   : 'bg-secondary text-muted-foreground border border-border'
                 }
               `}
@@ -48,7 +48,7 @@ export function StepIndicator({ currentStep = 5 }: StepIndicatorProps) {
               )}
             </div>
             <span 
-              className={`text-xs ${
+              className={`text-xs font-mono ${
                 isCurrent 
                   ? 'font-semibold text-foreground' 
                   : 'text-muted-foreground'

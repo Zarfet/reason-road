@@ -23,7 +23,7 @@ export function QuestionLayout({ question, hint, children }: QuestionLayoutProps
         
         {hint && (
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
-            <Info className="h-4 w-4 shrink-0 mt-0.5 text-accent" />
+            <Info className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
             <span>{hint}</span>
           </div>
         )}
