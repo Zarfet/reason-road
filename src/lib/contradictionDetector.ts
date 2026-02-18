@@ -52,7 +52,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
       category: 'value-preference',
       title: 'User Control vs Automatic Preference',
       description: 'You ranked "User Control" as your #1 value, but selected "Automatic" for control preference. These choices conflict.',
-      affectedSteps: [1, 10],
+      affectedSteps: [1, 9],
       suggestion: 'Either change User Control to lower priority, or select "Supervised" or "Full control" preference.'
     });
   }
@@ -66,7 +66,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
       category: 'value-preference',
       title: 'Efficiency vs Full Control Preference',
       description: 'Efficiency is your top priority, but "Full control" preference reduces automation opportunities.',
-      affectedSteps: [1, 10],
+      affectedSteps: [1, 9],
       suggestion: 'Consider "Supervised" automation to balance efficiency with control.'
     });
   }
@@ -98,7 +98,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
       category: 'logic',
       title: 'Complex Task with Full Automation',
       description: 'Complex tasks require human judgment. Full automation is risky for multi-step, nuanced workflows.',
-      affectedSteps: [2, 10],
+      affectedSteps: [2, 9],
       suggestion: 'Change to "Supervised" automation where system assists but human makes final decisions.'
     });
   }
@@ -148,7 +148,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
       category: 'capability-limitation',
       title: 'Unpredictable Tasks Cannot Be Automated',
       description: 'Tasks that are "always different" cannot be reliably automated. Automation will make frequent mistakes.',
-      affectedSteps: [4, 10],
+      affectedSteps: [4, 9],
       suggestion: 'Change control to "Full control" or "Supervised". Only automate if predictability improves.'
     });
   }
@@ -184,7 +184,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
       category: 'logic',
       title: 'CRITICAL: Serious Errors + Full Automation',
       description: 'Serious or irreversible consequences REQUIRE human oversight. Full automatic mode is unacceptable.',
-      affectedSteps: [8, 10],
+      affectedSteps: [8, 9],
       suggestion: 'REQUIRED: Change to "Supervised" automation with human approval before irreversible actions.'
     });
   }
@@ -206,7 +206,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
       category: 'context-mismatch',
       title: 'Elderly Users + Automatic Control',
       description: 'Elderly users often distrust automation ("I want to see what\'s happening"). Invisible processes create anxiety.',
-      affectedSteps: [0, 10],
+      affectedSteps: [0, 9],
       suggestion: 'Use "Supervised" automation with clear visual feedback and easy manual override.'
     });
   }
