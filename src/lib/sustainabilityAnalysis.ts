@@ -47,14 +47,16 @@ export interface SustainabilityReport {
    weightedLifecycle: number;          // Years (weighted average)
    
    // Comparison
-   comparisonVsPureScreen: {
-     energySavings: string;            // "+15% more efficient" or "-20% worse"
-     co2Savings: string;
-   };
-   comparisonVsPureVR: {
-     energySavings: string;
-     co2Savings: string;
-   };
+  comparisonVsPureScreen: {
+    energySavings: string;
+    co2Savings: string;
+    explanation?: string;
+  };
+  comparisonVsPureVR: {
+    energySavings: string;
+    co2Savings: string;
+    explanation?: string;
+  };
    
    // Recommendations
    recommendations: string[];
@@ -118,6 +120,46 @@ const PARADIGM_PROFILES: Record<keyof ParadigmPercentages, Omit<ParadigmSustaina
      recyclablePercent: 75,             // Good
    }
  };
+
+/**
+ * Generate contextual explanation for energy consumption vs baseline
+ */
+function generateEnergyExplanation(
+  percentDiff: number,
+  actualKwh: number,
+  baselineKwh: number,
+  allScores: ParadigmPercentages
+): string {
+  if (percentDiff <= 5) return '';
+
+  const deltaKwh = Math.round(actualKwh - baselineKwh);
+  const annualCostEur = (deltaKwh * 0.25).toFixed(1);
+
+  let cause = '';
+  let mitigation = '';
+
+  if (allScores.ai_vectorial > 30) {
+    cause = 'AI inference requires GPU compute for natural language processing';
+    mitigation = 'Use edge models (on-device) or batch requests to reduce cloud compute';
+  } else if (allScores.spatial > 20) {
+    cause = 'VR/AR headsets draw 5-10x more power than smartphones due to displays and sensors';
+    mitigation = 'Limit VR sessions to <2 hours/day or use standalone headsets instead of PC-tethered';
+  } else if (allScores.ai_vectorial > 15 && allScores.traditional_screen > 40) {
+    cause = 'Hybrid screen + AI adds background processing overhead';
+    mitigation = 'Disable AI auto-suggestions when not needed, use manual triggers';
+  } else {
+    cause = 'Multi-paradigm mix increases baseline power draw';
+    mitigation = 'Consolidate to 1-2 primary interfaces where possible';
+  }
+
+  const tradeoff = percentDiff < 20
+    ? 'This is typically acceptable if the added functionality saves >10% of user time'
+    : percentDiff < 40
+    ? 'Moderate overhead — evaluate if benefits justify the environmental cost'
+    : 'Significant impact — strongly consider alternatives or optimizations';
+
+  return `**Why higher:** ${cause}. **Impact:** +${deltaKwh} kWh/year per user (~€${annualCostEur} annual cost). **Trade-off:** ${tradeoff}. **Action:** ${mitigation}.`;
+}
 
 /**
  * Generate sustainability report from paradigm percentages
@@ -189,12 +231,19 @@ export function generateSustainabilityReport(
        `${Math.round(energyVsScreen)}% higher consumption`,
      co2Savings: co2VsScreen < 0 ? 
        `${Math.abs(Math.round(co2VsScreen))}% lower emissions` : 
-       `${Math.round(co2VsScreen)}% higher emissions`
+       `${Math.round(co2VsScreen)}% higher emissions`,
+     explanation: generateEnergyExplanation(
+       energyVsScreen, 
+       weightedAnnualEnergy, 
+       pureScreenEnergy, 
+       recommendation.allScores
+     )
    };
    
    const comparisonVsPureVR = {
      energySavings: `${Math.round(energyVsVR)}% more efficient`,
-     co2Savings: `${Math.round(co2VsVR)}% lower emissions`
+     co2Savings: `${Math.round(co2VsVR)}% lower emissions`,
+     explanation: ''
    };
     
     // Generate recommendations
