@@ -331,7 +331,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                   Date <SortIcon field="date" />
                 </button>
               </TableHead>
-              <TableHead>Project Description</TableHead>
+              <TableHead>Assessment Summary</TableHead>
               <TableHead>
                 <button onClick={() => toggleSort('primary_paradigm')} className="flex items-center gap-1.5 font-semibold hover:text-foreground">
                   Primary Type <SortIcon field="primary_paradigm" />
@@ -344,7 +344,6 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                 </button>
               </TableHead>
               <TableHead>Rating</TableHead>
-              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -366,91 +365,126 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                       })}
                     </TableCell>
 
-                    {/* Project Description */}
+                    {/* Assessment Summary */}
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <button className="text-sm text-primary hover:underline max-w-[200px] truncate text-left">
-                            {demographics.length > 40 ? demographics.substring(0, 40) + '…' : demographics}
-                          </button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Assessment Summary</DialogTitle>
-                            <DialogDescription>
-                              {demographics.length > 100 ? demographics.substring(0, 100) + '…' : demographics}
-                            </DialogDescription>
-                          </DialogHeader>
-                          {(() => {
-                            const pr = (assessment.paradigm_results || {}) as Record<string, unknown>;
-                            const prim = pr.primary as { paradigm?: string; pct?: number } | undefined;
-                            const sec = pr.secondary as { paradigm?: string; pct?: number } | undefined;
-                            const tert = pr.tertiary as { paradigm?: string; pct?: number } | undefined;
-                            const vals = r.valuesRanking as string[] | undefined;
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-0 h-auto"
+                          onClick={() => setExpandedId(isExpanded ? null : assessment.id)}
+                        >
+                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <button className="text-sm text-primary hover:underline max-w-[200px] truncate text-left">
+                              {demographics.length > 40 ? demographics.substring(0, 40) + '…' : demographics}
+                            </button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Assessment Summary</DialogTitle>
+                              <DialogDescription>
+                                {String(r.projectName || '').trim() ? (
+                                  <span className="font-medium text-foreground">{String(r.projectName)}</span>
+                                ) : null}
+                                {String(r.projectName || '').trim() && ' — '}
+                                {demographics.length > 100 ? demographics.substring(0, 100) + '…' : demographics}
+                              </DialogDescription>
+                            </DialogHeader>
+                            {(() => {
+                              const pr = (assessment.paradigm_results || {}) as Record<string, unknown>;
+                              const prim = pr.primary as { paradigm?: string; pct?: number } | undefined;
+                              const sec = pr.secondary as { paradigm?: string; pct?: number } | undefined;
+                              const tert = pr.tertiary as { paradigm?: string; pct?: number } | undefined;
+                              const vals = r.valuesRanking as string[] | undefined;
 
-                            return (
-                              <div className="space-y-5">
-                                {/* Recommendation */}
-                                <div>
-                                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recommendation</h4>
-                                  <div className="space-y-1.5">
-                                    {prim && (
-                                      <div className="flex justify-between items-center p-2 rounded bg-muted">
-                                        <span className="text-sm font-medium">{PARADIGM_LABELS[prim.paradigm as keyof ParadigmScores] || prim.paradigm}</span>
-                                        <Badge variant="default">{Math.round(prim.pct || 0)}%</Badge>
-                                      </div>
-                                    )}
-                                    {sec && (sec.pct ?? 0) > 15 && (
-                                      <div className="flex justify-between items-center p-2 rounded bg-muted/50">
-                                        <span className="text-sm">{PARADIGM_LABELS[sec.paradigm as keyof ParadigmScores] || sec.paradigm}</span>
-                                        <span className="text-sm text-muted-foreground">{Math.round(sec.pct || 0)}%</span>
-                                      </div>
-                                    )}
-                                    {tert && (tert.pct ?? 0) > 10 && (
-                                      <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                                        <span className="text-sm">{PARADIGM_LABELS[tert.paradigm as keyof ParadigmScores] || tert.paradigm}</span>
-                                        <span className="text-sm text-muted-foreground">{Math.round(tert.pct || 0)}%</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Details */}
-                                <div>
-                                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Assessment Details</h4>
-                                  <div className="grid grid-cols-2 gap-2 text-sm">
-                                    {[
-                                      ['Geography', r.geography],
-                                      ['Complexity', r.taskComplexity],
-                                      ['Frequency', r.frequency],
-                                      ['Context', r.contextOfUse],
-                                    ].map(([label, val]) => (
-                                      <div key={String(label)}>
-                                        <span className="text-muted-foreground">{String(label)}:</span>{' '}
-                                        <span className="text-foreground">{String(val || '—')}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {/* Values */}
-                                {vals && vals.length > 0 && (
+                              return (
+                                <div className="space-y-5">
+                                  {/* Recommendation */}
                                   <div>
-                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Design Values Priority</h4>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {vals.map((v, i) => (
-                                        <Badge key={v} variant={i === 0 ? 'default' : 'outline'} className="text-xs">
-                                          #{i + 1} {v}
-                                        </Badge>
+                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recommendation</h4>
+                                    <div className="space-y-1.5">
+                                      {prim && (
+                                        <div className="flex justify-between items-center p-2 rounded bg-muted">
+                                          <span className="text-sm font-medium">{PARADIGM_LABELS[prim.paradigm as keyof ParadigmScores] || prim.paradigm}</span>
+                                          <Badge variant="default">{Math.round(prim.pct || 0)}%</Badge>
+                                        </div>
+                                      )}
+                                      {sec && (sec.pct ?? 0) > 15 && (
+                                        <div className="flex justify-between items-center p-2 rounded bg-muted/50">
+                                          <span className="text-sm">{PARADIGM_LABELS[sec.paradigm as keyof ParadigmScores] || sec.paradigm}</span>
+                                          <span className="text-sm text-muted-foreground">{Math.round(sec.pct || 0)}%</span>
+                                        </div>
+                                      )}
+                                      {tert && (tert.pct ?? 0) > 10 && (
+                                        <div className="flex justify-between items-center p-2 rounded bg-muted/30">
+                                          <span className="text-sm">{PARADIGM_LABELS[tert.paradigm as keyof ParadigmScores] || tert.paradigm}</span>
+                                          <span className="text-sm text-muted-foreground">{Math.round(tert.pct || 0)}%</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Details */}
+                                  <div>
+                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Assessment Details</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      {[
+                                        ['Geography', r.geography],
+                                        ['Complexity', r.taskComplexity],
+                                        ['Frequency', r.frequency],
+                                        ['Context', r.contextOfUse],
+                                      ].map(([label, val]) => (
+                                        <div key={String(label)}>
+                                          <span className="text-muted-foreground">{String(label)}:</span>{' '}
+                                          <span className="text-foreground">{String(val || '—')}</span>
+                                        </div>
                                       ))}
                                     </div>
                                   </div>
-                                )}
-                              </div>
-                            );
-                          })()}
-                        </DialogContent>
-                      </Dialog>
+
+                                  {/* Values */}
+                                  {vals && vals.length > 0 && (
+                                    <div>
+                                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Design Values Priority</h4>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {vals.map((v, i) => (
+                                          <Badge key={v} variant={i === 0 ? 'default' : 'outline'} className="text-xs">
+                                            #{i + 1} {v}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* PDF Download */}
+                                  {assessment.is_completed && assessment.responses && assessment.paradigm_results && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full"
+                                      onClick={async () => {
+                                        try {
+                                          await generatePDFReport({
+                                            answers: assessment.responses as any,
+                                            recommendation: assessment.paradigm_results as any,
+                                          });
+                                        } catch (error) {
+                                          console.error('PDF generation failed:', error);
+                                        }
+                                      }}
+                                    >
+                                      <FileDown className="h-4 w-4 mr-1" /> Download PDF Report
+                                    </Button>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </TableCell>
 
                     {/* Primary Paradigm */}
@@ -506,45 +540,12 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                       )}
                     </TableCell>
 
-                    {/* Actions */}
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setExpandedId(isExpanded ? null : assessment.id)}
-                          title="Toggle details"
-                        >
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={!assessment.is_completed || !assessment.responses || !assessment.paradigm_results}
-                          title={assessment.is_completed ? "Download PDF report" : "Assessment incomplete"}
-                          onClick={async () => {
-                            if (assessment.responses && assessment.paradigm_results) {
-                              try {
-                                await generatePDFReport({
-                                  answers: assessment.responses as any,
-                                  recommendation: assessment.paradigm_results as any,
-                                });
-                              } catch (error) {
-                                console.error('PDF generation failed:', error);
-                              }
-                            }
-                          }}
-                        >
-                          <FileDown className="h-4 w-4" /> PDF
-                        </Button>
-                      </div>
-                    </TableCell>
                   </TableRow>
 
                   {/* Expandable detail row */}
                   {isExpanded && (
                     <TableRow key={`${assessment.id}-detail`}>
-                      <TableCell colSpan={7} className="bg-muted/30 p-4">
+                      <TableCell colSpan={6} className="bg-muted/30 p-4">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-sm">
                           {[
                             ['Geography',      String(r.geography        || '—')],
@@ -575,7 +576,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
 
             {paginatedData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   {processedData.length === 0
                     ? 'No assessments match your filters.'
                     : 'No results on this page.'}
