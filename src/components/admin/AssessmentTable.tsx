@@ -313,7 +313,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
           <span>Sustainability</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Globe className="h-4 w-4" style={{ color: 'hsl(217, 91%, 60%)' }} />
+          <Globe className="h-4 w-4 text-primary" />
           <span>Regulatory</span>
         </div>
       </div>
@@ -409,7 +409,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                         )}
                         {hasRegulatory && (
                           <div title="Regulatory Impact">
-                            <Globe className="h-4 w-4" style={{ color: 'hsl(217, 91%, 60%)' }} />
+                            <Globe className="h-4 w-4 text-primary" />
                           </div>
                         )}
                       </div>

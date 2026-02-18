@@ -376,8 +376,8 @@ export function StepControl() {
       </div>
       
       {hasContradiction && (
-        <div className="mt-4 p-4 rounded-lg bg-amber-50 border border-amber-200">
-          <p className="text-sm text-amber-800 font-medium">
+        <div className="mt-4 p-4 rounded-lg bg-warning-muted border border-warning-border">
+          <p className="text-sm text-warning-muted-foreground font-medium">
             ⚠️ Contradiction detected: You prioritized Control but prefer automation. Reconsider?
           </p>
         </div>

@@ -37,14 +37,14 @@ export function ContradictionWarning({ stepNumber, answers }: ContradictionWarni
           className={
             contradiction.severity === 'error'
               ? 'border-destructive/50 bg-destructive/5'
-              : 'border-amber-300/50 bg-amber-50/50'
+              : 'border-warning-border bg-warning-muted/50'
           }
         >
           <div className="flex items-start gap-3">
             {contradiction.severity === 'error' ? (
               <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
             ) : (
-              <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
             )}
             <div className="flex-1 min-w-0">
               <div className="font-medium text-sm">

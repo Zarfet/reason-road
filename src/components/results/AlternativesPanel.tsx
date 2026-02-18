@@ -58,11 +58,11 @@ export function AlternativesPanel({ allScores, primaryParadigm }: AlternativesPa
                   score >= 50 ? 'bg-foreground text-background' : score >= 30 ? 'border border-foreground text-foreground' : 'border border-border text-muted-foreground'
                 }`}>
                   {score}% Match
-                  {isLowMatch && <AlertTriangle className="h-3 w-3" />}
+                  {isLowMatch && <AlertTriangle className="h-3 w-3 text-risk" />}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                {isLowMatch && <span className="font-medium text-foreground">High risk. </span>}
+                {isLowMatch && <span className="font-medium text-risk">High risk. </span>}
                 {explanation}
               </p>
               <p className="text-sm text-muted-foreground">{PARADIGM_DESCRIPTIONS[paradigm as keyof ParadigmScores]}</p>

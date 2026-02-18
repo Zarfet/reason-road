@@ -62,7 +62,7 @@ export function ArgumentsSection({ recommendation, answers }: ArgumentsSectionPr
                       {(pArg.argumentsFor ?? []).length} strengths · {(pArg.argumentsAgainst ?? []).length} challenges
                     </p>
                   </div>
-                  <Badge variant="outline" className="border-foreground text-foreground text-xs font-mono font-semibold mr-2">
+                  <Badge variant="outline" className="text-xs font-mono font-semibold mr-2">
                     {Math.round(pArg.percentage)}%
                   </Badge>
                 </div>
