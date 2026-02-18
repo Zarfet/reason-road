@@ -76,8 +76,8 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
   const [filterParadigm, setFilterParadigm] = useState('all');
   const [filterCompleted, setFilterCompleted] = useState('all');
   const [filterGeography, setFilterGeography] = useState('all');
-  const [filterSustainability, setFilterSustainability] = useState<boolean | null>(null);
-  const [filterRegulatory, setFilterRegulatory] = useState<boolean | null>(null);
+  const [filterSustainabilityImpact, setFilterSustainabilityImpact] = useState('all');
+  const [filterRegulatoryRisk, setFilterRegulatoryRisk] = useState('all');
 
   // Sorting
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -172,12 +172,36 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
       });
     }
 
-    if (filterSustainability !== null) {
-      filtered = filtered.filter((a) => hasSustainabilityReport(a) === filterSustainability);
+    if (filterSustainabilityImpact !== 'all') {
+      filtered = filtered.filter((a) => {
+        const r = (a.responses || {}) as Record<string, unknown>;
+        const valuesRanking = r.valuesRanking as string[] | undefined;
+        const sustainabilityRank = valuesRanking?.indexOf('Sustainability') ?? -1;
+        const hasSustainability = sustainabilityRank >= 0 && sustainabilityRank <= 2;
+        if (!hasSustainability && filterSustainabilityImpact === 'none') return true;
+        if (!hasSustainability) return false;
+        const pr = (a.paradigm_results || {}) as Record<string, unknown>;
+        const sustainability = pr.sustainability as { weightedCO2?: number } | undefined;
+        const co2 = sustainability?.weightedCO2 || 0;
+        if (filterSustainabilityImpact === 'low') return co2 < 30;
+        if (filterSustainabilityImpact === 'medium') return co2 >= 30 && co2 < 50;
+        if (filterSustainabilityImpact === 'high') return co2 >= 50;
+        return true;
+      });
     }
 
-    if (filterRegulatory !== null) {
-      filtered = filtered.filter((a) => hasRegulatoryImpact(a) === filterRegulatory);
+    if (filterRegulatoryRisk !== 'all') {
+      filtered = filtered.filter((a) => {
+        const r = (a.responses || {}) as Record<string, unknown>;
+        const geography = r.geography as string | undefined;
+        if (geography !== 'Primarily Europe' && geography !== 'Global (multiple regions)') {
+          return filterRegulatoryRisk === 'none';
+        }
+        const pr = (a.paradigm_results || {}) as Record<string, unknown>;
+        const regulatory = pr.regulatory as { overallRiskLevel?: string } | undefined;
+        const riskLevel = regulatory?.overallRiskLevel?.toLowerCase() || 'low';
+        return filterRegulatoryRisk === riskLevel;
+      });
     }
 
     filtered.sort((a, b) => {
@@ -206,7 +230,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
     });
 
     return filtered;
-  }, [assessments, searchTerm, filterParadigm, filterCompleted, filterGeography, filterSustainability, filterRegulatory, sortConfig]);
+  }, [assessments, searchTerm, filterParadigm, filterCompleted, filterGeography, filterSustainabilityImpact, filterRegulatoryRisk, sortConfig]);
 
   const paginatedData = processedData.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.ceil(processedData.length / pageSize);
@@ -224,8 +248,8 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
     setFilterParadigm('all');
     setFilterCompleted('all');
     setFilterGeography('all');
-    setFilterSustainability(null);
-    setFilterRegulatory(null);
+    setFilterSustainabilityImpact('all');
+    setFilterRegulatoryRisk('all');
     setPage(1);
   };
 
@@ -295,23 +319,34 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
             </SelectContent>
           </Select>
 
-          <Button
-            variant={filterSustainability === true ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => { setFilterSustainability(filterSustainability === true ? null : true); setPage(1); }}
-          >
-            <Leaf className="h-4 w-4" /> Sustainability
-          </Button>
+          <Select value={filterSustainabilityImpact} onValueChange={(val) => { setFilterSustainabilityImpact(val); setPage(1); }}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Carbon Impact" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Impact Levels</SelectItem>
+              <SelectItem value="low">Low (&lt;30 kg CO₂)</SelectItem>
+              <SelectItem value="medium">Medium (30-50 kg)</SelectItem>
+              <SelectItem value="high">High (&gt;50 kg)</SelectItem>
+              <SelectItem value="none">No Sustainability</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <Button
-            variant={filterRegulatory === true ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => { setFilterRegulatory(filterRegulatory === true ? null : true); setPage(1); }}
-          >
-            <Globe className="h-4 w-4" /> Regulatory
-          </Button>
+          <Select value={filterRegulatoryRisk} onValueChange={(val) => { setFilterRegulatoryRisk(val); setPage(1); }}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Regulatory Risk" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Risk Levels</SelectItem>
+              <SelectItem value="low">Low Risk</SelectItem>
+              <SelectItem value="medium">Medium Risk</SelectItem>
+              <SelectItem value="high">High Risk</SelectItem>
+              <SelectItem value="critical">Critical Risk</SelectItem>
+              <SelectItem value="none">No Regulatory</SelectItem>
+            </SelectContent>
+          </Select>
 
-          {(searchTerm || filterParadigm !== 'all' || filterCompleted !== 'all' || filterGeography !== 'all' || filterSustainability !== null || filterRegulatory !== null) && (
+          {(searchTerm || filterParadigm !== 'all' || filterCompleted !== 'all' || filterGeography !== 'all' || filterSustainabilityImpact !== 'all' || filterRegulatoryRisk !== 'all') && (
             <Button variant="ghost" size="sm" onClick={handleClearFilters} className="ml-auto">
               <X className="h-4 w-4" /> Clear
             </Button>
@@ -325,29 +360,6 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
         {processedData.length !== assessments.length && ` (filtered from ${assessments.length} total)`}
       </div>
 
-      {/* Flag Legend */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 bg-muted/30 rounded border text-xs">
-        <div className="flex items-center gap-1.5">
-          <CheckCircle className="h-4 w-4 text-success" />
-          <span>Completed</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <XCircle className="h-4 w-4 text-destructive" />
-          <span>Abandoned</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <AlertTriangle className="h-4 w-4 text-warning" />
-          <span>Warnings</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Leaf className="h-4 w-4 text-success" />
-          <span>Sustainability</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Globe className="h-4 w-4 text-primary" />
-          <span>Regulatory</span>
-        </div>
-      </div>
 
       {/* Table */}
       <div className="rounded-lg border overflow-hidden">
