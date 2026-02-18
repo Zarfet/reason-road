@@ -435,7 +435,7 @@ export default function Admin() {
                         <span className="text-sm font-medium w-28 shrink-0">{value}</span>
                         <div className="flex-1 bg-muted rounded-full h-5 overflow-hidden">
                           <div
-                            className="h-full bg-accent/70 rounded-full transition-all"
+                            className="h-full bg-primary rounded-full transition-all"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
