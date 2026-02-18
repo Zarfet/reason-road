@@ -38,7 +38,7 @@ import React, { createContext, useContext, useState, useCallback, useRef, useMem
 import type { AssessmentAnswers, WizardStep, RecommendationResult } from '@/types/assessment';
 import { WIZARD_STEPS, DESIGN_VALUES, validateDemographics } from '@/types/assessment';
 import { calculateScores, generateRecommendation } from '@/lib/scoring';
-import { detectContradictionsForStep } from '@/lib/contradictionDetector';
+import { detectContradictionsForStep, detectContradictions } from '@/lib/contradictionDetector';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -148,8 +148,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           return answers.controlPreference !== null;
         case 'geography':
           return answers.geography !== null;
-        case 'review':
-          return true; // Review step allows proceeding with warnings
+        case 'review': {
+          const reviewReport = detectContradictions(answers);
+          return reviewReport.errorCount === 0;
+        }
         default:
           return false;
       }

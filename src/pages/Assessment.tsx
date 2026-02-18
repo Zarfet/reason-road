@@ -19,6 +19,7 @@ import {
   StepControl,
   StepGeography,
 } from '@/components/wizard/WizardSteps';
+import { StepReview } from '@/components/wizard/WizardSteps/StepReview';
 
 export default function Assessment() {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ export default function Assessment() {
       case 'errors': return <StepErrors />;
       case 'control': return <StepControl />;
       case 'geography': return <StepGeography />;
+      case 'review': return <StepReview />;
       default: return null;
     }
   };

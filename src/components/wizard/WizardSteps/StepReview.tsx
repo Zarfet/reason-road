@@ -169,37 +169,15 @@ export function StepReview() {
         </div>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex gap-3 pt-4">
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={() => goToStep(9)} // Go to Step 9 (Control Preference)
-          className="flex-1"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Edit
-        </Button>
-        
-        <Button
-          size="lg"
-          onClick={handleProceed}
-          disabled={report.errorCount > 0}
-          className="flex-1 gap-2"
-        >
-          {report.errorCount > 0 ? (
-            <>
-              <AlertTriangle className="h-4 w-4" />
-              Fix {report.errorCount} Error{report.errorCount !== 1 ? 's' : ''} to Proceed
-            </>
-          ) : (
-            <>
-              Generate Results
-              <ChevronRight className="h-4 w-4" />
-            </>
-          )}
-        </Button>
-      </div>
+      {/* Blocking Errors Notice */}
+      {report.errorCount > 0 && (
+        <Alert className="bg-destructive/10 border-destructive/30">
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+          <AlertDescription className="text-sm">
+            <strong>Fix {report.errorCount} error{report.errorCount !== 1 ? 's' : ''} to proceed.</strong> Use the links above to navigate to the conflicting steps.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Proceed with Warnings Disclaimer */}
       {report.warningCount > 0 && report.errorCount === 0 && (
