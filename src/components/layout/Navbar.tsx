@@ -4,7 +4,7 @@
  */
 
 import { Link, useNavigate } from 'react-router-dom';
-import { Hexagon, User, LogOut } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -43,13 +43,21 @@ export function Navbar() {
   return (
     <header className="nexus-container py-6">
       <div className="flex items-center justify-between">
-        {/* Logo — flat geometric */}
+        {/* Logo */}
         <Link 
           to="/" 
-          className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+          className="flex items-center gap-3 hover:opacity-70 transition-opacity"
         >
-          <Hexagon className="h-7 w-7 text-foreground" strokeWidth={2.5} />
-          <span className="font-semibold text-xl tracking-tighter text-foreground">NEXUS</span>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-foreground flex-shrink-0">
+            <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 7L12 12L22 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 12L7 14.5M12 12L17 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-xl tracking-tighter text-foreground leading-none">NEXUS</span>
+            <span className="font-mono text-[10px] text-muted-foreground tracking-wider leading-none mt-0.5">INTERFACE FRAMEWORK</span>
+          </div>
         </Link>
 
         {/* Auth Section */}
