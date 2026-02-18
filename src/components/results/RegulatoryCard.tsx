@@ -62,13 +62,14 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
             <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               Regulatory Classification
             </p>
-            <p className="text-sm text-foreground leading-relaxed">
-              {analysis.riskRationale}
-            </p>
+      <p className="text-sm text-foreground leading-relaxed">
+        {analysis.riskRationale || 'Risk classification based on selected paradigms and deployment context.'}
+      </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {analysis.complianceCategories.procedural.length > 0 && (
+    {analysis.complianceCategories && (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {analysis.complianceCategories.procedural?.length > 0 && (
               <div>
                 <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   Procedural
@@ -80,7 +81,7 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
                 </ul>
               </div>
             )}
-            {analysis.complianceCategories.technical.length > 0 && (
+            {analysis.complianceCategories.technical?.length > 0 && (
               <div>
                 <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   Technical
@@ -92,7 +93,7 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
                 </ul>
               </div>
             )}
-            {analysis.complianceCategories.organizational.length > 0 && (
+            {analysis.complianceCategories.organizational?.length > 0 && (
               <div>
                 <p className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   Organizational
@@ -103,8 +104,9 @@ export function RegulatoryCard({ analysis }: RegulatoryCardProps) {
                   ))}
                 </ul>
               </div>
-            )}
+           )}
           </div>
+          )}
 
           {analysis.preLaunchBlockers && analysis.preLaunchBlockers.length > 0 && (
             <div className="pt-3 border-t border-border">
