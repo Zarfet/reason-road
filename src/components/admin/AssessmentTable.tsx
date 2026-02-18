@@ -220,7 +220,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by demographics..."
+              placeholder="Search by project description..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
               className="pl-9"
@@ -331,7 +331,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                   Date <SortIcon field="date" />
                 </button>
               </TableHead>
-              <TableHead>Demographics</TableHead>
+              <TableHead>Project Description</TableHead>
               <TableHead>
                 <button onClick={() => toggleSort('primary_paradigm')} className="flex items-center gap-1.5 font-semibold hover:text-foreground">
                   Primary Type <SortIcon field="primary_paradigm" />
@@ -366,7 +366,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                       })}
                     </TableCell>
 
-                    {/* Demographics */}
+                    {/* Project Description */}
                     <TableCell>
                       <Dialog>
                         <DialogTrigger asChild>
