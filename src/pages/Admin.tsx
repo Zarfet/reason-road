@@ -391,9 +391,10 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ── Paradigm distribution (full width) ── */}
-        {Object.keys(stats.paradigmCounts).length > 0 && (
-          <Card className="mb-6">
+        {/* ── Paradigm + Values + Agreement — 3 columns ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Left: Primary Interface Type Distribution */}
+          <Card>
             <CardHeader>
               <CardTitle className="text-lg">Primary Interface Type Distribution</CardTitle>
             </CardHeader>
@@ -415,43 +416,39 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
-        )}
 
-        {/* ── Top Values + Agreement side by side ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {Object.keys(stats.valueCounts).length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Top Design Value (#1 Priority)</CardTitle>
-                <CardDescription>Most frequently ranked first by users</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {Object.entries(stats.valueCounts)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([value, count]) => {
-                      const pct = stats.total > 0 ? (count / stats.total) * 100 : 0;
-                      return (
-                        <div key={value} className="flex items-center gap-3">
-                          <span className="text-sm font-medium w-28 shrink-0">{value}</span>
-                          <div className="flex-1 bg-muted rounded-full h-5 overflow-hidden">
-                            <div
-                              className="h-full bg-primary rounded-full transition-all"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                          <span className="text-sm text-muted-foreground w-20 text-right shrink-0">
-                            {count} ({Math.round(pct)}%)
-                          </span>
+          {/* Center: Top Design Value */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Top Design Value (#1 Priority)</CardTitle>
+              <CardDescription>Most frequently ranked first by users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {Object.entries(stats.valueCounts)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([value, count]) => {
+                    const pct = stats.total > 0 ? (count / stats.total) * 100 : 0;
+                    return (
+                      <div key={value} className="flex items-center gap-3">
+                        <span className="text-sm font-medium w-28 shrink-0">{value}</span>
+                        <div className="flex-1 bg-muted rounded-full h-5 overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
                         </div>
-                      );
-                    })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                        <span className="text-sm text-muted-foreground w-16 text-right shrink-0">
+                          {count} ({Math.round(pct)}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* ── Agreement vs Confidence (thesis validation) ── */}
+          {/* Right: Agreement Rate by Confidence Level */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -459,14 +456,14 @@ export default function Admin() {
                 Agreement Rate by Confidence Level
               </CardTitle>
               <CardDescription>
-                Does higher algorithmic confidence (score gap) correlate with user agreement? — Thesis validation
+                Higher confidence = user agreement? — Thesis validation
               </CardDescription>
             </CardHeader>
             <CardContent>
               {assessments.filter(a => a.agreement_rating !== null).length === 0 ? (
                 <p className="text-sm text-muted-foreground">No agreement ratings collected yet.</p>
               ) : (
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="space-y-4">
                   {(
                     [
                       { key: 'high', label: 'High Confidence', sub: '≥30pt gap' },
@@ -478,11 +475,10 @@ export default function Admin() {
                     const rate = b.total > 0 ? Math.round((b.agree / b.total) * 100) : null;
                     const color = key === 'high' ? 'text-success' : key === 'med' ? 'text-warning' : 'text-risk';
                     return (
-                      <div key={key} className="p-4 rounded-lg border bg-card">
-                        <p className={`text-3xl font-bold ${color}`}>{rate !== null ? `${rate}%` : '—'}</p>
+                      <div key={key} className="p-3 rounded-lg border bg-card text-center">
+                        <p className={`text-2xl font-bold ${color}`}>{rate !== null ? `${rate}%` : '—'}</p>
                         <p className="text-sm font-medium text-foreground mt-1">{label}</p>
-                        <p className="text-xs text-muted-foreground">{sub}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{b.total} assessments</p>
+                        <p className="text-xs text-muted-foreground">{sub} · {b.total} assessments</p>
                       </div>
                     );
                   })}
