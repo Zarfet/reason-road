@@ -143,9 +143,20 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
               </div>
               
               {report.comparisonVsPureScreen.explanation && (
-                <div className="text-sm text-foreground leading-relaxed">
-                  {renderBoldMarkdown(report.comparisonVsPureScreen.explanation)}
-                </div>
+                <ul className="text-sm text-foreground leading-relaxed space-y-1.5 mt-1">
+                  {report.comparisonVsPureScreen.explanation
+                    .split(/\. \*\*/)
+                    .filter(Boolean)
+                    .map((segment, i) => {
+                      const text = i === 0 ? segment : `**${segment}`;
+                      return (
+                        <li key={i} className="flex gap-2">
+                          <span className="text-muted-foreground font-mono shrink-0">→</span>
+                          <span>{renderBoldMarkdown(text.replace(/\.$/, ''))}</span>
+                        </li>
+                      );
+                    })}
+                </ul>
               )}
               
               {!report.comparisonVsPureScreen.explanation && (
