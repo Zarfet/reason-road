@@ -159,14 +159,10 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
       return false;
     }
 
-    // Check for blocking contradictions (only on steps 3-10, not on review)
-    if (currentStepName !== 'review' && currentStep >= 2) {
-      const contradictions = detectContradictionsForStep(currentStep, answers);
-      const hasBlockingErrors = contradictions.some(c => c.severity === 'error');
-      if (hasBlockingErrors) {
-        return false;
-      }
-    }
+    // Check for blocking contradictions only on the step where the contradiction originates
+    // (not on subsequent unrelated steps). We no longer block navigation for contradictions —
+    // they are surfaced in the review step instead.
+    // This ensures users can always progress through the wizard.
 
     return true;
   }, [currentStep, currentStepName, answers]);
