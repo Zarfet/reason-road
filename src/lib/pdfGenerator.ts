@@ -53,16 +53,13 @@ function pageWrapper(num: number, title: string, rightMeta: string, content: str
   return `
   <div class="a4-page">
     <div class="page-header">
-      <div>
-        <div class="page-title">${esc(title)}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <svg width="50" height="14" viewBox="0 0 50 14" fill="none"><text x="0" y="11" font-family="system-ui" font-size="11" font-weight="600" fill="#888">NEXUS</text></svg>
+        <span class="page-title">${esc(title)}</span>
       </div>
       <div class="mono">${esc(rightMeta)}</div>
     </div>
     ${content}
-    <div class="page-footer">
-      <span>NEXUS Assessment</span>
-      <span>Page ${num} of ?</span>
-    </div>
   </div>`;
 }
 
@@ -81,9 +78,11 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
     const isPrimary = key === recommendation.primary.paradigm;
     return `
     <div class="score-row ${isPrimary ? 'score-primary' : ''}">
-      <div class="score-label">${esc(iLabel(key).toUpperCase())}</div>
+      <div class="score-header">
+        <div class="score-label">${esc(iLabel(key).toUpperCase())}</div>
+        <div class="score-pct">${Math.round(pct)}%</div>
+      </div>
       <div class="bar-container"><div class="bar-fill" style="width:${pct}%;background:${isPrimary ? '#000' : '#aaa'}"></div></div>
-      <div class="score-pct">${pct}%</div>
     </div>`;
   }).join('');
 
@@ -95,12 +94,17 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
   <div class="a4-page">
     <div class="cover-header">
       <div>
-        <div class="project-label">Project: ${esc(answers.projectName || 'Untitled')}</div>
-        <div class="cover-title">NEXUS Assessment</div>
+        <div class="nexus-logo">
+          <svg width="80" height="20" viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="0" y="16" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#000">NEXUS</text>
+          </svg>
+        </div>
+        <div class="cover-title">${esc(answers.projectName || 'NEXUS Assessment')}</div>
         ${answers.userDemographics ? `<div class="cover-sub">User: ${esc(answers.userDemographics)}</div>` : ''}
       </div>
       <div class="cover-meta">
-        <div class="mono">CONFIDENCE: ${confLabel} (${diff}% gap)</div>
+        <div class="mono">CONFIDENCE: ${confLabel}</div>
+        <div class="mono confidence-detail">${Math.round(recommendation.primary.pct)}% primary vs ${Math.round(recommendation.secondary.pct)}% secondary</div>
         <div class="mono">DATE: ${esc(dateStr.toUpperCase())}</div>
       </div>
     </div>
@@ -121,10 +125,6 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
       </div>
     </div>
 
-    <div class="page-footer">
-      <span>NEXUS Assessment</span>
-      <span>Page 1 of ?</span>
-    </div>
   </div>`;
 }
 
@@ -461,16 +461,13 @@ const CSS = `
   }
   .page-title { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; }
   .page-subtitle { font-size: 0.72rem; color: #666; font-style: italic; margin-bottom: 8px; }
-  .page-footer {
-    margin-top: auto; border-top: 1px solid #000; padding-top: 6px;
-    display: flex; justify-content: space-between; font-size: 0.65rem; color: #888;
-  }
 
   .cover-header {
     display: flex; justify-content: space-between; align-items: flex-end;
     border-bottom: 2px solid #000; padding-bottom: 14px;
   }
-  .project-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-bottom: 4px; }
+  .nexus-logo { margin-bottom: 6px; }
+  .confidence-detail { font-size: 0.65rem; color: #666; margin-top: 2px; }
   .cover-title { font-size: 2.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
   .cover-sub { font-size: 0.78rem; color: #555; margin-top: 4px; }
   .cover-meta { text-align: right; }
@@ -489,13 +486,15 @@ const CSS = `
   .reasoning-list { list-style: none; font-size: 0.72rem; display: flex; flex-direction: column; gap: 6px; }
   .reasoning-list li { padding-left: 4px; border-left: 3px solid #000; line-height: 1.4; }
 
-  .scores-panel { border: 1px solid #ccc; padding: 14px; background: #fafafa; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
-  .score-row { display: grid; grid-template-columns: 1fr auto; gap: 4px; align-items: center; }
-  .score-label { font-size: 0.6rem; font-weight: 700; grid-column: 1 / -1; }
-  .bar-container { height: 8px; border: 1px solid #000; padding: 1px; }
+  .scores-panel { border: 1px solid #ccc; padding: 14px; background: #fafafa; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+  .score-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+  .score-header { display: flex; justify-content: space-between; align-items: center; }
+  .score-label { font-size: 0.65rem; font-weight: 700; }
+  .bar-container { height: 10px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 2px; overflow: hidden; }
   .bar-fill { height: 100%; }
-  .score-pct { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; text-align: right; }
-  .score-primary .score-label { color: #000; }
+  .score-pct { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: #666; }
+  .score-primary .score-label { font-weight: 800; }
+  .score-primary .score-pct { color: #000; font-weight: 700; }
   .score-row:not(.score-primary) { opacity: 0.5; }
 
   .paradigm-section { margin-bottom: 14px; }
@@ -646,9 +645,7 @@ export function generatePDFReport({
   if (flagsPage) pages.push(flagsPage);
   if (resPage) pages.push(resPage);
 
-  // Fix page numbers now that we know total
-  const total = pages.length;
-  const html = pages.join('\n').replace(/Page (\d+) of \?/g, (_, n) => `Page ${n} of ${total}`);
+  const html = pages.join('\n');
 
   // Inject into hidden iframe and trigger print
   const iframe = document.createElement('iframe');
