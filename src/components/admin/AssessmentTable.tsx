@@ -374,12 +374,81 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                             {demographics.length > 40 ? demographics.substring(0, 40) + '…' : demographics}
                           </button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle>User Demographics</DialogTitle>
-                            <DialogDescription>Full demographic description from assessment</DialogDescription>
+                            <DialogTitle>Assessment Summary</DialogTitle>
+                            <DialogDescription>
+                              {demographics.length > 100 ? demographics.substring(0, 100) + '…' : demographics}
+                            </DialogDescription>
                           </DialogHeader>
-                          <div className="p-3 bg-muted rounded text-sm">{demographics}</div>
+                          {(() => {
+                            const pr = (assessment.paradigm_results || {}) as Record<string, unknown>;
+                            const prim = pr.primary as { paradigm?: string; pct?: number } | undefined;
+                            const sec = pr.secondary as { paradigm?: string; pct?: number } | undefined;
+                            const tert = pr.tertiary as { paradigm?: string; pct?: number } | undefined;
+                            const vals = r.valuesRanking as string[] | undefined;
+
+                            return (
+                              <div className="space-y-5">
+                                {/* Recommendation */}
+                                <div>
+                                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recommendation</h4>
+                                  <div className="space-y-1.5">
+                                    {prim && (
+                                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                                        <span className="text-sm font-medium">{PARADIGM_LABELS[prim.paradigm as keyof ParadigmScores] || prim.paradigm}</span>
+                                        <Badge variant="default">{Math.round(prim.pct || 0)}%</Badge>
+                                      </div>
+                                    )}
+                                    {sec && (sec.pct ?? 0) > 15 && (
+                                      <div className="flex justify-between items-center p-2 rounded bg-muted/50">
+                                        <span className="text-sm">{PARADIGM_LABELS[sec.paradigm as keyof ParadigmScores] || sec.paradigm}</span>
+                                        <span className="text-sm text-muted-foreground">{Math.round(sec.pct || 0)}%</span>
+                                      </div>
+                                    )}
+                                    {tert && (tert.pct ?? 0) > 10 && (
+                                      <div className="flex justify-between items-center p-2 rounded bg-muted/30">
+                                        <span className="text-sm">{PARADIGM_LABELS[tert.paradigm as keyof ParadigmScores] || tert.paradigm}</span>
+                                        <span className="text-sm text-muted-foreground">{Math.round(tert.pct || 0)}%</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Details */}
+                                <div>
+                                  <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Assessment Details</h4>
+                                  <div className="grid grid-cols-2 gap-2 text-sm">
+                                    {[
+                                      ['Geography', r.geography],
+                                      ['Complexity', r.taskComplexity],
+                                      ['Frequency', r.frequency],
+                                      ['Context', r.contextOfUse],
+                                    ].map(([label, val]) => (
+                                      <div key={String(label)}>
+                                        <span className="text-muted-foreground">{String(label)}:</span>{' '}
+                                        <span className="text-foreground">{String(val || '—')}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Values */}
+                                {vals && vals.length > 0 && (
+                                  <div>
+                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Design Values Priority</h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {vals.map((v, i) => (
+                                        <Badge key={v} variant={i === 0 ? 'default' : 'outline'} className="text-xs">
+                                          #{i + 1} {v}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </DialogContent>
                       </Dialog>
                     </TableCell>
@@ -468,89 +537,6 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                         >
                           <FileDown className="h-4 w-4" /> PDF
                         </Button>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" /> Summary
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>Assessment Summary</DialogTitle>
-                              <DialogDescription>
-                                {demographics.length > 100 ? demographics.substring(0, 100) + '…' : demographics}
-                              </DialogDescription>
-                            </DialogHeader>
-                            {(() => {
-                              const pr = (assessment.paradigm_results || {}) as Record<string, unknown>;
-                              const prim = pr.primary as { paradigm?: string; pct?: number } | undefined;
-                              const sec = pr.secondary as { paradigm?: string; pct?: number } | undefined;
-                              const tert = pr.tertiary as { paradigm?: string; pct?: number } | undefined;
-                              const vals = r.valuesRanking as string[] | undefined;
-
-                              return (
-                                <div className="space-y-5">
-                                  {/* Recommendation */}
-                                  <div>
-                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recommendation</h4>
-                                    <div className="space-y-1.5">
-                                      {prim && (
-                                        <div className="flex justify-between items-center p-2 rounded bg-muted">
-                                          <span className="text-sm font-medium">{PARADIGM_LABELS[prim.paradigm as keyof ParadigmScores] || prim.paradigm}</span>
-                                          <Badge variant="default">{Math.round(prim.pct || 0)}%</Badge>
-                                        </div>
-                                      )}
-                                      {sec && (sec.pct ?? 0) > 15 && (
-                                        <div className="flex justify-between items-center p-2 rounded bg-muted/50">
-                                          <span className="text-sm">{PARADIGM_LABELS[sec.paradigm as keyof ParadigmScores] || sec.paradigm}</span>
-                                          <span className="text-sm text-muted-foreground">{Math.round(sec.pct || 0)}%</span>
-                                        </div>
-                                      )}
-                                      {tert && (tert.pct ?? 0) > 10 && (
-                                        <div className="flex justify-between items-center p-2 rounded bg-muted/30">
-                                          <span className="text-sm">{PARADIGM_LABELS[tert.paradigm as keyof ParadigmScores] || tert.paradigm}</span>
-                                          <span className="text-sm text-muted-foreground">{Math.round(tert.pct || 0)}%</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Details */}
-                                  <div>
-                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Assessment Details</h4>
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                      {[
-                                        ['Geography', r.geography],
-                                        ['Complexity', r.taskComplexity],
-                                        ['Frequency', r.frequency],
-                                        ['Context', r.contextOfUse],
-                                      ].map(([label, val]) => (
-                                        <div key={String(label)}>
-                                          <span className="text-muted-foreground">{String(label)}:</span>{' '}
-                                          <span className="text-foreground">{String(val || '—')}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  {/* Values */}
-                                  {vals && vals.length > 0 && (
-                                    <div>
-                                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Design Values Priority</h4>
-                                      <div className="flex flex-wrap gap-1.5">
-                                        {vals.map((v, i) => (
-                                          <Badge key={v} variant={i === 0 ? 'default' : 'outline'} className="text-xs">
-                                            #{i + 1} {v}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </DialogContent>
-                        </Dialog>
                       </div>
                     </TableCell>
                   </TableRow>
