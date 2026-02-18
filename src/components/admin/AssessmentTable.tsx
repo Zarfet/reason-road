@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
+import { PARADIGM_LABELS, type ParadigmScores } from '@/types/assessment';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -297,7 +298,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
       {/* Flag Legend */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 bg-muted/30 rounded border text-xs">
         <div className="flex items-center gap-1.5">
-          <CheckCircle className="h-4 w-4 text-accent" />
+          <CheckCircle className="h-4 w-4 text-success" />
           <span>Completed</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -397,7 +398,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                       <div className="flex gap-1.5 flex-wrap">
                         <div title={assessment.is_completed ? "Completed" : "Abandoned"}>
                           {assessment.is_completed ? (
-                            <CheckCircle className="h-4 w-4 text-accent" />
+                            <CheckCircle className="h-4 w-4 text-success" />
                           ) : (
                             <XCircle className="h-4 w-4 text-destructive" />
                           )}
@@ -445,13 +446,89 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                         >
                           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(`/results/${assessment.id}`, '_blank')}
-                        >
-                          <Eye className="h-4 w-4" /> View
-                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" /> Summary
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Assessment Summary</DialogTitle>
+                              <DialogDescription>
+                                {demographics.length > 100 ? demographics.substring(0, 100) + '…' : demographics}
+                              </DialogDescription>
+                            </DialogHeader>
+                            {(() => {
+                              const pr = (assessment.paradigm_results || {}) as Record<string, unknown>;
+                              const prim = pr.primary as { paradigm?: string; pct?: number } | undefined;
+                              const sec = pr.secondary as { paradigm?: string; pct?: number } | undefined;
+                              const tert = pr.tertiary as { paradigm?: string; pct?: number } | undefined;
+                              const vals = r.valuesRanking as string[] | undefined;
+
+                              return (
+                                <div className="space-y-5">
+                                  {/* Recommendation */}
+                                  <div>
+                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recommendation</h4>
+                                    <div className="space-y-1.5">
+                                      {prim && (
+                                        <div className="flex justify-between items-center p-2 rounded bg-muted">
+                                          <span className="text-sm font-medium">{PARADIGM_LABELS[prim.paradigm as keyof ParadigmScores] || prim.paradigm}</span>
+                                          <Badge variant="default">{Math.round(prim.pct || 0)}%</Badge>
+                                        </div>
+                                      )}
+                                      {sec && (sec.pct ?? 0) > 15 && (
+                                        <div className="flex justify-between items-center p-2 rounded bg-muted/50">
+                                          <span className="text-sm">{PARADIGM_LABELS[sec.paradigm as keyof ParadigmScores] || sec.paradigm}</span>
+                                          <span className="text-sm text-muted-foreground">{Math.round(sec.pct || 0)}%</span>
+                                        </div>
+                                      )}
+                                      {tert && (tert.pct ?? 0) > 10 && (
+                                        <div className="flex justify-between items-center p-2 rounded bg-muted/30">
+                                          <span className="text-sm">{PARADIGM_LABELS[tert.paradigm as keyof ParadigmScores] || tert.paradigm}</span>
+                                          <span className="text-sm text-muted-foreground">{Math.round(tert.pct || 0)}%</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Details */}
+                                  <div>
+                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Assessment Details</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      {[
+                                        ['Geography', r.geography],
+                                        ['Complexity', r.taskComplexity],
+                                        ['Frequency', r.frequency],
+                                        ['Context', r.contextOfUse],
+                                      ].map(([label, val]) => (
+                                        <div key={String(label)}>
+                                          <span className="text-muted-foreground">{String(label)}:</span>{' '}
+                                          <span className="text-foreground">{String(val || '—')}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Values */}
+                                  {vals && vals.length > 0 && (
+                                    <div>
+                                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Design Values Priority</h4>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {vals.map((v, i) => (
+                                          <Badge key={v} variant={i === 0 ? 'default' : 'outline'} className="text-xs">
+                                            #{i + 1} {v}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </TableCell>
                   </TableRow>
