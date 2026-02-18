@@ -32,7 +32,7 @@ function getScoreExplanation(paradigm: keyof ParadigmScores, score: number, prim
     voice: 'hands-free contexts, accessibility needs, and simple commands',
   };
   if (score >= 50) return `Strong fit. Excels at ${paradigmStrengths[paradigm]}. Only ${diff}% behind primary—consider hybrid approach.`;
-  if (score >= 30) return `Moderate fit. Good for ${paradigmStrengths[paradigm]}, but your requirements favor other paradigms.`;
+  if (score >= 30) return `Moderate fit. Good for ${paradigmStrengths[paradigm]}, but your requirements favor other interface types.`;
   return `Low fit. Designed for ${paradigmStrengths[paradigm]}, which doesn't align well with your context.`;
 }
 

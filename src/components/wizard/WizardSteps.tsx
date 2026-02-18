@@ -44,7 +44,7 @@ export function StepContext() {
   return (
     <QuestionLayout 
       question="Tell us about your project"
-      hint="Demographics are critical for accurate paradigm recommendations."
+      hint="Demographics are critical for accurate interface recommendations."
     >
       <div className="space-y-6">
         {/* Project Name - Optional */}
@@ -400,7 +400,7 @@ export function StepGeography() {
   return (
     <QuestionLayout 
       question="Where will this product be used?"
-      hint="Regulations affect paradigm viability. Invisible needs data collection. European AI Act conflicts with 'invisible' philosophy."
+      hint="Regulations affect interface viability. Invisible interfaces need data collection. European AI Act conflicts with 'invisible' philosophy."
     >
       <div className="space-y-3">
         {options.map((option) => (

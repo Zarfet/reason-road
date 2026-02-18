@@ -108,7 +108,7 @@ export default function Admin() {
       : 0;
     const pdfCount = assessments.filter(a => a.pdf_downloaded).length;
 
-    // Primary paradigm distribution
+    // Primary interface type distribution
     const paradigmCounts: Record<string, number> = {};
     assessments.forEach(a => {
       const pr = a.paradigm_results as { primary?: { paradigm?: string } } | null;
@@ -395,7 +395,7 @@ export default function Admin() {
         {Object.keys(stats.paradigmCounts).length > 0 && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-lg">Primary Paradigm Distribution</CardTitle>
+              <CardTitle className="text-lg">Primary Interface Type Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-3">
