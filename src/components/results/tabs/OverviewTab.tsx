@@ -317,8 +317,8 @@ export function OverviewTab({ recommendation, answers, reasoningBullets, redFlag
             >
               <div className="flex items-center justify-between mb-1">
                 <h4 className="text-sm font-semibold">{r.title}</h4>
-                <Badge variant="outline" className="text-[10px] px-2 py-0">
-                  {r.severity}
+                <Badge variant={r.severity === 'High' ? 'risk' : r.severity === 'Medium' ? 'warning' : 'secondary'} className="text-[10px] px-2 py-0">
+                  {r.severity} Risk
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mb-2">{r.description}</p>
