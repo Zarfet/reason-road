@@ -343,6 +343,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                   Time <SortIcon field="completion_time" />
                 </button>
               </TableHead>
+              <TableHead>PDF</TableHead>
               <TableHead>Rating</TableHead>
             </TableRow>
           </TableHeader>
@@ -379,20 +380,21 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                         <Dialog>
                           <DialogTrigger asChild>
                             <button className="text-sm text-primary hover:underline max-w-[200px] truncate text-left">
-                              {demographics.length > 40 ? demographics.substring(0, 40) + '…' : demographics}
+                              {(() => {
+                                const projectName = String(r.projectName || 'Untitled Assessment');
+                                return projectName.length > 40 ? projectName.substring(0, 40) + '…' : projectName;
+                              })()}
                             </button>
                           </DialogTrigger>
                           <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
-                              <DialogTitle>Assessment Summary</DialogTitle>
-                              <DialogDescription>
-                                {String(r.projectName || '').trim() ? (
-                                  <span className="font-medium text-foreground">{String(r.projectName)}</span>
-                                ) : null}
-                                {String(r.projectName || '').trim() && ' — '}
-                                {demographics.length > 100 ? demographics.substring(0, 100) + '…' : demographics}
-                              </DialogDescription>
+                              <DialogTitle>{String(r.projectName || 'Untitled Assessment')}</DialogTitle>
+                              <DialogDescription>Assessment Summary</DialogDescription>
                             </DialogHeader>
+                            <div>
+                              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">User Context</div>
+                              <div className="text-sm">{demographics}</div>
+                            </div>
                             {(() => {
                               const pr = (assessment.paradigm_results || {}) as Record<string, unknown>;
                               const prim = pr.primary as { paradigm?: string; pct?: number } | undefined;
@@ -528,6 +530,29 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                         : '—'}
                     </TableCell>
 
+                    {/* PDF */}
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          if (!assessment.is_completed || !assessment.responses || !assessment.paradigm_results) return;
+                          try {
+                            await generatePDFReport({
+                              answers: assessment.responses as any,
+                              recommendation: assessment.paradigm_results as any,
+                            });
+                          } catch (error) {
+                            console.error('PDF generation failed:', error);
+                          }
+                        }}
+                        disabled={!assessment.is_completed}
+                        title={assessment.is_completed ? "Download PDF report" : "Assessment incomplete"}
+                      >
+                        <FileDown className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+
                     {/* Rating */}
                     <TableCell className="text-sm">
                       {assessment.agreement_rating ? (
@@ -545,7 +570,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                   {/* Expandable detail row */}
                   {isExpanded && (
                     <TableRow key={`${assessment.id}-detail`}>
-                      <TableCell colSpan={6} className="bg-muted/30 p-4">
+                      <TableCell colSpan={7} className="bg-muted/30 p-4">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-sm">
                           {[
                             ['Geography',      String(r.geography        || '—')],
@@ -576,7 +601,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
 
             {paginatedData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   {processedData.length === 0
                     ? 'No assessments match your filters.'
                     : 'No results on this page.'}
