@@ -85,7 +85,7 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
         </p>
       </div>
 
-      {/* Paradigm Breakdown */}
+      {/* Interface Type Breakdown */}
       <div className="mb-6">
         <h4 className="font-medium text-sm mb-3 tracking-tight">Environmental Impact by Interface Type</h4>
         <div className="overflow-x-auto rounded-lg border border-border">

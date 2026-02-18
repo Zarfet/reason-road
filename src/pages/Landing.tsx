@@ -48,9 +48,8 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              Stop Losing{' '}
-              <span className="font-mono font-bold">$1.7B</span>
-              {' '}on Wrong Interface Choices
+              Choose the Right Interface Type{' '}
+              <span className="font-mono font-bold">with Confidence</span>
             </motion.h1>
 
             {/* Subheadline */}
@@ -60,7 +59,7 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              Evidence-based paradigm selection in 5 minutes. Get AI-powered recommendations grounded in HCI research principles.
+              Research-backed interface recommendations for designers. Compare traditional screens, voice, AI, spatial computing, and ambient interfaces based on your project needs.
             </motion.p>
 
             {/* CTA Button */}
@@ -122,7 +121,7 @@ export default function Landing() {
             <div className="grid md:grid-cols-4 gap-6">
               <StepCard number={1} title="Define Values" description="Rank your 5 core design values" />
               <StepCard number={2} title="Answer Questions" description="9 context questions about your project" />
-              <StepCard number={3} title="Get Results" description="Multi-modal paradigm recommendation" />
+              <StepCard number={3} title="Get Results" description="Interface recommendation with confidence scores" />
               <StepCard number={4} title="Explore Research" description="Academic papers supporting your choice" />
             </div>
           </motion.div>

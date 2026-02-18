@@ -160,7 +160,7 @@ export default function Profile() {
                 <CardContent className="py-12 text-center">
                   <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                   <h3 className="font-medium text-foreground mb-2">No assessments yet</h3>
-                  <p className="text-muted-foreground mb-4">Start your first assessment to get paradigm recommendations</p>
+                  <p className="text-muted-foreground mb-4">Start your first assessment to get interface recommendations</p>
                   <Button onClick={() => navigate('/assessment')} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     Start Assessment
                   </Button>

@@ -228,10 +228,10 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
         <div className="flex flex-wrap gap-2">
           <Select value={filterParadigm} onValueChange={(val) => { setFilterParadigm(val); setPage(1); }}>
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Paradigm" />
+              <SelectValue placeholder="Interface Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Paradigms</SelectItem>
+              <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="traditional_screen">Traditional Screen</SelectItem>
               <SelectItem value="invisible">Invisible</SelectItem>
               <SelectItem value="ai_vectorial">AI Vectorial</SelectItem>
@@ -331,7 +331,7 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
               <TableHead>Demographics</TableHead>
               <TableHead>
                 <button onClick={() => toggleSort('primary_paradigm')} className="flex items-center gap-1.5 font-semibold hover:text-foreground">
-                  Primary <SortIcon field="primary_paradigm" />
+                  Primary Type <SortIcon field="primary_paradigm" />
                 </button>
               </TableHead>
               <TableHead>Flags</TableHead>
