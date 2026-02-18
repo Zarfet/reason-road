@@ -391,64 +391,65 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ── Paradigm distribution ── */}
-        {Object.keys(stats.paradigmCounts).length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-lg">Primary Interface Type Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                {Object.entries(stats.paradigmCounts)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([paradigm, count]) => (
-                    <div key={paradigm} className="flex items-center gap-2 rounded-lg border bg-card p-3">
-                      <span className="text-sm font-medium text-foreground">
-                        {PARADIGM_LABELS[paradigm as keyof ParadigmScores] || paradigm}
-                      </span>
-                      <Badge variant="secondary">{count}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        ({stats.total > 0 ? Math.round((count / stats.total) * 100) : 0}%)
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ── Top values distribution ── */}
-        {Object.keys(stats.valueCounts).length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-lg">Top Design Value (#1 Priority)</CardTitle>
-              <CardDescription>Most frequently ranked first by users</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {Object.entries(stats.valueCounts)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([value, count]) => {
-                    const pct = stats.total > 0 ? (count / stats.total) * 100 : 0;
-                    return (
-                      <div key={value} className="flex items-center gap-3">
-                        <span className="text-sm font-medium w-28 shrink-0">{value}</span>
-                        <div className="flex-1 bg-muted rounded-full h-5 overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full transition-all"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className="text-sm text-muted-foreground w-20 text-right shrink-0">
-                          {count} ({Math.round(pct)}%)
+        {/* ── Paradigm + Values side by side ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {Object.keys(stats.paradigmCounts).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Primary Interface Type Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  {Object.entries(stats.paradigmCounts)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([paradigm, count]) => (
+                      <div key={paradigm} className="flex items-center gap-2 rounded-lg border bg-card p-3">
+                        <span className="text-sm font-medium text-foreground">
+                          {PARADIGM_LABELS[paradigm as keyof ParadigmScores] || paradigm}
+                        </span>
+                        <Badge variant="secondary">{count}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          ({stats.total > 0 ? Math.round((count / stats.total) * 100) : 0}%)
                         </span>
                       </div>
-                    );
-                  })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {Object.keys(stats.valueCounts).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Top Design Value (#1 Priority)</CardTitle>
+                <CardDescription>Most frequently ranked first by users</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Object.entries(stats.valueCounts)
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([value, count]) => {
+                      const pct = stats.total > 0 ? (count / stats.total) * 100 : 0;
+                      return (
+                        <div key={value} className="flex items-center gap-3">
+                          <span className="text-sm font-medium w-28 shrink-0">{value}</span>
+                          <div className="flex-1 bg-muted rounded-full h-5 overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full transition-all"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-muted-foreground w-20 text-right shrink-0">
+                            {count} ({Math.round(pct)}%)
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* ── Agreement vs Confidence (thesis validation) ── */}
         <Card className="mb-8">
