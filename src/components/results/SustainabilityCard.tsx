@@ -102,29 +102,67 @@ export function SustainabilityCard({ recommendation, answers }: SustainabilityCa
         </div>
       </div>
 
-      {/* Comparison Section */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-4 rounded-lg border border-border bg-card">
-          <h4 className="font-medium text-sm mb-1 tracking-tight">vs Pure Screen Interface</h4>
-          <p className="text-xs text-muted-foreground mb-2 font-mono">
-            Baseline: 100% traditional screen (50 kWh/yr,{' '}
-            <a href="https://www.iea.org/reports/more-data-less-energy" target="_blank" rel="noopener noreferrer" className="text-foreground underline">IEA 2023</a>)
-          </p>
-          <div className="space-y-1 text-sm font-mono">
-            <div>Energy: <span className="font-semibold">{report.comparisonVsPureScreen.energySavings}</span></div>
-            <div>CO₂: <span className="font-semibold">{report.comparisonVsPureScreen.co2Savings}</span></div>
+      {/* Comparison vs Baselines */}
+      <div className="mb-6 space-y-3">
+        <h4 className="font-medium text-sm tracking-tight">Comparison to Baselines</h4>
+        
+        {/* vs Pure Screen */}
+        <div className={`p-4 rounded-lg border ${
+          report.comparisonVsPureScreen.energySavings.includes('higher')
+            ? 'bg-warning-muted border-warning-border'
+            : 'bg-success-muted border-success-border'
+        }`}>
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+                  vs Pure Traditional Screen
+                </span>
+                <span className={`text-sm font-medium ${
+                  report.comparisonVsPureScreen.energySavings.includes('higher')
+                    ? 'text-warning'
+                    : 'text-success'
+                }`}>
+                  {report.comparisonVsPureScreen.energySavings}
+                </span>
+              </div>
+              
+              {report.comparisonVsPureScreen.explanation && (
+                <div className="text-sm text-foreground leading-relaxed space-y-1">
+                  {report.comparisonVsPureScreen.explanation.split('. ').map((sentence, i) => {
+                    const [label, ...rest] = sentence.split(': ');
+                    if (!rest.length) return <p key={i}>{sentence}</p>;
+                    return (
+                      <p key={i}>
+                        <strong className="font-semibold">{label}:</strong> {rest.join(': ')}
+                      </p>
+                    );
+                  })}
+                </div>
+              )}
+              
+              {!report.comparisonVsPureScreen.explanation && (
+                <p className="text-sm text-muted-foreground">
+                  Your interface mix is energy-efficient compared to traditional screen-only approaches.
+                </p>
+              )}
+            </div>
           </div>
         </div>
-        <div className="p-4 rounded-lg border border-border bg-card">
-          <h4 className="font-medium text-sm mb-1 tracking-tight">vs Pure VR Interface</h4>
-          <p className="text-xs text-muted-foreground mb-2 font-mono">
-            Baseline: 100% spatial computing (200 kWh/yr,{' '}
-            <a href="https://sustainability.fb.com/reports/" target="_blank" rel="noopener noreferrer" className="text-foreground underline">Meta 2023</a>)
-          </p>
-          <div className="space-y-1 text-sm font-mono">
-            <div>Energy: <span className="font-semibold">{report.comparisonVsPureVR.energySavings}</span></div>
-            <div>CO₂: <span className="font-semibold">{report.comparisonVsPureVR.co2Savings}</span></div>
+
+        {/* vs Pure VR */}
+        <div className="p-4 rounded-lg border bg-success-muted border-success-border">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+              vs Pure Spatial (VR/AR)
+            </span>
+            <span className="text-sm font-medium text-success">
+              {report.comparisonVsPureVR.energySavings}
+            </span>
           </div>
+          <p className="text-sm text-muted-foreground">
+            VR headsets are the most energy-intensive interface type. Any mix that reduces VR usage is environmentally beneficial.
+          </p>
         </div>
       </div>
 

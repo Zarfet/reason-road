@@ -50,9 +50,9 @@ export function ImpactTab({ recommendation, answers }: ImpactTabProps) {
         : 'Not applicable',
       badge: sustainabilityReport.applicable 
         ? sustainabilityReport.comparisonVsPureScreen.energySavings.includes('higher')
-          ? '⚠️ HIGHER ENERGY'
-          : sustainabilityReport.comparisonVsPureScreen.energySavings.includes('lower')
-          ? '✓ EFFICIENT'
+          ? `+${sustainabilityReport.comparisonVsPureScreen.energySavings.split('%')[0].split(' ').pop()}% ENERGY`
+          : sustainabilityReport.comparisonVsPureScreen.energySavings.includes('efficient')
+          ? `✓ ${sustainabilityReport.comparisonVsPureScreen.energySavings.split('%')[0].split(' ').pop()}% EFFICIENT`
           : null
         : null,
       badgeClass: sustainabilityReport.applicable
