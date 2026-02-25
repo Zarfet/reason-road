@@ -2,12 +2,21 @@
  * Rating Card — Tech-Minimalist
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+/** Sanitize user text: strip HTML tags, limit to alphanumeric + basic punctuation */
+function sanitizeFeedback(input: string): string {
+  // Remove HTML tags
+  let cleaned = input.replace(/<[^>]*>/g, '');
+  // Remove potentially dangerous characters (keep letters, numbers, spaces, basic punctuation)
+  cleaned = cleaned.replace(/[^\w\s.,!?;:'"()\-–—áéíóúñüÁÉÍÓÚÑÜ@#%&/\n]/g, '');
+  return cleaned;
+}
 
 interface RatingCardProps {
   assessmentId: string;
@@ -37,6 +46,14 @@ export function RatingCard({ assessmentId }: RatingCardProps) {
   const [usefulnessRating, setUsefulness] = useState(0);
   const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
+  const MAX_FEEDBACK_LENGTH = 500;
+
+  const handleFeedbackChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const sanitized = sanitizeFeedback(e.target.value);
+    if (sanitized.length <= MAX_FEEDBACK_LENGTH) {
+      setFeedbackText(sanitized);
+    }
+  }, []);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [existingRating, setExistingRating] = useState<number | null>(null);
@@ -130,12 +147,17 @@ export function RatingCard({ assessmentId }: RatingCardProps) {
         </div>
       )}
 
-      {rating > 0 && (
-        <div>
-          <Textarea placeholder="Any additional feedback? (optional)" value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} rows={2} maxLength={500} className="resize-none" />
-          <p className="text-xs text-muted-foreground mt-1 text-right font-mono">{feedbackText.length}/500</p>
-        </div>
-      )}
+      <div>
+        <Textarea 
+          placeholder="Any additional feedback? (optional)" 
+          value={feedbackText} 
+          onChange={handleFeedbackChange} 
+          rows={2} 
+          maxLength={MAX_FEEDBACK_LENGTH} 
+          className="resize-none" 
+        />
+        <p className="text-xs text-muted-foreground mt-1 text-right font-mono">{feedbackText.length}/{MAX_FEEDBACK_LENGTH}</p>
+      </div>
 
       <Button onClick={handleSubmit} disabled={rating === 0 || submitting} className="w-full border-border hover:bg-secondary" variant="outline">
         {submitting ? 'Submitting...' : 'Submit Rating'}
