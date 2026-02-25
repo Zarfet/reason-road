@@ -42,6 +42,10 @@ import {
   ChevronDown,
   ChevronUp,
   Trash2,
+  Star,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
 } from 'lucide-react';
 import { generatePDFReport } from '@/lib/pdfGenerator';
 import { supabase } from '@/integrations/supabase/client';
@@ -66,7 +70,23 @@ interface SortConfig {
   direction: SortDirection;
 }
 
-export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] }) {
+interface RatingRow {
+  id: string;
+  assessment_id: string;
+  rating: number;
+  feedback_text: string | null;
+  accuracy_rating: number | null;
+  clarity_rating: number | null;
+  usefulness_rating: number | null;
+  would_recommend: boolean | null;
+}
+
+interface AssessmentTableProps {
+  assessments: AssessmentRow[];
+  ratings?: RatingRow[];
+}
+
+export function AssessmentTable({ assessments, ratings = [] }: AssessmentTableProps) {
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [filterParadigm, setFilterParadigm] = useState('all');
@@ -480,6 +500,44 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                                     </div>
                                   )}
 
+                                  {/* User Rating & Feedback */}
+                                  {(() => {
+                                    const ratingData = ratings.find(rt => rt.assessment_id === assessment.id);
+                                    if (!ratingData) return (
+                                      <div className="pt-2">
+                                        <span className="text-xs text-muted-foreground italic">No rating submitted</span>
+                                      </div>
+                                    );
+                                    return (
+                                      <div className="space-y-2">
+                                        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">User Rating</h4>
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex gap-0.5">
+                                            {[1,2,3,4,5].map(s => (
+                                              <Star key={s} className={`h-4 w-4 ${s <= ratingData.rating ? 'text-foreground fill-foreground' : 'text-muted-foreground/30'}`} />
+                                            ))}
+                                          </div>
+                                          {ratingData.would_recommend === true && (
+                                            <Badge variant="outline" className="text-xs"><ThumbsUp className="h-3 w-3 mr-1" /> Recommends</Badge>
+                                          )}
+                                          {ratingData.would_recommend === false && (
+                                            <Badge variant="outline" className="text-xs"><ThumbsDown className="h-3 w-3 mr-1" /> Doesn't recommend</Badge>
+                                          )}
+                                        </div>
+                                        {(ratingData.accuracy_rating || ratingData.clarity_rating || ratingData.usefulness_rating) && (
+                                          <div className="grid grid-cols-3 gap-2 text-sm">
+                                            {ratingData.accuracy_rating && <div><span className="text-muted-foreground">Accuracy:</span> <span className="font-medium">{ratingData.accuracy_rating}/5</span></div>}
+                                            {ratingData.clarity_rating && <div><span className="text-muted-foreground">Clarity:</span> <span className="font-medium">{ratingData.clarity_rating}/5</span></div>}
+                                            {ratingData.usefulness_rating && <div><span className="text-muted-foreground">Usefulness:</span> <span className="font-medium">{ratingData.usefulness_rating}/5</span></div>}
+                                          </div>
+                                        )}
+                                        {ratingData.feedback_text?.trim() && (
+                                          <p className="text-sm text-foreground italic border-l-2 border-border pl-3">"{ratingData.feedback_text}"</p>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
+
                                   {/* PDF Download */}
                                   {assessment.is_completed && assessment.responses && assessment.paradigm_results && (
                                     <Button
@@ -605,6 +663,71 @@ export function AssessmentTable({ assessments }: { assessments: AssessmentRow[] 
                             </div>
                           ))}
                         </div>
+
+                        {/* User Rating & Feedback */}
+                        {(() => {
+                          const ratingData = ratings.find(rt => rt.assessment_id === assessment.id);
+                          if (!ratingData) return (
+                            <div className="mt-4 pt-3 border-t border-border">
+                              <span className="text-xs text-muted-foreground italic">No rating submitted</span>
+                            </div>
+                          );
+                          return (
+                            <div className="mt-4 pt-3 border-t border-border space-y-3">
+                              <div className="flex flex-wrap items-center gap-4">
+                                {/* Overall rating */}
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Rating</span>
+                                  <div className="flex gap-0.5">
+                                    {[1,2,3,4,5].map(s => (
+                                      <Star key={s} className={`h-3.5 w-3.5 ${s <= ratingData.rating ? 'text-foreground fill-foreground' : 'text-muted-foreground/30'}`} />
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Sub-ratings */}
+                                {ratingData.accuracy_rating && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs text-muted-foreground">Accuracy:</span>
+                                    <span className="text-xs font-medium text-foreground">{ratingData.accuracy_rating}/5</span>
+                                  </div>
+                                )}
+                                {ratingData.clarity_rating && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs text-muted-foreground">Clarity:</span>
+                                    <span className="text-xs font-medium text-foreground">{ratingData.clarity_rating}/5</span>
+                                  </div>
+                                )}
+                                {ratingData.usefulness_rating && (
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-xs text-muted-foreground">Usefulness:</span>
+                                    <span className="text-xs font-medium text-foreground">{ratingData.usefulness_rating}/5</span>
+                                  </div>
+                                )}
+
+                                {/* Recommendation */}
+                                {ratingData.would_recommend === true && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <ThumbsUp className="h-3 w-3 mr-1" /> Recommends
+                                  </Badge>
+                                )}
+                                {ratingData.would_recommend === false && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <ThumbsDown className="h-3 w-3 mr-1" /> Doesn't recommend
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {/* Feedback text */}
+                              {ratingData.feedback_text?.trim() && (
+                                <div className="flex items-start gap-2">
+                                  <MessageSquare className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                                  <p className="text-sm text-foreground italic">"{ratingData.feedback_text}"</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                     </TableRow>
                   )}

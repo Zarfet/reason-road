@@ -549,7 +549,7 @@ export default function Admin() {
             <CardTitle className="text-lg">All Assessments ({stats.total})</CardTitle>
           </CardHeader>
           <CardContent>
-            <AssessmentTable assessments={assessments} />
+            <AssessmentTable assessments={assessments} ratings={ratings} />
           </CardContent>
         </Card>
       </main>
