@@ -384,7 +384,7 @@ export function AssessmentTable({ assessments, ratings = [] }: AssessmentTablePr
                 </button>
               </TableHead>
               <TableHead>PDF</TableHead>
-              <TableHead>Rating</TableHead>
+              
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -608,17 +608,6 @@ export function AssessmentTable({ assessments, ratings = [] }: AssessmentTablePr
                       </Button>
                     </TableCell>
 
-                    {/* Rating */}
-                    <TableCell className="text-sm">
-                      {assessment.agreement_rating ? (
-                        <div className="flex items-baseline gap-0.5">
-                          <span className="font-semibold text-foreground">{assessment.agreement_rating}</span>
-                          <span className="text-xs text-muted-foreground">/ 5</span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
 
                     {/* Actions */}
                     <TableCell>
@@ -641,7 +630,7 @@ export function AssessmentTable({ assessments, ratings = [] }: AssessmentTablePr
                   {/* Expandable detail row */}
                   {isExpanded && (
                     <TableRow key={`${assessment.id}-detail`}>
-                      <TableCell colSpan={7} className="bg-muted/30 p-4">
+                      <TableCell colSpan={6} className="bg-muted/30 p-4">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 text-sm">
                           {[
                             ['Geography',      String(r.geography        || '—')],
