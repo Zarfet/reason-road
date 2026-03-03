@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Star, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 /** Sanitize user text: strip HTML tags, limit to alphanumeric + basic punctuation */
 function sanitizeFeedback(input: string): string {
@@ -40,6 +41,7 @@ function StarRow({ label, value, onChange }: { label: string; value: number; onC
 
 export function RatingCard({ assessmentId }: RatingCardProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [accuracyRating, setAccuracy] = useState(0);
   const [clarityRating, setClarity] = useState(0);
@@ -60,11 +62,20 @@ export function RatingCard({ assessmentId }: RatingCardProps) {
 
   useEffect(() => {
     async function checkExisting() {
-      const { data } = await supabase.from('assessment_ratings').select('rating').eq('assessment_id', assessmentId).maybeSingle();
-      if (data) { setExistingRating(data.rating); setSubmitted(true); }
+      if (!user) return;
+      try {
+        const { data, error } = await supabase.from('assessment_ratings').select('rating').eq('assessment_id', assessmentId).maybeSingle();
+        if (error) {
+          console.error('Error checking existing rating:', error);
+          return;
+        }
+        if (data) { setExistingRating(data.rating); setSubmitted(true); }
+      } catch (err) {
+        console.error('Failed to check existing rating:', err);
+      }
     }
     checkExisting();
-  }, [assessmentId]);
+  }, [assessmentId, user]);
 
   async function handleSubmit() {
     if (rating === 0) return;
