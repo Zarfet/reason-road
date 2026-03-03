@@ -1,5 +1,6 @@
 /**
  * NEXUS - Landing Page — Tech-Minimalist / Vercel aesthetic
+ * Updated: force rebuild
  */
 
 import { Button } from '@/components/ui/button';
