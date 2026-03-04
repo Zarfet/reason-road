@@ -148,7 +148,7 @@ export default function SavedResults() {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="nexus-container py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="hover:opacity-70 transition-opacity">
+            <Link to="/" className="hover:opacity-80 transition-opacity">
               <NexusLogo iconSize={28} />
             </Link>
             <div className="flex items-center gap-2">

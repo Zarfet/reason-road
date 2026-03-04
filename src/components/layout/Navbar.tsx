@@ -47,7 +47,7 @@ export function Navbar() {
         {/* Logo */}
         <Link 
           to="/" 
-          className="hover:opacity-70 transition-opacity"
+          className="hover:opacity-80 transition-opacity"
         >
           <NexusLogo />
         </Link>
