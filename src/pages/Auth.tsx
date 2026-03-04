@@ -85,7 +85,7 @@ export default function Auth() {
     <div className="min-h-screen bg-background">
       <header className="nexus-container py-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="hover:opacity-70 transition-opacity">
+          <Link to="/" className="hover:opacity-80 transition-opacity">
             <NexusLogo />
           </Link>
           <Link to="/">
