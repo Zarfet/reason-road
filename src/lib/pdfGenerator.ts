@@ -177,7 +177,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
     <div class="field-label" style="margin-bottom:6px;">Why ${esc(reg.overallRiskLevel.toUpperCase())} Risk?</div>
     <div style="font-size:0.7rem;line-height:1.4;margin-bottom:8px;">${esc(reasonText)}</div>
     <div class="field-label" style="margin-bottom:4px;">Applies To</div>
-    <div style="font-size:0.68rem;color:#555;">${esc(reg.region)} deployment — GDPR + EU AI Act compliance</div>
+    <div style="font-size:0.68rem;color:#4b5563;">${esc(reg.region)} deployment — GDPR + EU AI Act compliance</div>
   </div>`;
 
   const reqs = reg.requirements.map(req => {
@@ -195,11 +195,11 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
         <span class="reg-impact reg-impact-${req.impactLevel}">${esc(req.impactLevel.toUpperCase())}</span>
       </div>
       <div class="reg-body">
-        <div style="font-size:0.68rem;color:#555;margin-bottom:6px;">${esc(clean(req.description))}</div>
+        <div style="font-size:0.68rem;color:#4b5563;margin-bottom:6px;">${esc(clean(req.description))}</div>
         <div class="field-label">Key Actions</div>
         <ul class="steps-list">
           ${steps}
-          ${hasMore ? `<li style="color:#888;font-style:italic;">+ ${req.mitigationSteps.length - 3} more actions</li>` : ''}
+          ${hasMore ? `<li style="color:#6b7280;font-style:italic;">+ ${req.mitigationSteps.length - 3} more actions</li>` : ''}
         </ul>
       </div>
     </div>`;
@@ -428,7 +428,7 @@ const CSS = `
   }
 
   .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: -0.02em; }
-  .text-xs { font-size: 0.72rem; line-height: 1.5; color: #444; }
+  .text-xs { font-size: 0.72rem; line-height: 1.5; color: #374151; }
   .mt-2 { display: block; margin-top: 8px; }
 
   .section-divider {
@@ -445,12 +445,12 @@ const CSS = `
   }
   .section-meta {
     font-size: 0.7rem;
-    color: #666;
+    color: #4b5563;
     margin-bottom: 12px;
     font-family: 'JetBrains Mono', monospace;
   }
 
-  .page-subtitle { font-size: 0.72rem; color: #666; font-style: italic; margin-bottom: 8px; }
+  .page-subtitle { font-size: 0.72rem; color: #4b5563; font-style: italic; margin-bottom: 8px; }
 
   .cover-section { margin-bottom: 0; }
   .cover-header {
@@ -483,7 +483,7 @@ const CSS = `
   .nexus-tagline {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.42rem;
-    color: #888;
+    color: #525252;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     line-height: 1;
@@ -501,7 +501,7 @@ const CSS = `
     opacity: 0.6;
   }
   .nexus-logo { margin-bottom: 6px; }
-  .confidence-detail { font-size: 0.65rem; color: #666; margin-top: 2px; }
+  .confidence-detail { font-size: 0.65rem; color: #4b5563; margin-top: 2px; }
   .cover-title { font-size: 2.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
   .cover-meta { text-align: right; }
   .cover-meta div { margin-bottom: 2px; }
@@ -519,8 +519,8 @@ const CSS = `
     padding: 2px 6px; margin-bottom: 8px;
   }
   .strategy-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
-  .strategy-secondary { color: #aaa; font-weight: 400; }
-  .strategy-rationale { font-size: 0.72rem; color: #444; line-height: 1.5; margin-bottom: 10px; }
+  .strategy-secondary { color: #6b7280; font-weight: 400; }
+  .strategy-rationale { font-size: 0.72rem; color: #374151; line-height: 1.5; margin-bottom: 10px; }
   .reasoning-list { list-style: none; font-size: 0.72rem; display: flex; flex-direction: column; gap: 6px; }
   .reasoning-list li { padding-left: 4px; border-left: 3px solid #000; line-height: 1.4; }
 
@@ -545,14 +545,14 @@ const CSS = `
   .arg-against { background: #fff7ed; border-left: 3px solid #ea580c; }
   .arg-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; margin-bottom: 4px; }
   .arg-title { font-size: 0.7rem; font-weight: 700; line-height: 1.3; }
-  .arg-desc { font-size: 0.65rem; color: #444; line-height: 1.4; }
+  .arg-desc { font-size: 0.65rem; color: #374151; line-height: 1.4; }
   .impact-badge {
     font-size: 0.55rem; font-weight: 700; text-transform: uppercase;
     padding: 1px 5px; border-radius: 2px; white-space: nowrap; flex-shrink: 0;
   }
   .impact-high { background: #000; color: #fff; }
   .impact-medium { background: #555; color: #fff; }
-  .impact-low { background: #bbb; color: #333; }
+  .impact-low { background: #9ca3af; color: #111; }
 
   .reg-overview { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .risk-badge { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border: 1px solid #000; }
@@ -565,7 +565,7 @@ const CSS = `
   .reg-row { display: grid; grid-template-columns: 100px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid #e5e5e5; }
   .reg-meta { display: flex; flex-direction: column; gap: 4px; }
   .reg-meta strong { font-size: 0.72rem; }
-  .reg-law { color: #888; }
+  .reg-law { color: #525252; }
   .reg-impact { font-size: 0.6rem; font-weight: 700; padding: 1px 4px; border: 1px solid currentColor; width: fit-content; }
   .reg-impact-critical { color: #b91c1c; }
   .reg-impact-high { color: #c2410c; }
@@ -581,7 +581,7 @@ const CSS = `
   .metric-tile { border: 1px solid #ccc; padding: 12px; text-align: left; }
   .metric-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
   .metric-unit { font-size: 0.65rem; font-weight: 400; }
-  .metric-label { font-size: 0.6rem; text-transform: uppercase; color: #888; margin-top: 4px; }
+  .metric-label { font-size: 0.6rem; text-transform: uppercase; color: #525252; margin-top: 4px; }
   .sust-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .compare-card { border: 1px solid #ccc; padding: 10px; }
   .green-flags-section { margin-top: 4px; }
@@ -591,7 +591,7 @@ const CSS = `
   .sust-table th { background: #000; color: #fff; padding: 5px 8px; text-align: left; font-size: 0.65rem; }
   .sust-table td { padding: 5px 8px; border-bottom: 1px solid #eee; }
   .tr-alt td { background: #f7f9f7; }
-  .disclaimer-text { font-size: 0.6rem; color: #888; margin-top: 6px; }
+  .disclaimer-text { font-size: 0.6rem; color: #525252; margin-top: 6px; }
 
   .flag-summary { font-size: 0.72rem; font-weight: 600; margin-bottom: 8px; }
   .flag-summary-critical { color: #b91c1c; }
@@ -605,7 +605,7 @@ const CSS = `
   .sev-critical { background: #b91c1c; }
   .sev-high { background: #c2410c; }
   .sev-medium { background: #a16207; }
-  .cat-badge { font-size: 0.58rem; font-weight: 600; padding: 2px 6px; background: #e5e5e5; color: #555; border-radius: 2px; }
+  .cat-badge { font-size: 0.58rem; font-weight: 600; padding: 2px 6px; background: #e5e5e5; color: #374151; border-radius: 2px; }
   .flag-title { font-size: 0.78rem; font-weight: 700; }
   .flag-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; }
   .flag-col { display: flex; flex-direction: column; gap: 4px; }
@@ -613,7 +613,7 @@ const CSS = `
   .research-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
   .research-item { border-left: 2px solid #ccc; padding-left: 10px; }
   .research-item strong { font-size: 0.78rem; display: block; margin-bottom: 2px; }
-  .author-line { display: block; color: #888; margin-bottom: 4px; }
+  .author-line { display: block; color: #525252; margin-bottom: 4px; }
   .relevance-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 6px 8px; margin-top: 5px; border-radius: 2px; }
   .case-group { margin-bottom: 10px; }
   .case-group-title { font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
@@ -629,7 +629,7 @@ const CSS = `
   .case-col { display: flex; flex-direction: column; gap: 4px; }
 
   .section-title { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 3px; margin-bottom: 8px; }
-  .field-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: #888; display: block; margin-bottom: 2px; }
+  .field-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: #525252; display: block; margin-bottom: 2px; }
   .steps-list { list-style: none; font-size: 0.65rem; display: flex; flex-direction: column; gap: 3px; padding-left: 0; }
   .steps-list li::before { content: "— "; }
   .step-required { font-weight: 700; color: #b91c1c; }
