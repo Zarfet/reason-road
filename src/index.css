@@ -27,7 +27,7 @@
 
     /* Muted — Zinc 100/500 */
     --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted-foreground: 240 4% 40%;
 
     /* Accent — Blue subtle hover state */
     --accent: 221 83% 97%;
@@ -72,7 +72,7 @@
     --nexus-emerald-light: 221 83% 97%;
     --nexus-slate: 240 6% 10%;
     --nexus-warm-gray: 240 5% 96%;
-    --nexus-gold: 240 4% 46%;
+    --nexus-gold: 240 4% 40%;
     --nexus-gold-light: 240 5% 96%;
 
     /* Active border */
@@ -88,7 +88,7 @@
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 4% 46%;
+    --sidebar-foreground: 240 4% 40%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 5% 96%;
