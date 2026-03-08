@@ -61,9 +61,7 @@ export default function SharedResults() {
 
       try {
         const { data, error: fetchError } = await supabase
-          .from('assessments')
-          .select('id, responses, paradigm_results, created_at')
-          .eq('share_token', token)
+          .rpc('get_shared_assessment', { p_token: token })
           .maybeSingle();
 
         if (fetchError) {

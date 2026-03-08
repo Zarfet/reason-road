@@ -156,6 +156,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_shared_assessment: {
+        Args: { p_token: string }
+        Returns: {
+          created_at: string
+          id: string
+          paradigm_results: Json
+          responses: Json
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
