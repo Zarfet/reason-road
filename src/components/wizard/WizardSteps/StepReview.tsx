@@ -106,9 +106,9 @@ export function StepReview() {
           className="p-4 rounded-lg border border-accent/30 bg-accent/5"
         >
           <div className="flex items-center gap-3">
-            <CheckCircle className="h-6 w-6 text-accent shrink-0" />
+            <CheckCircle className="h-6 w-6 text-accent-foreground shrink-0" />
             <div>
-              <h3 className="font-semibold text-accent">All Clear!</h3>
+              <h3 className="font-semibold text-accent-foreground">All Clear!</h3>
               <p className="text-sm text-muted-foreground">
                 No contradictions detected. Your answers are logically consistent.
               </p>
