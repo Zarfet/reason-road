@@ -24,6 +24,9 @@ const STEP_NAMES: Record<WizardStep, string> = {
   'exploration': 'Exploration Mode',
   'errors': 'Error Consequences',
   'control': 'Control Preference',
+  'product-type': 'Product Type',
+  'ecosystem': 'Existing Ecosystem',
+  'initiation': 'Interaction Initiation',
   'geography': 'Geography',
   'review': 'Review'
 };

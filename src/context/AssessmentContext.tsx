@@ -88,6 +88,9 @@ const initialAnswers: AssessmentAnswers = {
   explorationMode: null,
   errorConsequence: null,
   controlPreference: null,
+  deviceType: null,
+  existingEcosystem: null,
+  interactionInitiation: null,
 };
 
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
