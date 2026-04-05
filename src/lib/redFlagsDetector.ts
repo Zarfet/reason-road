@@ -389,7 +389,10 @@ export function detectRedFlags(
     answers.userDemographics.toLowerCase().includes('ar glasses') ||
     answers.userDemographics.toLowerCase().includes('headset') ||
     answers.userDemographics.toLowerCase().includes('head-mounted') ||
-    (recommendation.allScores.spatial > 5 && answers.contextOfUse === 'Social situations');
+    (recommendation.allScores.spatial > 5 && answers.contextOfUse === 'Social situations') ||
+    (answers.deviceType === 'Dedicated hardware' &&
+     answers.contextOfUse === 'Social situations' &&
+     answers.informationType === 'Visual content');
 
   if (answers.contextOfUse === 'Social situations' && isWearableContext) {
     flags.push({
@@ -434,7 +437,7 @@ export function detectRedFlags(
   // 8. UNSOLICITED AUTOMATION + FULL CONTROL (Clippy)
   // =============================================
   
-  if (answers.interactionInitiation === 'System-initiated (proactive)' &&
+  if (answers.interactionInitiation === 'System-initiated: proactively interrupts or assists without being asked' &&
       answers.controlPreference === 'Full control' &&
       answers.frequency === 'Multiple times daily') {
     flags.push({
@@ -463,6 +466,7 @@ export function detectRedFlags(
   
   if (answers.valuesRanking[0] === 'Efficiency' &&
       answers.frequency === 'Multiple times daily' &&
+      answers.informationType === 'Unstructured text' &&
       ((recommendation.allScores.ai_vectorial || 0) > 15 || (recommendation.allScores.invisible || 0) > 25)) {
     flags.push({
       id: 'efficiency-ai-latency',
@@ -489,7 +493,7 @@ export function detectRedFlags(
   // =============================================
   
   if (answers.deviceType === 'Dedicated hardware' &&
-      answers.existingEcosystem === 'Yes - users already own competing solutions' &&
+      answers.existingEcosystem === 'Yes: users already own devices or tools that handle this' &&
       answers.contextOfUse === 'Mobile') {
     flags.push({
       id: 'hardware-redundancy',
@@ -518,7 +522,7 @@ export function detectRedFlags(
   if (answers.valuesRanking[1] === 'Joy' &&
       answers.valuesRanking[0] === 'Efficiency' &&
       answers.contextOfUse === 'Mobile' &&
-      answers.existingEcosystem === 'Yes - users already own competing solutions') {
+      answers.existingEcosystem === 'Yes: users already own devices or tools that handle this') {
     flags.push({
       id: 'novelty-over-utility',
       severity: 'high',

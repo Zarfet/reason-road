@@ -234,7 +234,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
   // =============================================
   
   // Proactive system + Serious errors = dangerous automation
-  if (answers.interactionInitiation === 'System-initiated (proactive)' &&
+  if (answers.interactionInitiation === 'System-initiated: proactively interrupts or assists without being asked' &&
       answers.errorConsequence === 'Serious') {
     contradictions.push({
       id: 'proactive-serious-errors',
@@ -248,7 +248,7 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
   }
 
   // Proactive system + Full control = contradiction
-  if (answers.interactionInitiation === 'System-initiated (proactive)' &&
+  if (answers.interactionInitiation === 'System-initiated: proactively interrupts or assists without being asked' &&
       answers.controlPreference === 'Full control') {
     contradictions.push({
       id: 'proactive-full-control',
