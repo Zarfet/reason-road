@@ -19,6 +19,9 @@ import type {
   ExplorationMode,
   ErrorConsequence,
   ControlPreference,
+  DeviceType,
+  ExistingEcosystem,
+  InteractionInitiation,
   GeographicDeployment 
 } from '@/types/assessment';
 
@@ -386,7 +389,98 @@ export function StepControl() {
   );
 }
 
-// Step 10: Geographic Deployment
+// Step 10: Product Type
+export function StepProductType() {
+  const { answers, updateAnswer } = useAssessment();
+
+  const options: { value: DeviceType; label: string; description: string }[] = [
+    { value: 'Dedicated hardware', label: 'Dedicated hardware device', description: 'A standalone physical product (e.g., wearable, smart device)' },
+    { value: 'Software/App', label: 'Software application or app', description: 'Native or cross-platform application' },
+    { value: 'Web platform', label: 'Web platform or service', description: 'Browser-based product or SaaS' },
+    { value: 'Not applicable', label: 'Not a standalone product', description: 'Component, plugin, or internal module' },
+  ];
+
+  return (
+    <QuestionLayout
+      question="What are you building?"
+      hint="Dedicated hardware faces higher adoption barriers when competing solutions already exist on smartphones."
+    >
+      <div className="space-y-3">
+        {options.map((option) => (
+          <OptionCard
+            key={option.value}
+            label={option.label}
+            description={option.description}
+            selected={answers.deviceType === option.value}
+            onClick={() => updateAnswer('deviceType', option.value)}
+          />
+        ))}
+      </div>
+    </QuestionLayout>
+  );
+}
+
+// Step 11: Existing Ecosystem
+export function StepEcosystem() {
+  const { answers, updateAnswer } = useAssessment();
+
+  const options: { value: ExistingEcosystem; label: string; description: string }[] = [
+    { value: 'Yes - users already own competing solutions', label: 'Yes — they own smartphones, computers, or tools that already handle this', description: 'Users have existing workflows and habits' },
+    { value: 'Partial - some alternatives exist', label: 'Partially — some alternatives exist but with significant gaps', description: 'Competitors cover part of the use case' },
+    { value: 'No - no direct alternatives', label: 'No — nothing comparable exists today', description: 'Greenfield opportunity' },
+  ];
+
+  return (
+    <QuestionLayout
+      question="Do users already have solutions that do this?"
+      hint="Products competing against existing smartphone capabilities face 'why not just use your phone?' objection."
+    >
+      <div className="space-y-3">
+        {options.map((option) => (
+          <OptionCard
+            key={option.value}
+            label={option.label}
+            description={option.description}
+            selected={answers.existingEcosystem === option.value}
+            onClick={() => updateAnswer('existingEcosystem', option.value)}
+          />
+        ))}
+      </div>
+    </QuestionLayout>
+  );
+}
+
+// Step 12: Interaction Initiation
+export function StepInitiation() {
+  const { answers, updateAnswer } = useAssessment();
+
+  const options: { value: InteractionInitiation; label: string; description: string }[] = [
+    { value: 'User-initiated only', label: 'Always the user — system only responds when asked', description: 'Pull model: user requests, system delivers' },
+    { value: 'System-initiated (proactive)', label: 'The system — it proactively interrupts or assists without being asked', description: 'Push model: system decides when to act' },
+    { value: 'Both user and system can initiate', label: 'Both — system can interrupt AND user can ask', description: 'Hybrid: bidirectional interaction' },
+  ];
+
+  return (
+    <QuestionLayout
+      question="Who starts the interaction?"
+      hint="Proactive systems risk rejection when users prefer control. Clippy's failure was unsolicited interruption."
+    >
+      <div className="space-y-3">
+        {options.map((option) => (
+          <OptionCard
+            key={option.value}
+            label={option.label}
+            description={option.description}
+            selected={answers.interactionInitiation === option.value}
+            onClick={() => updateAnswer('interactionInitiation', option.value)}
+          />
+        ))}
+      </div>
+    </QuestionLayout>
+  );
+}
+
+// Step 13: Geographic Deployment
 export function StepGeography() {
   const { answers, updateAnswer } = useAssessment();
 
