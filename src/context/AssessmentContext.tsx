@@ -88,6 +88,9 @@ const initialAnswers: AssessmentAnswers = {
   explorationMode: null,
   errorConsequence: null,
   controlPreference: null,
+  deviceType: null,
+  existingEcosystem: null,
+  interactionInitiation: null,
 };
 
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
@@ -146,6 +149,12 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           return answers.errorConsequence !== null;
         case 'control':
           return answers.controlPreference !== null;
+        case 'product-type':
+          return answers.deviceType !== null;
+        case 'ecosystem':
+          return answers.existingEcosystem !== null;
+        case 'initiation':
+          return answers.interactionInitiation !== null;
         case 'geography':
           return answers.geography !== null;
         case 'review':

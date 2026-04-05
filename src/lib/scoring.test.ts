@@ -21,7 +21,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Structured data',
       explorationMode: 'Know exactly',
       errorConsequence: 'Serious',
-      controlPreference: 'Full control'
+      controlPreference: 'Full control',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
@@ -53,7 +56,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Unstructured text',
       explorationMode: 'Mix of both',
       errorConsequence: 'Trivial',
-      controlPreference: 'Automatic'
+      controlPreference: 'Automatic',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
@@ -82,7 +88,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Unstructured text',
       explorationMode: 'Know exactly',
       errorConsequence: 'Trivial',
-      controlPreference: 'Full control'
+      controlPreference: 'Full control',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
@@ -111,7 +120,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Structured data',
       explorationMode: 'Know exactly',
       errorConsequence: 'Trivial',
-      controlPreference: 'Automatic'
+      controlPreference: 'Automatic',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
@@ -140,7 +152,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Structured data',
       explorationMode: 'Know exactly',
       errorConsequence: 'Serious',
-      controlPreference: 'Full control'
+      controlPreference: 'Full control',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
@@ -172,7 +187,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Structured data',
       explorationMode: 'Mix of both',
       errorConsequence: 'Serious',
-      controlPreference: 'Supervised'
+      controlPreference: 'Supervised',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
@@ -211,7 +229,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Structured data',
       explorationMode: 'Know exactly',
       errorConsequence: 'Trivial',
-      controlPreference: 'Automatic'
+      controlPreference: 'Automatic',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scoresSimple = calculateScores(answersSimple);
@@ -236,7 +257,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Visual content',
       explorationMode: 'Mix of both',
       errorConsequence: 'Trivial',
-      controlPreference: 'Automatic'
+      controlPreference: 'Automatic',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
@@ -260,7 +284,10 @@ describe('Demographics Scoring', () => {
       informationType: 'Structured data',
       explorationMode: 'Know exactly',
       errorConsequence: 'Trivial',
-      controlPreference: 'Full control'
+      controlPreference: 'Full control',
+      deviceType: null,
+      existingEcosystem: null,
+      interactionInitiation: null
     };
 
     const scores = calculateScores(answers);
