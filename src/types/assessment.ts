@@ -91,13 +91,13 @@ export type DeviceType = 'Dedicated hardware' | 'Software/App' | 'Web platform' 
  * Whether users already have competing solutions
  * Affects adoption and redundancy risk
  */
-export type ExistingEcosystem = 'Yes - users already own competing solutions' | 'No - no direct alternatives' | 'Partial - some alternatives exist';
+export type ExistingEcosystem = 'Yes: users already own devices or tools that handle this' | 'No: nothing comparable exists today' | 'Partial: some alternatives exist but with significant gaps';
 
 /**
  * Who initiates the interaction
  * Proactive systems risk interruption rejection
  */
-export type InteractionInitiation = 'User-initiated only' | 'System-initiated (proactive)' | 'Both user and system can initiate';
+export type InteractionInitiation = 'User-initiated: system only responds when asked' | 'System-initiated: proactively interrupts or assists without being asked' | 'Both: system can interrupt AND user can ask';
 
 /**
  * Geographic deployment region

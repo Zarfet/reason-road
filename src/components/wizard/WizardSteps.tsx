@@ -425,9 +425,9 @@ export function StepEcosystem() {
   const { answers, updateAnswer } = useAssessment();
 
   const options: { value: ExistingEcosystem; label: string; description: string }[] = [
-    { value: 'Yes - users already own competing solutions', label: 'Yes — they own smartphones, computers, or tools that already handle this', description: 'Users have existing workflows and habits' },
-    { value: 'Partial - some alternatives exist', label: 'Partially — some alternatives exist but with significant gaps', description: 'Competitors cover part of the use case' },
-    { value: 'No - no direct alternatives', label: 'No — nothing comparable exists today', description: 'Greenfield opportunity' },
+    { value: 'Yes: users already own devices or tools that handle this', label: 'Yes: users already own devices or tools that handle this', description: 'Users have existing workflows and habits' },
+    { value: 'Partial: some alternatives exist but with significant gaps', label: 'Partial: some alternatives exist but with significant gaps', description: 'Competitors cover part of the use case' },
+    { value: 'No: nothing comparable exists today', label: 'No: nothing comparable exists today', description: 'Greenfield opportunity' },
   ];
 
   return (
@@ -455,9 +455,9 @@ export function StepInitiation() {
   const { answers, updateAnswer } = useAssessment();
 
   const options: { value: InteractionInitiation; label: string; description: string }[] = [
-    { value: 'User-initiated only', label: 'Always the user — system only responds when asked', description: 'Pull model: user requests, system delivers' },
-    { value: 'System-initiated (proactive)', label: 'The system — it proactively interrupts or assists without being asked', description: 'Push model: system decides when to act' },
-    { value: 'Both user and system can initiate', label: 'Both — system can interrupt AND user can ask', description: 'Hybrid: bidirectional interaction' },
+    { value: 'User-initiated: system only responds when asked', label: 'User-initiated: system only responds when asked', description: 'Pull model: user requests, system delivers' },
+    { value: 'System-initiated: proactively interrupts or assists without being asked', label: 'System-initiated: proactively interrupts or assists without being asked', description: 'Push model: system decides when to act' },
+    { value: 'Both: system can interrupt AND user can ask', label: 'Both: system can interrupt AND user can ask', description: 'Hybrid: bidirectional interaction' },
   ];
 
   return (
