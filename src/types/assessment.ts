@@ -82,6 +82,24 @@ export type ErrorConsequence = 'Trivial' | 'Annoying but recoverable' | 'Serious
 export type ControlPreference = 'Automatic' | 'Supervised' | 'Full control';
 
 /**
+ * Product/device type being built
+ * Dedicated hardware vs software affects redundancy risk
+ */
+export type DeviceType = 'Dedicated hardware' | 'Software/App' | 'Web platform' | 'Not applicable';
+
+/**
+ * Whether users already have competing solutions
+ * Affects adoption and redundancy risk
+ */
+export type ExistingEcosystem = 'Yes - users already own competing solutions' | 'No - no direct alternatives' | 'Partial - some alternatives exist';
+
+/**
+ * Who initiates the interaction
+ * Proactive systems risk interruption rejection
+ */
+export type InteractionInitiation = 'User-initiated only' | 'System-initiated (proactive)' | 'Both user and system can initiate';
+
+/**
  * Geographic deployment region
  * Affects regulatory requirements
  */
@@ -114,6 +132,9 @@ export interface AssessmentAnswers {
   explorationMode: ExplorationMode | null;
   errorConsequence: ErrorConsequence | null;
   controlPreference: ControlPreference | null;
+  deviceType: DeviceType | null;
+  existingEcosystem: ExistingEcosystem | null;
+  interactionInitiation: InteractionInitiation | null;
 }
 
 /**
@@ -202,6 +223,9 @@ export type WizardStep =
   | 'exploration'
   | 'errors'
   | 'control'
+  | 'product-type'
+  | 'ecosystem'
+  | 'initiation'
   | 'geography'
   | 'review';
 
@@ -220,8 +244,11 @@ export const WIZARD_STEPS: WizardStep[] = [
   'exploration',
   'errors',
   'control',
+  'product-type',
+  'ecosystem',
+  'initiation',
   'geography',
-  'review'
+  'review',
 ];
 
 // ============================================
