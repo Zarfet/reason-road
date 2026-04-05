@@ -230,6 +230,38 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
   }
   
   // =============================================
+  // INTERACTION INITIATION CONTRADICTIONS
+  // =============================================
+  
+  // Proactive system + Serious errors = dangerous automation
+  if (answers.interactionInitiation === 'System-initiated (proactive)' &&
+      answers.errorConsequence === 'Serious') {
+    contradictions.push({
+      id: 'proactive-serious-errors',
+      severity: 'error',
+      category: 'logic',
+      title: 'Proactive Automation + Serious Error Consequences',
+      description: 'System initiates actions without user request AND errors have serious consequences. Unsolicited automation in high-stakes contexts is unacceptable.',
+      affectedSteps: [12, 8],
+      suggestion: 'Change to user-initiated only, OR reduce error consequence scope for automated actions.'
+    });
+  }
+
+  // Proactive system + Full control = contradiction
+  if (answers.interactionInitiation === 'System-initiated (proactive)' &&
+      answers.controlPreference === 'Full control') {
+    contradictions.push({
+      id: 'proactive-full-control',
+      severity: 'warning',
+      category: 'value-preference',
+      title: 'Proactive System vs Full Control Preference',
+      description: 'System is designed to interrupt proactively, but users need full manual control. These are incompatible interaction models.',
+      affectedSteps: [12, 9],
+      suggestion: 'Choose one: either system stays silent until asked (user-initiated), or users accept guided automation (Supervised).'
+    });
+  }
+
+  // =============================================
   // CALCULATE SUMMARY
   // =============================================
   

@@ -381,6 +381,164 @@ export function detectRedFlags(
   }
   
   // =============================================
+  // 7. WEARABLE + SOCIAL CONTEXT (Google Glass)
+  // =============================================
+  
+  const isWearableContext = 
+    answers.userDemographics.toLowerCase().includes('wearable') ||
+    answers.userDemographics.toLowerCase().includes('ar glasses') ||
+    answers.userDemographics.toLowerCase().includes('headset') ||
+    answers.userDemographics.toLowerCase().includes('head-mounted') ||
+    (recommendation.allScores.spatial > 5 && answers.contextOfUse === 'Social situations');
+
+  if (answers.contextOfUse === 'Social situations' && isWearableContext) {
+    flags.push({
+      id: 'social-wearable-privacy',
+      severity: 'critical',
+      category: 'safety',
+      title: '🚨 Privacy Violation: Recording Capability in Social Contexts',
+      description: 'Wearable device with visual/audio capture capability deployed in social situations without clear consent mechanism for bystanders.',
+      impact: 'Users and bystanders will reject the product. Public spaces may ban the device. Legal exposure under wiretapping and privacy statutes.',
+      evidence: 'Google Glass discontinued in 2015 after "Glasshole" social rejection. Always-on recording without visible indicators violates social norms and emerging privacy law (Hoy, 2014).',
+      citation: getRedFlagCitation('GDPR_FINES'),
+      mitigation: [
+        'Add visible recording indicator (light/sound) whenever camera is active',
+        'Default to user-initiated capture only (no always-on)',
+        'Consider enterprise-only deployment in controlled environments',
+        'Conduct social acceptability testing before consumer launch',
+        'Add explicit bystander consent mechanism'
+      ],
+      affectedParadigms: ['spatial']
+    });
+
+    flags.push({
+      id: 'social-acceptability-wearable',
+      severity: 'critical',
+      category: 'adoption',
+      title: '🚨 Social Acceptability Failure: Visible Wearable in Public',
+      description: 'Visible wearable technology worn in social situations violates unspoken public norms. Bystanders feel surveilled; wearers face social stigma.',
+      impact: 'Product rejection regardless of technical capability. "Glasshole" effect — social exclusion of users in public contexts.',
+      evidence: 'Wearable AR in public contexts faces consistent social rejection. Google Glass banned in restaurants, bars, and public spaces (Stein, 2013; Hoy, 2014).',
+      citation: getRedFlagCitation('BLACK_BOX_SYSTEMS'),
+      mitigation: [
+        'Redesign for social invisibility (look like normal eyewear)',
+        'Restrict launch to private/professional contexts only',
+        'Run social norm testing with non-users (bystanders), not just wearers',
+        'Explore audio-only or haptic alternatives that are socially invisible'
+      ],
+      affectedParadigms: ['spatial']
+    });
+  }
+  
+  // =============================================
+  // 8. UNSOLICITED AUTOMATION + FULL CONTROL (Clippy)
+  // =============================================
+  
+  if (answers.interactionInitiation === 'System-initiated (proactive)' &&
+      answers.controlPreference === 'Full control' &&
+      answers.frequency === 'Multiple times daily') {
+    flags.push({
+      id: 'interruption-control-violation',
+      severity: 'critical',
+      category: 'contradiction',
+      title: '🚨 Interruption Risk: Proactive System vs User Control Requirement',
+      description: 'System is designed to initiate interactions proactively, but users require full manual control. Unsolicited interruptions during focused work violate user agency.',
+      impact: 'Users will disable the feature entirely or abandon the product. Interruptions during deep work cost more productivity than the automation saves.',
+      evidence: 'Clippy (1997-2007): proactive assistance without user initiation caused sustained rejection. Users spent more time dismissing incorrect help than benefiting from correct suggestions (Baym et al., 2019; Swartz, 2003).',
+      citation: getRedFlagCitation('AUTOMATION_REJECTION'),
+      mitigation: [
+        'REQUIRED: Switch to user-initiated model — help only when asked',
+        'If proactive: add a visible, dismissable indicator (never a blocking popup)',
+        'Implement "do not disturb" mode during focused work sessions',
+        'Allow users to set frequency and timing of proactive suggestions',
+        'Default to off — let users opt in to proactive assistance'
+      ],
+      affectedParadigms: ['invisible', 'ai_vectorial']
+    });
+  }
+  
+  // =============================================
+  // 9. AI LATENCY vs EFFICIENCY (Humane AI Pin, Rabbit R1)
+  // =============================================
+  
+  if (answers.valuesRanking[0] === 'Efficiency' &&
+      answers.frequency === 'Multiple times daily' &&
+      ((recommendation.allScores.ai_vectorial || 0) > 15 || (recommendation.allScores.invisible || 0) > 25)) {
+    flags.push({
+      id: 'efficiency-ai-latency',
+      severity: 'critical',
+      category: 'contradiction',
+      title: '🚨 Efficiency Contradiction: AI Latency vs High-Frequency Use',
+      description: 'Efficiency is the #1 value, but cloud-based AI processing introduces 3-10 second response delays. At "multiple times daily" frequency, this latency compounds into significant productivity loss.',
+      impact: 'Marketing promises instant results; reality delivers frustrating delays. Users abandon product within weeks of purchase.',
+      evidence: 'Humane AI Pin (2024): documented 5-10 second delays for simple queries destroyed efficiency value proposition. Marketing vs reality gap caused mass returns within 30 days (Pierce, 2024).',
+      citation: getRedFlagCitation('TRUST_IN_AUTOMATION'),
+      mitigation: [
+        'Measure actual P95 latency before launch — not demo conditions',
+        'Set user expectations honestly: "responses in 3-8 seconds"',
+        'Implement on-device processing for common queries to reduce latency',
+        'Design UI for latency: show progress indicators, never a blank wait',
+        'Consider smartphone app alternative where processing is already optimized'
+      ],
+      affectedParadigms: ['ai_vectorial', 'invisible']
+    });
+  }
+  
+  // =============================================
+  // 10. DEDICATED HARDWARE REDUNDANCY (Humane AI Pin, Rabbit R1, Fire Phone)
+  // =============================================
+  
+  if (answers.deviceType === 'Dedicated hardware' &&
+      answers.existingEcosystem === 'Yes - users already own competing solutions' &&
+      answers.contextOfUse === 'Mobile') {
+    flags.push({
+      id: 'hardware-redundancy',
+      severity: 'critical',
+      category: 'adoption',
+      title: '🚨 Redundancy Risk: Dedicated Hardware vs Existing User Solutions',
+      description: 'Users already carry devices (smartphones) that cover this use case. No demonstrated functional advantage justifies a second device.',
+      impact: 'Users will not carry an additional device without clear, measurable superiority. Product fails to establish reason to exist.',
+      evidence: 'Rabbit R1 (2024, €118M) and Humane AI Pin (2024, €200M): both failed because smartphones already provided equivalent or superior functionality. "Why not just use your phone?" had no compelling answer (Pierce, 2024; Coldewey, 2024).',
+      citation: getRedFlagCitation('DIGITAL_DIVIDE'),
+      mitigation: [
+        'REQUIRED: Define one specific task where dedicated hardware is measurably 2x better than smartphone',
+        'Run direct comparison tests: dedicated device vs smartphone app for core tasks',
+        'Consider software-first approach: prove the concept as an app before building hardware',
+        'If hardware is essential, identify the physical constraint that makes software impossible',
+        'Critical question: "Would users buy this if they could not use their smartphone for one week?"'
+      ],
+      affectedParadigms: ['ai_vectorial', 'voice', 'invisible']
+    });
+  }
+  
+  // =============================================
+  // 11. NOVELTY OVER UTILITY (Fire Phone, Rabbit R1)
+  // =============================================
+  
+  if (answers.valuesRanking[1] === 'Joy' &&
+      answers.valuesRanking[0] === 'Efficiency' &&
+      answers.contextOfUse === 'Mobile' &&
+      answers.existingEcosystem === 'Yes - users already own competing solutions') {
+    flags.push({
+      id: 'novelty-over-utility',
+      severity: 'high',
+      category: 'adoption',
+      title: 'Novelty Risk: Design Prioritizes "Cool Factor" Over Functional Advantage',
+      description: 'Joy is ranked #2 behind Efficiency, but users already have solutions. Novel features (3D interfaces, unique hardware) are insufficient to overcome switching costs when alternatives work adequately.',
+      impact: 'Initial hype converts to returns and abandonment when novelty wears off. "Cool gadget" without daily utility fails in competitive markets.',
+      evidence: 'Amazon Fire Phone (2014, €170M): 3D Dynamic Perspective dismissed as "gimmicky rather than useful." Users found gestures added complexity without benefit for standard 2D tasks (Luckerson, 2014).',
+      citation: getRedFlagCitation('COGNITIVE_LOAD_COMPLEXITY'),
+      mitigation: [
+        'For each novel feature, document the specific user problem it solves',
+        'Run task-comparison tests: novel feature vs standard approach — is it actually faster?',
+        'Remove features that cannot demonstrate measurable user benefit',
+        'Focus novelty budget on one signature differentiator, not multiple gimmicks',
+        'Test with skeptical mainstream users, not just enthusiasts who love novelty'
+      ],
+      affectedParadigms: ['spatial', 'ai_vectorial', 'traditional_screen']
+    });
+  }
+  // =============================================
   // CALCULATE SUMMARY STATS
   // =============================================
   
