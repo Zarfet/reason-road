@@ -511,3 +511,65 @@ export function StepGeography() {
     </QuestionLayout>
   );
 }
+
+// Step 13: Product Constraints (multi-select)
+export function StepConstraints() {
+  const { answers, updateAnswer } = useAssessment();
+
+  const options: { value: ProductConstraints; label: string; description: string; tooltip: string | null }[] = [
+    { value: 'always-on', label: 'Requires always-on hardware or continuous connectivity', description: 'Device must stay active 24/7 or maintain constant network connection', tooltip: 'Device must stay active 24/7 or maintain constant network connection (e.g., wearables, IoT sensors)' },
+    { value: 'ecosystem-abandonment', label: 'Users must abandon an existing platform or ecosystem to adopt this', description: 'Users would need to leave their current platform and lose apps/data', tooltip: 'Users would need to leave iOS, Android, or other established platforms and lose their apps, data, or workflows' },
+    { value: 'voice-only', label: 'Interaction is primarily voice or audio with no visual output', description: 'Responses through audio only, no screen to verify outputs', tooltip: 'Users receive responses through audio only, with no screen to verify, review or correct outputs' },
+    { value: 'hardware-limitations', label: 'Product has known hardware limitations', description: 'Short battery life, overheating, weight, or display quality constraints', tooltip: 'Includes short battery life, overheating, weight, or display quality constraints during normal use' },
+    { value: 'narrow-demographic', label: 'Product targets a narrow demographic due to price or technical requirements', description: 'High price point or steep learning curve limits adoption', tooltip: 'High price point or steep learning curve limits adoption to a small segment of potential users' },
+    { value: 'biometric-data', label: 'Product captures biometric or facial data passively', description: 'Collects face, voice, movement or biometric data without explicit action', tooltip: 'Device collects face, voice, movement or other biometric data without explicit user action each time' },
+    { value: 'none', label: 'None of the above', description: 'No known constraints apply', tooltip: null },
+  ];
+
+  const handleToggle = (value: ProductConstraints) => {
+    const current = answers.productConstraints || [];
+    if (value === 'none') {
+      // "None" deselects all others
+      updateAnswer('productConstraints', current.includes('none') ? [] : ['none']);
+    } else {
+      // Selecting any option deselects "none"
+      const withoutNone = current.filter(v => v !== 'none');
+      if (withoutNone.includes(value)) {
+        updateAnswer('productConstraints', withoutNone.filter(v => v !== value));
+      } else {
+        updateAnswer('productConstraints', [...withoutNone, value]);
+      }
+    }
+  };
+
+  return (
+    <QuestionLayout
+      question="Select any constraints that apply to this product"
+      hint="These constraints help identify specific risk patterns associated with documented product failures. Select all that apply."
+    >
+      <div className="space-y-3">
+        {options.map((option) => (
+          <TooltipProvider key={option.value}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <OptionCard
+                    label={option.label}
+                    description={option.description}
+                    selected={(answers.productConstraints || []).includes(option.value)}
+                    onClick={() => handleToggle(option.value)}
+                  />
+                </div>
+              </TooltipTrigger>
+              {option.tooltip && (
+                <TooltipContent className="max-w-sm">
+                  <p className="text-sm">{option.tooltip}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        ))}
+      </div>
+    </QuestionLayout>
+  );
+}

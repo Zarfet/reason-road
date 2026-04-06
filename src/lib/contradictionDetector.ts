@@ -262,6 +262,23 @@ export function detectContradictions(answers: AssessmentAnswers): ContradictionR
   }
 
   // =============================================
+  // VOICE ONLY + SERIOUS ERRORS
+  // =============================================
+  
+  if (answers.productConstraints?.includes('voice-only') &&
+      answers.errorConsequence === 'Serious') {
+    contradictions.push({
+      id: 'voice-only-serious-errors',
+      severity: 'error',
+      category: 'context-mismatch',
+      title: 'Voice-Only Interface + Serious Error Consequences',
+      description: 'Voice-only interaction prevents visual verification of outputs. Serious or irreversible errors cannot be caught before execution.',
+      affectedSteps: [13, 8],
+      suggestion: 'Add visual output capability, or restrict voice-only mode to low-stakes tasks only.'
+    });
+  }
+
+  // =============================================
   // CALCULATE SUMMARY
   // =============================================
   
