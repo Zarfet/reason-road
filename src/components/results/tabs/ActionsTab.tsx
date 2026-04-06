@@ -21,11 +21,12 @@ import { RatingCard } from '../RatingCard';
 
 interface ActionsTabProps {
   onDownloadPDF: () => void;
+  onDownloadBrief: () => void;
   onStartOver: () => void;
   savedAssessmentId: string | null;
 }
 
-export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: ActionsTabProps) {
+export function ActionsTab({ onDownloadPDF, onDownloadBrief, onStartOver, savedAssessmentId }: ActionsTabProps) {
   return (
     <BentoGrid className="mt-6">
       <BentoBox size="medium">
