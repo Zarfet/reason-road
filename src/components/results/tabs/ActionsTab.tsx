@@ -8,7 +8,7 @@ import {
   Share2, 
   RefreshCw,
   FileText,
-  FileBadge,
+  FileCheck,
   Link2,
   Sparkles,
   MessageSquare,
@@ -31,24 +31,35 @@ export function ActionsTab({ onDownloadPDF, onDownloadBrief, onStartOver, savedA
     <BentoGrid className="mt-6">
       <BentoBox size="medium">
         <BentoHeader 
-          title="Download Report" 
-          subtitle="Generate a comprehensive PDF"
+          title="Technical Report" 
+          subtitle="Full analysis for your product team"
           icon={<FileText className="h-5 w-5" />}
         />
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
           <p className="text-sm text-muted-foreground mb-4">
             Get a detailed PDF report with all recommendations, reasoning, and implementation guidance.
           </p>
-          <div className="flex gap-2">
-            <Button onClick={onDownloadPDF} className="flex-1 gap-2 border-border hover:bg-secondary" variant="outline">
-              <Download className="h-4 w-4" />
-              Download Report
-            </Button>
-            <Button onClick={onDownloadBrief} className="flex-1 gap-2 border-border hover:bg-secondary" variant="outline">
-              <FileBadge className="h-4 w-4" />
-              Executive Brief
-            </Button>
-          </div>
+          <Button onClick={onDownloadPDF} className="w-full gap-2 border-border hover:bg-secondary" variant="outline">
+            <Download className="h-4 w-4" />
+            Download Technical Report
+          </Button>
+        </motion.div>
+      </BentoBox>
+
+      <BentoBox size="medium">
+        <BentoHeader 
+          title="Executive Brief" 
+          subtitle="For stakeholders and decision makers"
+          icon={<FileCheck className="h-5 w-5" />}
+        />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mt-6">
+          <p className="text-sm text-muted-foreground mb-4">
+            One-page summary with recommendation, key reasons, and risk highlights. Designed to be shared with leadership.
+          </p>
+          <Button onClick={onDownloadBrief} className="w-full gap-2 border-border hover:bg-secondary" variant="outline">
+            <Download className="h-4 w-4" />
+            Download Executive Brief
+          </Button>
         </motion.div>
       </BentoBox>
 
