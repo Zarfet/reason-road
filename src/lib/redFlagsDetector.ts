@@ -392,7 +392,8 @@ export function detectRedFlags(
     (recommendation.allScores.spatial > 5 && answers.contextOfUse === 'Social situations') ||
     (answers.deviceType === 'Dedicated hardware' &&
      answers.contextOfUse === 'Social situations' &&
-     answers.informationType === 'Visual content');
+     answers.informationType === 'Visual content' &&
+     answers.interactionInitiation !== 'User-initiated: system only responds when asked');
 
   if (answers.contextOfUse === 'Social situations' && isWearableContext) {
     flags.push({
