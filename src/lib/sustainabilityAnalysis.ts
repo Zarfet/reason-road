@@ -302,6 +302,6 @@ export function generateSustainabilityReport(
      greenFlags,
      redFlags,
      citationCount: getTotalCitationCount(),
-     disclaimer: '⚠️ ENVIRONMENTAL DATA DISCLAIMER: Energy consumption, CO₂ emissions, and lifecycle estimates are based on industry averages and academic research. Actual values vary significantly by: hardware models, usage patterns, regional energy mix (EU: ~0.3 kg CO₂/kWh, US: ~0.4 kg CO₂/kWh), and organizational practices. Values shown are for comparative analysis and early-stage assessment, not precise carbon accounting. For production environmental impact assessments, use context-specific data and certified carbon accounting methodologies.'
+     disclaimer: 'ENVIRONMENTAL DATA DISCLAIMER: Energy consumption, CO₂ emissions, and lifecycle estimates are based on industry averages and academic research. Actual values vary significantly by: hardware models, usage patterns, regional energy mix (EU: ~0.3 kg CO₂/kWh, US: ~0.4 kg CO₂/kWh), and organizational practices. Values shown are for comparative analysis and early-stage assessment, not precise carbon accounting. For production environmental impact assessments, use context-specific data and certified carbon accounting methodologies.'
    };
  }
