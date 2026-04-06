@@ -103,12 +103,23 @@ export function ResultsHero({
 
         {contextLine && (
           <motion.p
-            className="text-muted-foreground text-lg text-center mb-8"
+            className="text-muted-foreground text-lg text-center mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
             Assessment for {contextLine}
+          </motion.p>
+        )}
+
+        {(userDemographics || geography) && (
+          <motion.p
+            className="text-muted-foreground text-sm text-center mb-8 max-w-2xl mx-auto leading-relaxed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.35 }}
+          >
+            {userDemographics}{userDemographics && geography ? '. ' : ''}{geography ? `Deploying in ${geography}.` : ''}
           </motion.p>
         )}
 

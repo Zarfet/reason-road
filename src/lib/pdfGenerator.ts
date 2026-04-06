@@ -108,6 +108,7 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
         <span class="strategy-secondary"> + ${esc(iLabel(recommendation.secondary.paradigm))}</span>
       </div>
       ${contextLine ? `<div class="strategy-rationale">Assessment for ${esc(contextLine)}</div>` : ''}
+      ${(answers.userDemographics || answers.geography) ? `<div class="strategy-rationale" style="font-size:9pt;margin-top:4px;">${esc(answers.userDemographics || '')}${answers.userDemographics && answers.geography ? '. ' : ''}${answers.geography ? `Deploying in ${esc(answers.geography)}.` : ''}</div>` : ''}
       <ul class="reasoning-list">${bulletItems}</ul>
     </div>
   </div>`;
