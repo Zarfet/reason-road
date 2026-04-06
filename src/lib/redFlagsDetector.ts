@@ -391,7 +391,9 @@ export function detectRedFlags(
     answers.userDemographics.toLowerCase().includes('ar glasses') ||
     answers.userDemographics.toLowerCase().includes('headset') ||
     answers.userDemographics.toLowerCase().includes('head-mounted') ||
-    (recommendation.allScores.spatial > 5 && answers.contextOfUse === 'Social situations') ||
+    (recommendation.allScores.spatial > 5 &&
+     answers.contextOfUse === 'Social situations' &&
+     answers.interactionInitiation !== 'User-initiated: system only responds when asked') ||
     (answers.deviceType === 'Dedicated hardware' &&
      answers.contextOfUse === 'Social situations' &&
      answers.informationType === 'Visual content' &&
