@@ -109,6 +109,20 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
       </div>
       ${contextLine ? `<div class="strategy-rationale">Assessment for ${esc(contextLine)}</div>` : ''}
       ${(answers.userDemographics || answers.geography) ? `<div class="strategy-rationale" style="font-size:9pt;margin-top:4px;">${esc(answers.userDemographics || '')}${answers.userDemographics && answers.geography ? '. ' : ''}${answers.geography ? `Deploying in ${esc(answers.geography)}.` : ''}</div>` : ''}
+      <div style="display:flex;justify-content:center;gap:32px;margin:16px 0 12px 0;">
+        <div style="text-align:center;">
+          <div style="font-size:22pt;font-weight:700;font-family:'SF Mono',SFMono-Regular,Menlo,monospace;color:#18181b;">${recommendation.primary.pct}%</div>
+          <div style="font-size:8pt;color:#71717a;font-family:'SF Mono',SFMono-Regular,Menlo,monospace;">${esc(iLabel(recommendation.primary.paradigm))}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:22pt;font-weight:700;font-family:'SF Mono',SFMono-Regular,Menlo,monospace;color:#18181b;">${recommendation.secondary.pct}%</div>
+          <div style="font-size:8pt;color:#71717a;font-family:'SF Mono',SFMono-Regular,Menlo,monospace;">${esc(iLabel(recommendation.secondary.paradigm))}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:22pt;font-weight:700;font-family:'SF Mono',SFMono-Regular,Menlo,monospace;color:#18181b;">${recommendation.tertiary.pct}%</div>
+          <div style="font-size:8pt;color:#71717a;font-family:'SF Mono',SFMono-Regular,Menlo,monospace;">${esc(iLabel(recommendation.tertiary.paradigm))}</div>
+        </div>
+      </div>
       <ul class="reasoning-list">${bulletItems}</ul>
     </div>
   </div>`;
