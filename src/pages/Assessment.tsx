@@ -20,6 +20,7 @@ import {
   StepProductType,
   StepEcosystem,
   StepInitiation,
+  StepConstraints,
   StepGeography,
 } from '@/components/wizard/WizardSteps';
 import { StepReview } from '@/components/wizard/WizardSteps/StepReview';
@@ -52,6 +53,7 @@ export default function Assessment() {
       case 'product-type': return <StepProductType />;
       case 'ecosystem': return <StepEcosystem />;
       case 'initiation': return <StepInitiation />;
+      case 'constraints': return <StepConstraints />;
       case 'geography': return <StepGeography />;
       case 'review': return <StepReview />;
       default: return null;
