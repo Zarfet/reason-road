@@ -650,6 +650,103 @@ const CSS = `
   .step-required { font-weight: 700; color: #b91c1c; }
   .citation-link { color: #166534; }
 
+  .brief-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid #000;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+  }
+
+  .brief-context {
+    background: #f9fafb;
+    border-left: 3px solid #000;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.72rem;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .brief-section {
+    margin-bottom: 20px;
+  }
+
+  .brief-section-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #000;
+    border-bottom: 2px solid #000;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+  }
+
+  .brief-recommendation {
+    margin-bottom: 20px;
+  }
+
+  .brief-rec-name {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .brief-risk-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  .brief-risk-title {
+    font-weight: 700;
+    color: #b91c1c;
+  }
+
+  .brief-risk-high {
+    font-weight: 700;
+    color: #c2410c;
+  }
+
+  .brief-alt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.72rem;
+  }
+
+  .brief-alt-name {
+    font-weight: 600;
+    min-width: 140px;
+  }
+
+  .brief-alt-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #525252;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  .brief-alt-reason {
+    flex: 1;
+    color: #6b7280;
+    padding-left: 16px;
+    font-size: 0.68rem;
+  }
+
+  .brief-no-risk {
+    font-size: 0.72rem;
+    color: #166534;
+    padding: 8px 0;
+  }
+
   @media print {
     body { background: none; }
     .pdf-document { box-shadow: none; width: 100%; margin: 0; }
@@ -696,7 +793,7 @@ export async function generatePDFReport({
 
   const iframeDoc = iframe.contentDocument!;
   iframeDoc.open();
-  iframeDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${CSS}</style></head><body>${html}</body></html>`);
+  iframeDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>NEXUS Technical Report — ${esc(answers.projectName || 'Assessment')}</title><style>${CSS}</style></head><body>${html}</body></html>`);
   iframeDoc.close();
 
   // Wait for fonts to load, then print
