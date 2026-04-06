@@ -8,6 +8,7 @@ import {
   Share2, 
   RefreshCw,
   FileText,
+  FileBadge,
   Link2,
   Sparkles,
   MessageSquare,
