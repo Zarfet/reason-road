@@ -384,6 +384,8 @@ export function detectRedFlags(
   // 7. WEARABLE + SOCIAL CONTEXT (Google Glass)
   // =============================================
   
+  console.log('interactionInitiation value:', answers.interactionInitiation);
+
   const isWearableContext = 
     answers.userDemographics.toLowerCase().includes('wearable') ||
     answers.userDemographics.toLowerCase().includes('ar glasses') ||
