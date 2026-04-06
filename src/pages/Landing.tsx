@@ -99,7 +99,7 @@ export default function Landing() {
             <FeatureCard 
               icon={<Shield className="h-5 w-5" />}
               title="DIKW Framework"
-              description="9 context questions across Data, Information, Knowledge, and Wisdom layers."
+              description="Questions about your users, context, and product constraints across the DIKW framework"
             />
             <FeatureCard 
               icon={<Sparkles className="h-5 w-5" />}
@@ -121,8 +121,8 @@ export default function Landing() {
             
             <div className="grid md:grid-cols-4 gap-6">
               <StepCard number={1} title="Define Values" description="Rank your 5 core design values" />
-              <StepCard number={2} title="Answer Questions" description="9 context questions about your project" />
-              <StepCard number={3} title="Get Results" description="Interface recommendation with confidence scores" />
+              <StepCard number={2} title="Answer Questions" description="Questions about your users, context, and product constraints" />
+              <StepCard number={3} title="Get Results" description="Interface recommendation with risk analysis" />
               <StepCard number={4} title="Explore Research" description="Academic papers supporting your choice" />
             </div>
           </motion.div>
