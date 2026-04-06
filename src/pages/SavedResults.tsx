@@ -28,7 +28,7 @@ import {
   type RecommendationResult,
 } from '@/types/assessment';
 import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/lib/scoring';
-import { generatePDFReport } from '@/lib/pdfGenerator';
+import { generatePDFReport, generateExecutiveBrief } from '@/lib/pdfGenerator';
 
 // Results components
 import { StepIndicator } from '@/components/results/StepIndicator';
@@ -139,6 +139,18 @@ export default function SavedResults() {
     });
   };
 
+  const handleDownloadBrief = async () => {
+    await generateExecutiveBrief({ 
+      answers, 
+      recommendation, 
+      createdAt: assessment.created_at 
+    });
+    toast({
+      title: "Executive Brief Generated",
+      description: "Your brief has been downloaded.",
+    });
+  };
+
   const handleStartOver = () => {
     navigate('/assessment');
   };
@@ -235,6 +247,7 @@ export default function SavedResults() {
             <TabsContent value="actions">
               <ActionsTab
                 onDownloadPDF={handleDownloadPDF}
+                onDownloadBrief={handleDownloadBrief}
                 onStartOver={handleStartOver}
                 savedAssessmentId={assessment.id}
               />
