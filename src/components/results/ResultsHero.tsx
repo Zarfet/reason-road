@@ -55,10 +55,16 @@ export function ResultsHero({
   confidenceLevel,
   strategicRationale,
   reasoningBullets = [],
+  geography,
 }: ResultsHeroProps) {
-  const subtitle = [projectName, userDemographics]
-    .filter(Boolean)
-    .join(' for ');
+  const gap = primaryPct - secondaryPct;
+  const separationLabel = gap > 15 ? 'Strong recommendation' : gap >= 10 ? 'Moderate recommendation' : 'Low separation';
+  const separationSubtext = gap > 15
+    ? 'Context clearly favors this interface type.'
+    : gap >= 10
+    ? 'Context shows some alignment with alternatives.'
+    : 'Multiple interface types score similarly. Review inputs for clarity.';
+  const contextLine = [projectName, geography].filter(Boolean).join(', ');
 
   const breakdownItems = [
     { paradigm: primaryParadigm, pct: primaryPct },
