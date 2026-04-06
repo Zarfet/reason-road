@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAssessment } from '@/context/AssessmentContext';
 import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/lib/scoring';
-import { generatePDFReport } from '@/lib/pdfGenerator';
+import { generatePDFReport, generateExecutiveBrief } from '@/lib/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 
 import { StepIndicator } from '@/components/results/StepIndicator';
@@ -75,6 +75,14 @@ export default function Results() {
     toast({
       title: "PDF Generated",
       description: "Your report has been downloaded.",
+    });
+  };
+
+  const handleDownloadBrief = async () => {
+    await generateExecutiveBrief({ answers, recommendation });
+    toast({
+      title: "Executive Brief Generated",
+      description: "Your brief has been downloaded.",
     });
   };
 
@@ -155,7 +163,7 @@ export default function Results() {
               <ResearchTab paradigm={recommendation.primary.paradigm} userDemographics={answers.userDemographics} />
             </TabsContent>
             <TabsContent value="actions">
-              <ActionsTab onDownloadPDF={handleDownloadPDF} onStartOver={handleStartOver} savedAssessmentId={savedAssessmentId} />
+              <ActionsTab onDownloadPDF={handleDownloadPDF} onDownloadBrief={handleDownloadBrief} onStartOver={handleStartOver} savedAssessmentId={savedAssessmentId} />
             </TabsContent>
           </Tabs>
         </motion.div>

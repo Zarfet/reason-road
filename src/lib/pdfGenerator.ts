@@ -650,6 +650,103 @@ const CSS = `
   .step-required { font-weight: 700; color: #b91c1c; }
   .citation-link { color: #166534; }
 
+  .brief-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid #000;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+  }
+
+  .brief-context {
+    background: #f9fafb;
+    border-left: 3px solid #000;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 0.72rem;
+    line-height: 1.6;
+    color: #374151;
+  }
+
+  .brief-section {
+    margin-bottom: 20px;
+  }
+
+  .brief-section-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #000;
+    border-bottom: 2px solid #000;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+  }
+
+  .brief-recommendation {
+    margin-bottom: 20px;
+  }
+
+  .brief-rec-name {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .brief-risk-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  .brief-risk-title {
+    font-weight: 700;
+    color: #b91c1c;
+  }
+
+  .brief-risk-high {
+    font-weight: 700;
+    color: #c2410c;
+  }
+
+  .brief-alt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.72rem;
+  }
+
+  .brief-alt-name {
+    font-weight: 600;
+    min-width: 140px;
+  }
+
+  .brief-alt-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #525252;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  .brief-alt-reason {
+    flex: 1;
+    color: #6b7280;
+    padding-left: 16px;
+    font-size: 0.68rem;
+  }
+
+  .brief-no-risk {
+    font-size: 0.72rem;
+    color: #166534;
+    padding: 8px 0;
+  }
+
   @media print {
     body { background: none; }
     .pdf-document { box-shadow: none; width: 100%; margin: 0; }
@@ -696,10 +793,186 @@ export async function generatePDFReport({
 
   const iframeDoc = iframe.contentDocument!;
   iframeDoc.open();
-  iframeDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${CSS}</style></head><body>${html}</body></html>`);
+  iframeDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>NEXUS Technical Report — ${esc(answers.projectName || 'Assessment')}</title><style>${CSS}</style></head><body>${html}</body></html>`);
   iframeDoc.close();
 
   // Wait for fonts to load, then print
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow!.focus();
+      iframe.contentWindow!.print();
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    }, 800);
+  };
+}
+
+// ─── Executive Brief — Builder functions ─────────────────────────────────────
+
+function buildBriefHeader(answers: AssessmentAnswers, recommendation: RecommendationResult, dateStr: string, logoBase64: string): string {
+  const diff = recommendation.primary.pct - recommendation.secondary.pct;
+  const sepLabel = diff > 15 ? 'STRONG RECOMMENDATION' : diff >= 10 ? 'MODERATE RECOMMENDATION' : 'LOW SEPARATION';
+
+  return `
+  <div class="brief-header">
+    <div>
+      <div class="nexus-branding">
+        <img src="${logoBase64}" class="nexus-logo-img" alt="NEXUS" />
+        <div class="nexus-text">
+          <div class="nexus-title">NEXUS</div>
+          <div class="nexus-tagline">Executive Brief</div>
+        </div>
+      </div>
+    </div>
+    <div class="cover-meta">
+      <div class="mono">${esc(answers.projectName || 'Assessment')}</div>
+      <div class="mono">${esc(dateStr.toUpperCase())}</div>
+      <div class="mono">${sepLabel}</div>
+    </div>
+  </div>`;
+}
+
+function buildBriefContext(answers: AssessmentAnswers): string {
+  const demo = answers.userDemographics || '';
+  const geo = answers.geography || '';
+  const content = demo + (demo && geo ? '. Deploying in ' : geo ? 'Deploying in ' : '') + geo + (geo ? '.' : '');
+  if (!content.trim()) return '';
+
+  return `
+  <div class="brief-section">
+    <div class="field-label">ASSESSMENT CONTEXT</div>
+    <div class="brief-context">${esc(content)}</div>
+  </div>`;
+}
+
+function buildBriefRecommendation(recommendation: RecommendationResult): string {
+  return `
+  <div class="brief-recommendation">
+    <div class="brief-rec-name">${esc(iLabel(recommendation.primary.paradigm))}</div>
+    <div style="display:flex;gap:32px;margin-bottom:8px;">
+      <div style="text-align:center;">
+        <div style="font-size:22pt;font-weight:700;font-family:'JetBrains Mono',monospace;color:#18181b;">${recommendation.primary.pct}%</div>
+        <div style="font-size:8pt;color:#71717a;font-family:'JetBrains Mono',monospace;">${esc(iLabel(recommendation.primary.paradigm))}</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:22pt;font-weight:700;font-family:'JetBrains Mono',monospace;color:#18181b;">${recommendation.secondary.pct}%</div>
+        <div style="font-size:8pt;color:#71717a;font-family:'JetBrains Mono',monospace;">${esc(iLabel(recommendation.secondary.paradigm))}</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:22pt;font-weight:700;font-family:'JetBrains Mono',monospace;color:#18181b;">${recommendation.tertiary.pct}%</div>
+        <div style="font-size:8pt;color:#71717a;font-family:'JetBrains Mono',monospace;">${esc(iLabel(recommendation.tertiary.paradigm))}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildBriefWhy(answers: AssessmentAnswers, recommendation: RecommendationResult): string {
+  const bullets = getReasoningBullets(answers, recommendation).slice(0, 4);
+  const items = bullets.map(b => `<li>${esc(clean(b))}</li>`).join('');
+
+  return `
+  <div class="brief-section">
+    <div class="brief-section-title">WHY THIS RECOMMENDATION</div>
+    <ul class="reasoning-list">${items}</ul>
+  </div>`;
+}
+
+function buildBriefRisks(answers: AssessmentAnswers, recommendation: RecommendationResult): string {
+  const flags = detectRedFlags(answers, recommendation);
+  const criticalHigh = flags.flags.filter((f: { severity: string }) => f.severity === 'critical' || f.severity === 'high');
+
+  if (criticalHigh.length === 0) {
+    return `
+    <div class="brief-section">
+      <div class="brief-section-title">RISK SUMMARY</div>
+      <div class="brief-no-risk">No critical risks identified.</div>
+    </div>`;
+  }
+
+  const shown = criticalHigh.slice(0, 4);
+  const remaining = criticalHigh.length - shown.length;
+
+  const items = shown.map((f: { severity: string; title: string; impact: string }) => {
+    const cls = f.severity === 'critical' ? 'brief-risk-title' : 'brief-risk-high';
+    const impact = f.impact.length > 120 ? f.impact.slice(0, 117) + '...' : f.impact;
+    return `
+    <div class="brief-risk-item">
+      <span class="${cls}">${esc(clean(f.title))}</span> — ${esc(clean(impact))}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="brief-section">
+    <div class="brief-section-title">RISK SUMMARY</div>
+    ${items}
+    ${remaining > 0 ? `<div style="font-size:0.65rem;color:#6b7280;margin-top:6px;">+ ${remaining} additional flags in full technical report</div>` : ''}
+  </div>`;
+}
+
+function buildBriefAlternatives(recommendation: RecommendationResult): string {
+  const allKeys = Object.keys(recommendation.allScores) as string[];
+  const primaryKey = recommendation.primary.paradigm;
+  const others = allKeys
+    .filter(k => k !== primaryKey)
+    .map(k => ({ key: k, pct: Math.round((recommendation.allScores as unknown as Record<string, number>)[k]) }))
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 4);
+
+  const rows = others.map(o => {
+    let reason: string;
+    if (o.pct < 5) reason = 'Insufficient alignment with project context';
+    else if (o.pct < 15) reason = 'Secondary consideration — low contextual fit';
+    else reason = 'Viable alternative — lower alignment than primary';
+
+    return `
+    <div class="brief-alt-row">
+      <span class="brief-alt-name">${esc(iLabel(o.key))}</span>
+      <span class="brief-alt-pct">${o.pct}%</span>
+      <span class="brief-alt-reason">${esc(reason)}</span>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="brief-section">
+    <div class="brief-section-title">ALTERNATIVES CONSIDERED</div>
+    ${rows}
+  </div>`;
+}
+
+// ─── Executive Brief — Main export ───────────────────────────────────────────
+export async function generateExecutiveBrief({
+  answers,
+  recommendation,
+  createdAt,
+}: {
+  answers: AssessmentAnswers;
+  recommendation: RecommendationResult;
+  createdAt?: string;
+}): Promise<void> {
+  const logoBase64 = await toBase64(nexusLogoUrl);
+
+  const dateStr = createdAt
+    ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  const sections: string[] = [];
+  sections.push(buildBriefHeader(answers, recommendation, dateStr, logoBase64));
+  sections.push(buildBriefContext(answers));
+  sections.push(buildBriefRecommendation(recommendation));
+  sections.push(buildBriefWhy(answers, recommendation));
+  sections.push(buildBriefRisks(answers, recommendation));
+  sections.push(buildBriefAlternatives(recommendation));
+
+  const html = `<div class="pdf-document">${sections.join('\n')}</div>`;
+
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;';
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentDocument!;
+  iframeDoc.open();
+  iframeDoc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>NEXUS Executive Brief — ${esc(answers.projectName || 'Assessment')}</title><style>${CSS}</style></head><body>${html}</body></html>`);
+  iframeDoc.close();
+
   iframe.onload = () => {
     setTimeout(() => {
       iframe.contentWindow!.focus();

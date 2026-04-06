@@ -8,6 +8,7 @@ import {
   Share2, 
   RefreshCw,
   FileText,
+  FileBadge,
   Link2,
   Sparkles,
   MessageSquare,
@@ -20,11 +21,12 @@ import { RatingCard } from '../RatingCard';
 
 interface ActionsTabProps {
   onDownloadPDF: () => void;
+  onDownloadBrief: () => void;
   onStartOver: () => void;
   savedAssessmentId: string | null;
 }
 
-export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: ActionsTabProps) {
+export function ActionsTab({ onDownloadPDF, onDownloadBrief, onStartOver, savedAssessmentId }: ActionsTabProps) {
   return (
     <BentoGrid className="mt-6">
       <BentoBox size="medium">
@@ -37,10 +39,16 @@ export function ActionsTab({ onDownloadPDF, onStartOver, savedAssessmentId }: Ac
           <p className="text-sm text-muted-foreground mb-4">
             Get a detailed PDF report with all recommendations, reasoning, and implementation guidance.
           </p>
-          <Button onClick={onDownloadPDF} className="w-full gap-2 border-border hover:bg-secondary" variant="outline">
-            <Download className="h-4 w-4" />
-            Download PDF Report
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={onDownloadPDF} className="flex-1 gap-2 border-border hover:bg-secondary" variant="outline">
+              <Download className="h-4 w-4" />
+              Download Report
+            </Button>
+            <Button onClick={onDownloadBrief} className="flex-1 gap-2 border-border hover:bg-secondary" variant="outline">
+              <FileBadge className="h-4 w-4" />
+              Executive Brief
+            </Button>
+          </div>
         </motion.div>
       </BentoBox>
 
