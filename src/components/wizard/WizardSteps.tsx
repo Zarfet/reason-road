@@ -549,25 +549,13 @@ export function StepConstraints() {
     >
       <div className="space-y-3">
         {options.map((option) => (
-          <TooltipProvider key={option.value}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <OptionCard
-                    label={option.label}
-                    description={option.description}
-                    selected={(answers.productConstraints || []).includes(option.value)}
-                    onClick={() => handleToggle(option.value)}
-                  />
-                </div>
-              </TooltipTrigger>
-              {option.tooltip && (
-                <TooltipContent className="max-w-sm">
-                  <p className="text-sm">{option.tooltip}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
+          <OptionCard
+            key={option.value}
+            label={option.label}
+            description={option.description}
+            selected={(answers.productConstraints || []).includes(option.value)}
+            onClick={() => handleToggle(option.value)}
+          />
         ))}
       </div>
     </QuestionLayout>
