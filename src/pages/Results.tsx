@@ -114,8 +114,8 @@ export default function Results() {
           projectName={answers.projectName}
           userDemographics={answers.userDemographics}
           confidenceLevel={confidenceLevel}
-          strategicRationale={generateStrategicRationale(recommendation, answers)}
           reasoningBullets={reasoningBullets}
+          geography={answers.geography}
         />
       </div>
 

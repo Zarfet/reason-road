@@ -73,13 +73,14 @@ function sectionHeader(title: string): string {
 // ─── Cover ────────────────────────────────────────────────────────────────────
 function buildCover(answers: AssessmentAnswers, recommendation: RecommendationResult, dateStr: string, logoBase64: string): string {
   const diff = recommendation.primary.pct - recommendation.secondary.pct;
-  const confLabel = diff >= 30 ? 'STRONG' : diff >= 15 ? 'MODERATE' : 'LOW';
+  const sepLabel = diff > 15 ? 'STRONG RECOMMENDATION' : diff >= 10 ? 'MODERATE RECOMMENDATION' : 'LOW SEPARATION';
   const bullets = getReasoningBullets(answers, recommendation).slice(0, 4);
-  const rationale = clean(generateStrategicRationale(recommendation, answers));
 
   const bulletItems = bullets.map((b, i) =>
     `<li>${i + 1}. ${esc(clean(b))}</li>`
   ).join('');
+
+  const contextLine = [answers.projectName, answers.geography].filter(Boolean).join(', ');
 
   return `
   <div class="cover-section">
@@ -95,8 +96,7 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
         <div class="cover-title">${esc(answers.projectName || 'NEXUS Assessment')}</div>
       </div>
       <div class="cover-meta">
-        <div class="mono">CONFIDENCE: ${confLabel}</div>
-        <div class="mono confidence-detail">${Math.round(recommendation.primary.pct)}% primary vs ${Math.round(recommendation.secondary.pct)}% secondary</div>
+        <div class="mono">${sepLabel}</div>
         <div class="mono">DATE: ${esc(dateStr.toUpperCase())}</div>
       </div>
     </div>
@@ -107,7 +107,7 @@ function buildCover(answers: AssessmentAnswers, recommendation: RecommendationRe
         ${esc(iLabel(recommendation.primary.paradigm))}
         <span class="strategy-secondary"> + ${esc(iLabel(recommendation.secondary.paradigm))}</span>
       </div>
-      <div class="strategy-rationale">${esc(rationale)}</div>
+      ${contextLine ? `<div class="strategy-rationale">Assessment for ${esc(contextLine)}</div>` : ''}
       <ul class="reasoning-list">${bulletItems}</ul>
     </div>
   </div>`;
@@ -210,7 +210,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
   <div class="section-meta">Region: ${esc(reg.region)}</div>
   ${riskSummary}
   <div class="reg-list">${reqs}</div>
-  <div class="legal-disclaimer">Legal Disclaimer: ${esc(clean(reg.disclaimer))}</div>`;
+  <div class="legal-disclaimer">ACADEMIC FRAMEWORK DISCLAIMER: ${esc(clean(reg.disclaimer))}</div>`;
 }
 
 // ─── Sustainability ──────────────────────────────────────────────────────────
