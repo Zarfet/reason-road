@@ -100,6 +100,19 @@ export type ExistingEcosystem = 'Yes: users already own devices or tools that ha
 export type InteractionInitiation = 'User-initiated: system only responds when asked' | 'System-initiated: proactively interrupts or assists without being asked' | 'Both: system can interrupt AND user can ask';
 
 /**
+ * Product constraints that map to documented failure patterns
+ * Multi-select field — users can choose multiple
+ */
+export type ProductConstraints = 
+  | 'always-on'
+  | 'ecosystem-abandonment'
+  | 'voice-only'
+  | 'hardware-limitations'
+  | 'narrow-demographic'
+  | 'biometric-data'
+  | 'none';
+
+/**
  * Geographic deployment region
  * Affects regulatory requirements
  */
@@ -135,6 +148,7 @@ export interface AssessmentAnswers {
   deviceType: DeviceType | null;
   existingEcosystem: ExistingEcosystem | null;
   interactionInitiation: InteractionInitiation | null;
+  productConstraints: ProductConstraints[];
 }
 
 /**
@@ -226,6 +240,7 @@ export type WizardStep =
   | 'product-type'
   | 'ecosystem'
   | 'initiation'
+  | 'constraints'
   | 'geography'
   | 'review';
 
@@ -247,6 +262,7 @@ export const WIZARD_STEPS: WizardStep[] = [
   'product-type',
   'ecosystem',
   'initiation',
+  'constraints',
   'geography',
   'review',
 ];

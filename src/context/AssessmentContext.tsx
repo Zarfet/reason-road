@@ -91,6 +91,7 @@ const initialAnswers: AssessmentAnswers = {
   deviceType: null,
   existingEcosystem: null,
   interactionInitiation: null,
+  productConstraints: [],
 };
 
 const AssessmentContext = createContext<AssessmentContextType | undefined>(undefined);
@@ -155,6 +156,8 @@ export function AssessmentProvider({ children }: { children: React.ReactNode }) 
           return answers.existingEcosystem !== null;
         case 'initiation':
           return answers.interactionInitiation !== null;
+        case 'constraints':
+          return true; // Optional step — always allow proceeding
         case 'geography':
           return answers.geography !== null;
         case 'review':

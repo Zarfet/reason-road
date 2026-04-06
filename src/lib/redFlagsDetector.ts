@@ -542,6 +542,163 @@ export function detectRedFlags(
       affectedParadigms: ['spatial', 'ai_vectorial', 'traditional_screen']
     });
   }
+
+  // =============================================
+  // 12. INTENT PREDICTION FAILURE (Clippy)
+  // =============================================
+  
+  if (answers.interactionInitiation === 'System-initiated: proactively interrupts or assists without being asked' &&
+      answers.predictability === 'Varies within known patterns' &&
+      answers.taskComplexity === 'Medium') {
+    flags.push({
+      id: 'intent-prediction-failure',
+      severity: 'high',
+      category: 'contradiction',
+      title: 'Intent Prediction Risk: System Cannot Reliably Anticipate Variable Tasks',
+      description: 'The system initiates interactions proactively, but tasks vary in unpredictable ways. Automated intent prediction fails frequently when task patterns are inconsistent, producing irrelevant or incorrect suggestions.',
+      impact: 'Users spend more time dismissing incorrect suggestions than benefiting from correct ones. Productivity loss exceeds productivity gain. Users disable the feature entirely.',
+      evidence: 'Clippy (1997-2007): proactive intent prediction failed consistently for variable office tasks. Users found suggestions irrelevant or obvious, spending more time dismissing than benefiting (Baym et al., 2019).',
+      citation: getRedFlagCitation('AUTOMATION_REJECTION'),
+      mitigation: [
+        'Switch to user-initiated model: system only suggests when explicitly asked',
+        'If proactive: limit to highly predictable, identical tasks only',
+        'Implement confidence threshold: only suggest when prediction confidence >85%',
+        'Allow users to train the system by rating suggestion relevance',
+        'Default proactive suggestions to off — opt-in model'
+      ],
+      affectedParadigms: ['invisible', 'ai_vectorial']
+    });
+  }
+
+  // =============================================
+  // 13. BATTERY AND THERMAL CONSTRAINTS (Humane AI Pin, Glass)
+  // =============================================
+  
+  if (answers.productConstraints?.includes('always-on') &&
+      answers.deviceType === 'Dedicated hardware' &&
+      answers.frequency === 'Multiple times daily') {
+    flags.push({
+      id: 'battery-thermal-constraint',
+      severity: 'high',
+      category: 'adoption',
+      title: 'Hardware Constraint: Always-On Device Conflicts with All-Day Usage Pattern',
+      description: 'Always-on hardware with multiple daily interactions requires sustained power and thermal management. Current wearable and IoT hardware cannot maintain performance across a full day of active use.',
+      impact: 'Users experience device shutdowns, overheating, and forced charging breaks during active use. Device reliability undermines trust and abandonment follows.',
+      evidence: 'Humane AI Pin (2024): required charging every 2-4 hours and overheated during normal use, making all-day wearability impossible (Pierce, 2024). Google Glass: 2-3 hour battery life during active use (Bilton, 2015).',
+      citation: getRedFlagCitation('TRUST_IN_AUTOMATION'),
+      mitigation: [
+        'Benchmark battery life under realistic all-day usage conditions, not demo conditions',
+        'Design low-power standby modes that activate between interactions',
+        'Communicate battery limitations clearly in product marketing',
+        'Provide charging solutions that integrate with daily routines',
+        'Consider tethered or modular battery alternatives'
+      ],
+      affectedParadigms: ['spatial', 'invisible', 'ai_vectorial']
+    });
+  }
+
+  // =============================================
+  // 14. ECOSYSTEM SWITCHING COST (Fire Phone)
+  // =============================================
+  
+  if (answers.productConstraints?.includes('ecosystem-abandonment') &&
+      answers.existingEcosystem === 'Yes: users already own devices or tools that handle this') {
+    flags.push({
+      id: 'ecosystem-switching-cost',
+      severity: 'critical',
+      category: 'adoption',
+      title: 'Ecosystem Lock-In: Switching Costs Prohibitive for Existing Platform Users',
+      description: 'Users must abandon their existing platform ecosystem (apps, data, workflows, contacts) to adopt this product. Switching costs — financial, cognitive, and social — create a near-insurmountable adoption barrier when no compelling advantage exists.',
+      impact: 'Users will not switch without a revolutionary, measurable advantage over their existing solution. Incremental improvements are insufficient to justify ecosystem abandonment.',
+      evidence: 'Amazon Fire Phone (2014, €170M): users already invested in iOS/Android apps, data, and workflows refused to switch for 3D gesture features. "No compelling reason to abandon existing ecosystem" (Luckerson, 2014; Venkatesh & Davis, 2000).',
+      citation: getRedFlagCitation('DIGITAL_DIVIDE'),
+      mitigation: [
+        'REQUIRED: Identify one specific capability that is measurably 10x better than existing platform',
+        'Provide migration tools that preserve user data, contacts, and key workflows',
+        'Consider cross-platform strategy: deliver value without requiring ecosystem switch',
+        'Run switching cost analysis: what do users lose vs what do they gain?',
+        'Historical precedent: Windows Phone, BlackBerry 10, and WebOS all failed against iOS/Android duopoly'
+      ],
+      affectedParadigms: ['traditional_screen', 'ai_vectorial', 'voice']
+    });
+  }
+
+  // =============================================
+  // 15. VOICE-ONLY MODALITY MISMATCH (Humane AI Pin)
+  // =============================================
+  
+  if (answers.productConstraints?.includes('voice-only') &&
+      answers.taskComplexity === 'Medium') {
+    flags.push({
+      id: 'voice-only-modality-mismatch',
+      severity: 'critical',
+      category: 'contradiction',
+      title: 'Modality Mismatch: Voice-Only Interface Insufficient for Medium-Complexity Tasks',
+      description: 'Voice-only interaction forces users to complete medium-complexity tasks without visual feedback, verification, or correction. Tasks involving multiple steps, data review, or output confirmation cannot be reliably completed through audio alone.',
+      impact: 'Users experience frustration when tasks require visual confirmation. Errors go undetected. Users revert to smartphone for tasks the product was designed to replace.',
+      evidence: 'Humane AI Pin (2024): screenless design forced voice-only interactions for tasks that genuinely needed visual feedback, creating frustration rather than convenience (Pierce, 2024).',
+      citation: getRedFlagCitation('AUTOMATION_SURPRISE'),
+      mitigation: [
+        'Audit all use cases: identify which require visual output or confirmation',
+        'Add minimal display for output verification (even small screen or projection)',
+        'Design audio confirmation patterns for each task type',
+        'Consider hybrid approach: voice input, visual output',
+        'Critical test: can a user complete every core task eyes-free, hands-free, without error?'
+      ],
+      affectedParadigms: ['voice', 'invisible', 'ai_vectorial']
+    });
+  }
+
+  // =============================================
+  // 16. PRICE AND ACCESSIBILITY BARRIER (Google Glass)
+  // =============================================
+  
+  if (answers.productConstraints?.includes('narrow-demographic')) {
+    flags.push({
+      id: 'accessibility-price-barrier',
+      severity: 'high',
+      category: 'adoption',
+      title: 'Accessibility Barrier: Price or Complexity Excludes Majority of Target Market',
+      description: 'Product price point or technical requirements limit adoption to a narrow demographic, reducing total addressable market and creating perception of exclusivity that may generate negative publicity.',
+      impact: 'Small addressable market limits revenue potential. High-profile launches with narrow reach generate disproportionate criticism. Enterprise pivot may be required.',
+      evidence: 'Google Glass (2013, $1,500): price point limited adoption to wealthy early adopters, generating "tech elite" criticism. Enterprise pivot to controlled environments was the only viable path (Bilton, 2015).',
+      citation: getRedFlagCitation('VR_AGE_BARRIER'),
+      mitigation: [
+        'Define minimum viable price point for target demographic',
+        'Consider tiered pricing or subscription model to lower entry barrier',
+        'Identify enterprise/professional market where price is justified by ROI',
+        'Run willingness-to-pay research before hardware investment',
+        'Plan consumer version roadmap with lower price point if enterprise-first'
+      ],
+      affectedParadigms: ['spatial', 'ai_vectorial', 'traditional_screen']
+    });
+  }
+
+  // =============================================
+  // 17. BIOMETRIC DATA AND REGULATORY RISK (Google Glass)
+  // =============================================
+  
+  if (answers.productConstraints?.includes('biometric-data') &&
+      answers.contextOfUse === 'Social situations') {
+    flags.push({
+      id: 'biometric-regulatory-risk',
+      severity: 'critical',
+      category: 'regulatory',
+      title: 'Regulatory Risk: Passive Biometric Capture in Public Contexts',
+      description: 'Product captures biometric or facial data passively in social situations. This creates significant legal exposure under GDPR, CCPA, BIPA (Illinois), and emerging facial recognition laws. Bystanders have no opportunity to consent.',
+      impact: 'Regulatory action, class action lawsuits, and forced product withdrawal. Multiple jurisdictions have enacted or are enacting facial recognition bans in public spaces.',
+      evidence: 'Google Glass (2013): facial recognition capabilities raised immediate legal and ethical questions. Multiple US states and EU regulators flagged Glass as potential privacy law violation before consumer launch (Hoy, 2014).',
+      citation: getRedFlagCitation('AI_ACT_PENALTIES'),
+      mitigation: [
+        'REQUIRED: Conduct legal review in every target market before launch',
+        'Implement explicit opt-in for any biometric capture — no passive collection',
+        'Add visible, unmistakable recording indicator (light, sound, physical switch)',
+        'Consider removing biometric capabilities entirely for consumer version',
+        'Monitor GDPR Article 9, CCPA, and BIPA compliance requirements'
+      ],
+      affectedParadigms: ['spatial', 'invisible']
+    });
+  }
   // =============================================
   // CALCULATE SUMMARY STATS
   // =============================================
