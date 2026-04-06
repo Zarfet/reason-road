@@ -27,6 +27,7 @@ const STEP_NAMES: Record<WizardStep, string> = {
   'product-type': 'Product Type',
   'ecosystem': 'Existing Ecosystem',
   'initiation': 'Interaction Initiation',
+  'constraints': 'Product Constraints',
   'geography': 'Geography',
   'review': 'Review'
 };

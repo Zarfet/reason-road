@@ -24,7 +24,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Full control',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -59,7 +61,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Automatic',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -91,7 +95,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Full control',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -123,7 +129,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Automatic',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -155,7 +163,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Full control',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -190,7 +200,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Supervised',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -232,7 +244,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Automatic',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scoresSimple = calculateScores(answersSimple);
@@ -260,7 +274,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Automatic',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -287,7 +303,9 @@ describe('Demographics Scoring', () => {
       controlPreference: 'Full control',
       deviceType: null,
       existingEcosystem: null,
-      interactionInitiation: null
+      interactionInitiation: null,
+      productConstraints: [],
+      productConstraints: []
     };
 
     const scores = calculateScores(answers);

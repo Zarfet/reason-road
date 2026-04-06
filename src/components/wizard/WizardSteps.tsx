@@ -22,6 +22,7 @@ import type {
   DeviceType,
   ExistingEcosystem,
   InteractionInitiation,
+  ProductConstraints,
   GeographicDeployment 
 } from '@/types/assessment';
 
