@@ -39,10 +39,16 @@ export function ActionsTab({ onDownloadPDF, onDownloadBrief, onStartOver, savedA
           <p className="text-sm text-muted-foreground mb-4">
             Get a detailed PDF report with all recommendations, reasoning, and implementation guidance.
           </p>
-          <Button onClick={onDownloadPDF} className="w-full gap-2 border-border hover:bg-secondary" variant="outline">
-            <Download className="h-4 w-4" />
-            Download PDF Report
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={onDownloadPDF} className="flex-1 gap-2 border-border hover:bg-secondary" variant="outline">
+              <Download className="h-4 w-4" />
+              Download Report
+            </Button>
+            <Button onClick={onDownloadBrief} className="flex-1 gap-2 border-border hover:bg-secondary" variant="outline">
+              <FileBadge className="h-4 w-4" />
+              Executive Brief
+            </Button>
+          </div>
         </motion.div>
       </BentoBox>
 
