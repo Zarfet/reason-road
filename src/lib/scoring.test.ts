@@ -26,7 +26,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -63,7 +62,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -97,7 +95,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -131,7 +128,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -165,7 +161,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -202,7 +197,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -246,7 +240,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scoresSimple = calculateScores(answersSimple);
@@ -276,7 +269,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
@@ -305,7 +297,6 @@ describe('Demographics Scoring', () => {
       existingEcosystem: null,
       interactionInitiation: null,
       productConstraints: [],
-      productConstraints: []
     };
 
     const scores = calculateScores(answers);
