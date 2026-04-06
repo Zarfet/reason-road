@@ -77,9 +77,10 @@ export default function SharedResults() {
           return;
         }
 
+        const responses = data.responses as unknown as AssessmentAnswers;
         setAssessment({
           id: data.id,
-          responses: data.responses as unknown as AssessmentAnswers,
+          responses: { ...responses, productConstraints: responses.productConstraints ?? [] },
           paradigm_results: data.paradigm_results as unknown as RecommendationResult,
           created_at: data.created_at,
         });
