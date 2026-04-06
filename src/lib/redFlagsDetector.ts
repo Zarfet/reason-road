@@ -387,10 +387,12 @@ export function detectRedFlags(
   console.log('interactionInitiation value:', answers.interactionInitiation);
 
   const isWearableContext = 
-    answers.userDemographics.toLowerCase().includes('wearable') ||
-    answers.userDemographics.toLowerCase().includes('ar glasses') ||
-    answers.userDemographics.toLowerCase().includes('headset') ||
-    answers.userDemographics.toLowerCase().includes('head-mounted') ||
+    (answers.userDemographics.toLowerCase().includes('wearable') ||
+     answers.userDemographics.toLowerCase().includes('ar glasses') ||
+     answers.userDemographics.toLowerCase().includes('headset') ||
+     answers.userDemographics.toLowerCase().includes('head-mounted')) &&
+     answers.interactionInitiation !== 'User-initiated: system only responds when asked'
+    ||
     (recommendation.allScores.spatial > 5 &&
      answers.contextOfUse === 'Social situations' &&
      answers.interactionInitiation !== 'User-initiated: system only responds when asked') ||
