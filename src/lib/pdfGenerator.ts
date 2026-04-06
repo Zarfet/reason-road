@@ -913,11 +913,9 @@ function buildBriefAlternatives(recommendation: RecommendationResult): string {
   const primaryKey = recommendation.primary.paradigm;
   const others = allKeys
     .filter(k => k !== primaryKey)
-    .map(k => ({ key: k, pct: Math.round((recommendation.allScores as Record<string, number>)[k]) }))
+    .map(k => ({ key: k, pct: Math.round((recommendation.allScores as unknown as Record<string, number>)[k]) }))
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 4);
-
-  const avoidKeys = recommendation.avoid ? recommendation.avoid.map((a: { paradigm: string }) => a.paradigm) : [];
 
   const rows = others.map(o => {
     let reason: string;
