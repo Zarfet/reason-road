@@ -82,7 +82,7 @@ export function ResultsHero({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <span className="nexus-badge-success px-4 py-1.5 text-xs font-semibold tracking-wider uppercase">
+          <span className="nexus-badge-success px-4 py-1.5 text-xs font-semibold tracking-wider uppercase gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-success" />
             Recommended Strategy
           </span>
