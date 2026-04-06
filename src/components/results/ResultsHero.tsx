@@ -18,6 +18,7 @@ interface ResultsHeroProps {
   confidenceLevel?: number;
   strategicRationale?: string;
   reasoningBullets?: string[];
+  geography?: string;
 }
 
 const paradigmIcons: Record<keyof ParadigmScores, React.ReactNode> = {
@@ -54,10 +55,16 @@ export function ResultsHero({
   confidenceLevel,
   strategicRationale,
   reasoningBullets = [],
+  geography,
 }: ResultsHeroProps) {
-  const subtitle = [projectName, userDemographics]
-    .filter(Boolean)
-    .join(' for ');
+  const gap = primaryPct - secondaryPct;
+  const separationLabel = gap > 15 ? 'Strong recommendation' : gap >= 10 ? 'Moderate recommendation' : 'Low separation';
+  const separationSubtext = gap > 15
+    ? 'Context clearly favors this interface type.'
+    : gap >= 10
+    ? 'Context shows some alignment with alternatives.'
+    : 'Multiple interface types score similarly. Review inputs for clarity.';
+  const contextLine = [projectName, geography].filter(Boolean).join(', ');
 
   const breakdownItems = [
     { paradigm: primaryParadigm, pct: primaryPct },
@@ -94,14 +101,14 @@ export function ResultsHero({
           )}
         </motion.h1>
 
-        {subtitle && (
+        {contextLine && (
           <motion.p
             className="text-muted-foreground text-lg text-center mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Best fit for {subtitle}
+            Assessment for {contextLine}
           </motion.p>
         )}
 
@@ -131,52 +138,42 @@ export function ResultsHero({
           ))}
         </motion.div>
 
-        {/* Confidence Level */}
-        {confidenceLevel !== undefined && (
-          <motion.div
-            className="flex flex-col items-center gap-2 mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground text-sm font-mono">Confidence:</span>
-              <span className="font-mono font-bold text-lg tracking-tight text-foreground">
-                {confidenceLevel}%
-              </span>
-            </div>
-            <p className="text-muted-foreground text-xs max-w-md text-center font-mono">
-              Based on response consistency and score differentiation
-            </p>
-          </motion.div>
-        )}
+        {/* Score Separation */}
+        <motion.div
+          className="flex flex-col items-center gap-2 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <span className="font-mono font-bold text-lg tracking-tight text-foreground">
+              {separationLabel}
+            </span>
+          </div>
+          <p className="text-muted-foreground text-xs max-w-md text-center font-mono">
+            {separationSubtext}
+          </p>
+        </motion.div>
 
-        {/* Strategic Rationale */}
-        {(strategicRationale || reasoningBullets.length > 0) && (
+        {/* Reasoning Bullets (no prose rationale) */}
+        {reasoningBullets.length > 0 && (
           <motion.div
             className="mt-8 pt-8 border-t border-border max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            {strategicRationale && (
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed text-center mb-6">
-                {renderBold(strategicRationale)}
-              </p>
-            )}
-            {reasoningBullets.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {reasoningBullets.slice(0, 4).map((bullet, i) => (
-                  <div key={i} className="flex items-start gap-3 text-left p-3 rounded-xl border border-border bg-secondary/50">
-                    <span className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-mono font-bold flex items-center justify-center shrink-0 mt-0.5">
-                      {i + 1}
-                    </span>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{renderBold(bullet)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {reasoningBullets.slice(0, 4).map((bullet, i) => (
+                <div key={i} className="flex items-start gap-3 text-left p-3 rounded-xl border border-border bg-secondary/50">
+                  <span className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-mono font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{renderBold(bullet)}</p>
+                </div>
+              ))}
+            </div>
           </motion.div>
         )}
       </div>

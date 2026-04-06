@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 
 import { StepIndicator } from '@/components/results/StepIndicator';
 import { ResultsHero } from '@/components/results/ResultsHero';
-import { generateStrategicRationale } from '@/components/results/tabs/OverviewTab';
+
 import { AnalysisTab } from '@/components/results/tabs/AnalysisTab';
 import { ImpactTab } from '@/components/results/tabs/ImpactTab';
 import { ResearchTab } from '@/components/results/tabs/ResearchTab';
@@ -114,8 +114,8 @@ export default function Results() {
           projectName={answers.projectName}
           userDemographics={answers.userDemographics}
           confidenceLevel={confidenceLevel}
-          strategicRationale={generateStrategicRationale(recommendation, answers)}
           reasoningBullets={reasoningBullets}
+          geography={answers.geography}
         />
       </div>
 

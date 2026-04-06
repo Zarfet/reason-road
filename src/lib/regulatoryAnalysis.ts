@@ -524,7 +524,7 @@ export function generateRegulatoryAnalysis(
     preLaunchBlockers,
     officialGuidance,
     recommendations,
-    disclaimer: '⚠️ ACADEMIC FRAMEWORK DISCLAIMER: This analysis identifies potentially applicable regulations based on interface design patterns and regulatory text. It does NOT constitute legal advice, cost estimates, or implementation timelines. Actual compliance requirements vary by jurisdiction, organizational context, data processing activities, and legal interpretation. Consult qualified legal counsel and data protection officers for production systems.',
+    disclaimer: 'ACADEMIC FRAMEWORK DISCLAIMER: This analysis identifies potentially applicable regulations based on interface design patterns and regulatory text. It does NOT constitute legal advice, cost estimates, or implementation timelines. Actual compliance requirements vary by jurisdiction, organizational context, data processing activities, and legal interpretation. Consult qualified legal counsel and data protection officers for production systems.',
   };
 }
 
