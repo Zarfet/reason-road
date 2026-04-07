@@ -28,6 +28,7 @@ import {
   type RecommendationResult,
 } from '@/types/assessment';
 import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/lib/scoring';
+import { detectRedFlags } from '@/lib/redFlagsDetector';
 import { generatePDFReport, generateExecutiveBrief } from '@/lib/pdfGenerator';
 
 // Results components
@@ -126,6 +127,8 @@ export default function SavedResults() {
   const reasoningBullets = getReasoningBullets(answers, recommendation);
   const redFlags = getRedFlags(answers, recommendation);
   const confidenceLevel = calculateConfidenceLevel(answers, recommendation);
+  const redFlagsReport = detectRedFlags(answers, recommendation);
+  const flagIds = redFlagsReport?.flags?.map((f) => f.id) || [];
 
   const handleDownloadPDF = async () => {
     await generatePDFReport({ 
@@ -241,6 +244,7 @@ export default function SavedResults() {
               <ResearchTab
                 paradigm={recommendation.primary.paradigm}
                 userDemographics={answers.userDemographics}
+                flagIds={flagIds}
               />
             </TabsContent>
 

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAssessment } from '@/context/AssessmentContext';
 import { getReasoningBullets, getRedFlags, calculateConfidenceLevel } from '@/lib/scoring';
+import { detectRedFlags } from '@/lib/redFlagsDetector';
 import { generatePDFReport, generateExecutiveBrief } from '@/lib/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 
@@ -64,6 +65,8 @@ export default function Results() {
   const reasoningBullets = getReasoningBullets(answers, recommendation);
   const redFlags = getRedFlags(answers, recommendation);
   const confidenceLevel = calculateConfidenceLevel(answers, recommendation);
+  const redFlagsReport = detectRedFlags(answers, recommendation);
+  const flagIds = redFlagsReport?.flags?.map((f) => f.id) || [];
 
   const handleStartOver = () => {
     resetAssessment();
@@ -160,7 +163,7 @@ export default function Results() {
               <ImpactTab recommendation={recommendation} answers={answers} />
             </TabsContent>
             <TabsContent value="research">
-              <ResearchTab paradigm={recommendation.primary.paradigm} userDemographics={answers.userDemographics} />
+              <ResearchTab paradigm={recommendation.primary.paradigm} userDemographics={answers.userDemographics} flagIds={flagIds} />
             </TabsContent>
             <TabsContent value="actions">
               <ActionsTab onDownloadPDF={handleDownloadPDF} onDownloadBrief={handleDownloadBrief} onStartOver={handleStartOver} savedAssessmentId={savedAssessmentId} />
