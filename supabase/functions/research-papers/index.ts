@@ -70,7 +70,7 @@ serve(async (req) => {
     console.log(`Authenticated user: ${userId}`);
 
     const body = await req.json();
-    const { paradigm, userDemographics, detectedFlags } = body;
+    const { paradigm, userDemographics, detectedFlags, topValue } = body;
 
     // Input validation
     if (!paradigm || typeof paradigm !== "string") {
@@ -104,8 +104,20 @@ serve(async (req) => {
 
     const sanitizedParadigm = paradigm.replace(/[\n\r]/g, " ").trim();
 
+    // Human-readable paradigm labels
+    const PARADIGM_LABELS: Record<string, string> = {
+      traditional_screen: "Traditional Screen-Based",
+      invisible: "Invisible / Ambient",
+      ai_vectorial: "AI Conversational",
+      spatial: "Spatial / AR",
+      voice: "Voice-First",
+    };
+
     // Build prompt with optional flag enrichment
     const baseQuery = PARADIGM_QUERIES[sanitizedParadigm] || PARADIGM_QUERIES["traditional_screen"];
+    const paradigmLabel = PARADIGM_LABELS[sanitizedParadigm] || "Traditional Screen-Based";
+    const safeTopValue = (typeof topValue === "string" ? topValue : "User Control").replace(/[\n\r]/g, " ").trim().slice(0, 100);
+    const safeDemographics = (typeof userDemographics === "string" ? userDemographics : "general users").replace(/[\n\r]/g, " ").trim().slice(0, 500);
     const flagIds: string[] = Array.isArray(detectedFlags) ? detectedFlags : [];
     const enrichments = flagIds
       .filter((id: string) => typeof id === "string" && FLAG_ENRICHMENTS[id])
@@ -113,19 +125,22 @@ serve(async (req) => {
       .slice(0, 2)
       .join(" ");
 
-    const prompt = `Use Google Search to find 5 real peer-reviewed papers about ${baseQuery.replace(/^Search Google Scholar for 5 real peer-reviewed papers about /, "")}${enrichments ? " " + enrichments : ""} For each paper you find, verify it exists by confirming its DOI on doi.org, ACM Digital Library, or IEEE Xplore. Only include papers with a confirmed DOI that starts with 10. Do not invent citations. Return fewer than 5 if needed.
+    const paradigmQuery = baseQuery.replace(/^Search Google Scholar for 5 real peer-reviewed papers about /, "");
 
-Return as JSON array only:
-[
-  {
-    "title": "exact title",
-    "authors": "Author A, Author B",
-    "year": 2019,
-    "venue": "journal name",
-    "abstract": "one sentence summary",
-    "doi": "10.xxxx/xxxxx"
-  }
-]`;
+    const prompt = `Use Google Search to find 5 real peer-reviewed papers about ${paradigmQuery}${enrichments ? " " + enrichments : ""} For each paper you find, verify it exists by confirming its DOI on doi.org, ACM Digital Library, or IEEE Xplore. Only include papers with a confirmed DOI that starts with 10. Do not invent citations. Return fewer than 5 if needed.
+
+The papers are for a user whose top design value is ${safeTopValue} and who is building a ${paradigmLabel} interface for: ${safeDemographics}.
+
+For each verified paper return:
+- title: exact title as published
+- authors: last name, first initial format
+- year
+- venue: journal or conference name
+- abstract: one sentence summary of main finding
+- relevance: one sentence explaining specifically why this paper supports ${paradigmLabel} interfaces for users who prioritize ${safeTopValue} in this specific context
+- doi: confirmed DOI starting with 10.
+
+Return as JSON array only.`;
 
     console.log(`Calling Google AI Studio for paradigm: ${sanitizedParadigm}`);
 

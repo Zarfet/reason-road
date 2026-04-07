@@ -30,6 +30,7 @@ interface ResearchPanelProps {
   paradigm: string;
   userDemographics?: string;
   flagIds?: string[];
+  topValue?: string;
 }
 
 // Cache key generator
@@ -80,7 +81,7 @@ function setCachedPapers(paradigm: string, userDemographics: string | undefined,
   }
 }
 
-export function ResearchPanel({ paradigm, userDemographics, flagIds }: ResearchPanelProps) {
+export function ResearchPanel({ paradigm, userDemographics, flagIds, topValue }: ResearchPanelProps) {
   const [papers, setPapers] = useState<ResearchPaper[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +105,7 @@ export function ResearchPanel({ paradigm, userDemographics, flagIds }: ResearchP
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('research-papers', {
-        body: { paradigm, userDemographics, detectedFlags: flagIds || [] },
+        body: { paradigm, userDemographics, detectedFlags: flagIds || [], topValue: topValue || 'User Control' },
       });
 
       if (fnError) {

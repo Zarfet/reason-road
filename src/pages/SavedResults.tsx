@@ -245,6 +245,7 @@ export default function SavedResults() {
                 paradigm={recommendation.primary.paradigm}
                 userDemographics={answers.userDemographics}
                 flagIds={flagIds}
+                topValue={answers.valuesRanking?.[0] || 'User Control'}
               />
             </TabsContent>
 
