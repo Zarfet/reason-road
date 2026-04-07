@@ -163,7 +163,7 @@ export default function Results() {
               <ImpactTab recommendation={recommendation} answers={answers} />
             </TabsContent>
             <TabsContent value="research">
-              <ResearchTab paradigm={recommendation.primary.paradigm} userDemographics={answers.userDemographics} flagIds={flagIds} />
+              <ResearchTab paradigm={recommendation.primary.paradigm} userDemographics={answers.userDemographics} flagIds={flagIds} topValue={answers.valuesRanking?.[0] || 'User Control'} />
             </TabsContent>
             <TabsContent value="actions">
               <ActionsTab onDownloadPDF={handleDownloadPDF} onDownloadBrief={handleDownloadBrief} onStartOver={handleStartOver} savedAssessmentId={savedAssessmentId} />

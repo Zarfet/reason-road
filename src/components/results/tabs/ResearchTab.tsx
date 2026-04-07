@@ -15,9 +15,10 @@ interface ResearchTabProps {
   paradigm: keyof ParadigmScores;
   userDemographics?: string;
   flagIds?: string[];
+  topValue?: string;
 }
 
-export function ResearchTab({ paradigm, userDemographics, flagIds }: ResearchTabProps) {
+export function ResearchTab({ paradigm, userDemographics, flagIds, topValue }: ResearchTabProps) {
   return (
     <div className="space-y-6 mt-6">
       <Accordion type="multiple" defaultValue={['research', 'cases']} className="space-y-0">
@@ -38,7 +39,7 @@ export function ResearchTab({ paradigm, userDemographics, flagIds }: ResearchTab
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4">
-              <ResearchPanel paradigm={paradigm} userDemographics={userDemographics} flagIds={flagIds} />
+              <ResearchPanel paradigm={paradigm} userDemographics={userDemographics} flagIds={flagIds} topValue={topValue} />
             </div>
           </AccordionContent>
         </AccordionItem>
