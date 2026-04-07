@@ -219,7 +219,7 @@ export function ResearchPanel({ paradigm, userDemographics, flagIds }: ResearchP
                     <p className="text-xs text-foreground/80 mb-2">
                       {paper.abstract}
                     </p>
-                    <p className="text-xs text-accent">
+                    <p className="text-xs text-muted-foreground">
                       → {paper.relevance}
                     </p>
                   </div>
