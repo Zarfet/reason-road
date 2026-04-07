@@ -3,7 +3,7 @@
  * 
  * Features:
  * - LocalStorage cache to avoid refetching
- * - AI-generated paper suggestions
+ * - Gemini with Google Search grounding for verified papers
  * - External links via window.open() for preview compatibility
  */
 
@@ -21,11 +21,15 @@ interface ResearchPaper {
   venue: string;
   abstract: string;
   relevance: string;
+  doi?: string | null;
+  url?: string;
+  source?: string;
 }
 
 interface ResearchPanelProps {
   paradigm: string;
   userDemographics?: string;
+  flagIds?: string[];
 }
 
 // Cache key generator
@@ -76,7 +80,7 @@ function setCachedPapers(paradigm: string, userDemographics: string | undefined,
   }
 }
 
-export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps) {
+export function ResearchPanel({ paradigm, userDemographics, flagIds }: ResearchPanelProps) {
   const [papers, setPapers] = useState<ResearchPaper[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +104,7 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('research-papers', {
-        body: { paradigm, userDemographics },
+        body: { paradigm, userDemographics, detectedFlags: flagIds || [] },
       });
 
       if (fnError) {
@@ -124,7 +128,7 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
     } finally {
       setLoading(false);
     }
-  }, [paradigm, userDemographics]);
+  }, [paradigm, userDemographics, flagIds]);
 
   useEffect(() => {
     fetchResearch();
@@ -134,9 +138,11 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
     fetchResearch(true);
   };
 
-  const handleOpenScholar = (title: string) => {
-    const searchUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
-    window.open(searchUrl, '_blank', 'noopener,noreferrer');
+  const handleOpenPaper = (paper: ResearchPaper) => {
+    const target = paper.url
+      || (paper.doi ? `https://doi.org/${paper.doi}` : null)
+      || `https://scholar.google.com/scholar?q=${encodeURIComponent(paper.title)}`;
+    window.open(target, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -219,9 +225,9 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleOpenScholar(paper.title)}
+                    onClick={() => handleOpenPaper(paper)}
                     className="shrink-0 mt-0.5 p-1.5 rounded hover:bg-accent/10 transition-colors cursor-pointer"
-                    title="Search on Google Scholar"
+                    title="View paper"
                   >
                     <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-accent" />
                   </button>
@@ -230,7 +236,7 @@ export function ResearchPanel({ paradigm, userDemographics }: ResearchPanelProps
             ))}
             
             <p className="text-xs text-muted-foreground text-center pt-2 italic">
-              AI-generated suggestions based on your paradigm context. These are not sourced from a curated database—verify citations via Google Scholar links.
+              Papers retrieved from Google Scholar via Gemini search grounding. Click the external link icon to view and verify each paper.
             </p>
           </div>
         )}

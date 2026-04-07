@@ -14,9 +14,10 @@ import type { ParadigmScores } from '@/types/assessment';
 interface ResearchTabProps {
   paradigm: keyof ParadigmScores;
   userDemographics?: string;
+  flagIds?: string[];
 }
 
-export function ResearchTab({ paradigm, userDemographics }: ResearchTabProps) {
+export function ResearchTab({ paradigm, userDemographics, flagIds }: ResearchTabProps) {
   return (
     <div className="space-y-6 mt-6">
       <Accordion type="multiple" defaultValue={['research', 'cases']} className="space-y-0">
@@ -28,16 +29,16 @@ export function ResearchTab({ paradigm, userDemographics }: ResearchTabProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground">Supporting Research</p>
-                <p className="text-xs text-muted-foreground font-mono">Peer-reviewed papers curated by AI</p>
+                <p className="text-xs text-muted-foreground font-mono">Peer-reviewed papers retrieved via Google Search</p>
               </div>
               <Badge variant="outline" className="text-[10px] font-mono font-semibold uppercase tracking-wider mr-2 border-border text-muted-foreground">
-                AI Curated
+                Google Scholar
               </Badge>
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <div className="pt-2 pb-4">
-              <ResearchPanel paradigm={paradigm} userDemographics={userDemographics} />
+              <ResearchPanel paradigm={paradigm} userDemographics={userDemographics} flagIds={flagIds} />
             </div>
           </AccordionContent>
         </AccordionItem>
