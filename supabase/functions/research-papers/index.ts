@@ -113,35 +113,17 @@ serve(async (req) => {
       .slice(0, 2)
       .join(" ");
 
-    const prompt = `${baseQuery}${enrichments ? " " + enrichments : ""}
+    const prompt = `Use Google Search to find 5 real peer-reviewed papers about ${baseQuery.replace(/^Search Google Scholar for 5 real peer-reviewed papers about /, "")}${enrichments ? " " + enrichments : ""} For each paper you find, verify it exists by confirming its DOI on doi.org, ACM Digital Library, or IEEE Xplore. Only include papers with a confirmed DOI that starts with 10. Do not invent citations. Return fewer than 5 if needed.
 
-For each paper return exactly:
-- Title (exact title as published)
-- Authors (last name, first initial format)
-- Year
-- Journal or conference name
-- One sentence summary of the main finding relevant to interface design
-- DOI (required — only include papers with a confirmed DOI)
-
-Rules:
-- Only return papers you can verify exist through Google Search right now
-- Only include papers that have a confirmed DOI — exclude any paper without one
-- Do not invent or fabricate any citation
-- Focus on HCI, UX, and design research — not robotics, medicine, or networking
-- Return 3 to 5 papers maximum
-- Return as a JSON array only, no other text
-
-JSON format:
+Return as JSON array only:
 [
   {
     "title": "exact title",
     "authors": "Author A, Author B",
     "year": 2019,
-    "venue": "journal or conference name",
+    "venue": "journal name",
     "abstract": "one sentence summary",
-    "relevance": "why this paper supports the recommended interface type",
-    "doi": "10.xxxx/xxxxx",
-    "url": "https://doi.org/10.xxxx/xxxxx"
+    "doi": "10.xxxx/xxxxx"
   }
 ]`;
 
@@ -190,9 +172,9 @@ JSON format:
       papers = [];
     }
 
-    // Filter: only papers with confirmed DOI
-    const verified = papers.filter((p: { doi?: string; title?: string }) =>
-      p.doi && p.doi.length > 5 && p.title
+    // Filter: only papers with valid DOI starting with "10."
+    const verified = papers.filter((p: any) =>
+      p.doi && p.doi.startsWith("10.") && p.doi.length > 8 && p.title
     );
 
     return new Response(

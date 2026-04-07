@@ -139,10 +139,10 @@ export function ResearchPanel({ paradigm, userDemographics, flagIds }: ResearchP
   };
 
   const handleOpenPaper = (paper: ResearchPaper) => {
-    const target = paper.url
-      || (paper.doi ? `https://doi.org/${paper.doi}` : null)
-      || `https://scholar.google.com/scholar?q=${encodeURIComponent(paper.title)}`;
-    window.open(target, '_blank', 'noopener,noreferrer');
+    const url = paper.doi
+      ? `https://doi.org/${paper.doi}`
+      : `https://scholar.google.com/scholar?q=${encodeURIComponent(paper.title)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
