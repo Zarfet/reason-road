@@ -6,7 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Valid paradigm values (whitelist)
 const VALID_PARADIGMS = [
   "traditional_screen",
   "invisible",
@@ -14,6 +13,28 @@ const VALID_PARADIGMS = [
   "spatial",
   "voice",
 ];
+
+// Curated search queries per interface type
+const PARADIGM_QUERIES: Record<string, string> = {
+  traditional_screen: "Search Google Scholar for 5 real peer-reviewed papers about direct manipulation interfaces, screen-based interaction design, and user control in desktop productivity applications. Focus on HCI and UX research from ACM CHI, IJHCS, or similar venues.",
+  invisible: "Search Google Scholar for 5 real peer-reviewed papers about invisible automation, ambient computing, and user trust in background automated systems in HCI. Focus on when automation works well for users and when it fails.",
+  ai_vectorial: "Search Google Scholar for 5 real peer-reviewed papers about conversational AI interfaces, user expectations in AI assistants, and human-AI interaction design. Focus on HCI research about natural language interfaces and their limitations.",
+  spatial: "Search Google Scholar for 5 real peer-reviewed papers about augmented reality wearables, spatial computing user adoption, and social acceptability of head-mounted displays. Focus on HCI research about AR/VR user experience.",
+  voice: "Search Google Scholar for 5 real peer-reviewed papers about voice user interfaces, speech interaction design, and limitations of voice-only interfaces for complex tasks. Focus on HCI research about voice assistants and their failure modes.",
+};
+
+// Flag-specific query enrichments
+const FLAG_ENRICHMENTS: Record<string, string> = {
+  "interruption-control-violation": "Include papers about automation interruption and user control rejection.",
+  "hardware-redundancy": "Include papers about hardware adoption barriers and device redundancy.",
+  "efficiency-ai-latency": "Include papers about AI response latency and user productivity.",
+  "social-wearable-privacy": "Include papers about wearable privacy and social acceptability.",
+  "ecosystem-switching-cost": "Include papers about platform switching costs and ecosystem lock-in.",
+  "voice-only-modality-mismatch": "Include papers about voice interface limitations for visual tasks.",
+  "battery-thermal-constraint": "Include papers about wearable hardware constraints.",
+  "novelty-over-utility": "Include papers about technology novelty versus utility in adoption.",
+  "biometric-regulatory-risk": "Include papers about biometric data privacy regulations.",
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -32,16 +53,13 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-    
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
     const token = authHeader.replace("Bearer ", "");
     const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-
     if (claimsError || !claimsData?.claims) {
-      console.error("Auth error:", claimsError);
       return new Response(
         JSON.stringify({ error: "Invalid authentication" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -52,9 +70,9 @@ serve(async (req) => {
     console.log(`Authenticated user: ${userId}`);
 
     const body = await req.json();
-    const { paradigm, userDemographics } = body;
+    const { paradigm, userDemographics, detectedFlags } = body;
 
-    // Input validation: paradigm (required, must be from whitelist)
+    // Input validation
     if (!paradigm || typeof paradigm !== "string") {
       return new Response(
         JSON.stringify({ error: "Invalid paradigm parameter: required string" }),
@@ -79,97 +97,109 @@ serve(async (req) => {
       }
     }
 
-    // Sanitize inputs for prompt injection prevention
-    const sanitizedParadigm = paradigm.replace(/[\n\r]/g, " ").trim();
-    const sanitizedDemographics = userDemographics
-      ? userDemographics.replace(/[\n\r]/g, " ").trim().slice(0, 500)
-      : "general users";
-    
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const GOOGLE_AI_KEY = Deno.env.get("GOOGLE_AI_STUDIO_KEY");
+    if (!GOOGLE_AI_KEY) {
+      throw new Error("GOOGLE_AI_STUDIO_KEY is not configured");
     }
 
-    console.log(`Fetching research for paradigm: ${sanitizedParadigm}, demographics: ${sanitizedDemographics}`);
+    const sanitizedParadigm = paradigm.replace(/[\n\r]/g, " ").trim();
 
-    const systemPrompt = `You are an academic research assistant specializing in Human-Computer Interaction (HCI), User Experience (UX), and interface design. Your task is to suggest 5 relevant peer-reviewed academic papers that support a specific interface paradigm recommendation.
+    // Build prompt with optional flag enrichment
+    const baseQuery = PARADIGM_QUERIES[sanitizedParadigm] || PARADIGM_QUERIES["traditional_screen"];
+    const flagIds: string[] = Array.isArray(detectedFlags) ? detectedFlags : [];
+    const enrichments = flagIds
+      .filter((id: string) => typeof id === "string" && FLAG_ENRICHMENTS[id])
+      .map((id: string) => FLAG_ENRICHMENTS[id])
+      .slice(0, 2)
+      .join(" ");
 
-Focus on papers from reputable sources like:
-- ACM Digital Library (CHI, UIST, DIS conferences)
-- IEEE Transactions on Visualization and Computer Graphics
-- International Journal of Human-Computer Studies
-- Behaviour & Information Technology
+    const prompt = `${baseQuery}${enrichments ? " " + enrichments : ""}
 
-Provide papers from 2018-2025 when possible.`;
+For each paper return exactly:
+- Title (exact title as published)
+- Authors (last name, first initial format)
+- Year
+- Journal or conference name
+- One sentence summary of the main finding relevant to interface design
+- DOI (required — only include papers with a confirmed DOI)
 
-    const userPrompt = `Find 5 peer-reviewed academic papers that support the use of "${sanitizedParadigm}" interface paradigm for "${sanitizedDemographics}".
+Rules:
+- Only return papers you can verify exist through Google Search right now
+- Only include papers that have a confirmed DOI — exclude any paper without one
+- Do not invent or fabricate any citation
+- Focus on HCI, UX, and design research — not robotics, medicine, or networking
+- Return 3 to 5 papers maximum
+- Return as a JSON array only, no other text
 
-Return your response as a JSON array with this exact structure:
+JSON format:
 [
   {
-    "title": "Paper title",
-    "authors": "Author names",
-    "year": 2023,
-    "venue": "Conference or Journal name",
-    "abstract": "Brief 1-2 sentence summary of findings",
-    "relevance": "Why this paper supports the recommendation"
+    "title": "exact title",
+    "authors": "Author A, Author B",
+    "year": 2019,
+    "venue": "journal or conference name",
+    "abstract": "one sentence summary",
+    "relevance": "why this paper supports the recommended interface type",
+    "doi": "10.xxxx/xxxxx",
+    "url": "https://doi.org/10.xxxx/xxxxx"
   }
-]
+]`;
 
-Only return the JSON array, no other text.`;
+    console.log(`Calling Google AI Studio for paradigm: ${sanitizedParadigm}`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
+    // Call Google AI Studio directly with Google Search grounding
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          tools: [{ google_search: {} }],
+        }),
+      }
+    );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Google AI Studio error:", response.status, errorText);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Usage limit reached." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
+      throw new Error(`Google AI Studio error: ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "[]";
-    
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+
     console.log("Raw AI response:", content);
 
-    // Parse the JSON response
+    // Parse JSON response
     let papers = [];
     try {
-      // Clean up the response in case it has markdown code blocks
-      const cleanedContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      papers = JSON.parse(cleanedContent);
+      const cleaned = content
+        .replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
+      papers = JSON.parse(cleaned);
     } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError);
+      console.error("Failed to parse response:", parseError);
       papers = [];
     }
 
-    return new Response(JSON.stringify({ papers }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Filter: only papers with confirmed DOI
+    const verified = papers.filter((p: { doi?: string; title?: string }) =>
+      p.doi && p.doi.length > 5 && p.title
+    );
+
+    return new Response(
+      JSON.stringify({ papers: verified, source: "gemini_grounding" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
   } catch (error) {
     console.error("research-papers error:", error);
     return new Response(
