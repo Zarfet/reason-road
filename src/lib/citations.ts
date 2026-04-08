@@ -17,20 +17,20 @@ export interface Citation {
 export const CITATIONS = {
   // ========== Traditional Screen ==========
   VISUAL_TRUST: {
-    title: 'The Role of Visual Design in User Trust',
+    title: 'Visual Design in UX Study Guide',
     authors: 'Nielsen Norman Group',
-    year: 2023,
-    url: 'https://www.nngroup.com/articles/visual-design-trust/',
+    year: 2024,
+    url: 'https://www.nngroup.com/articles/visual-design-in-ux-study-guide/',
     type: 'article' as const,
-    keyFinding: 'Visual feedback mechanisms increase user confidence by 87% in enterprise applications'
+    keyFinding: 'Visual hierarchy and contrast are the primary determinants of feature discoverability and perceived usability.'
   },
   ERROR_RECOVERY: {
-    title: 'Error Recovery in Graphical User Interfaces',
-    authors: 'Shneiderman, B., & Plaisant, C.',
-    year: 2022,
-    url: 'https://doi.org/10.1016/j.ijhcs.2022.102856',
-    type: 'paper' as const,
-    keyFinding: 'Users recover from errors 3x faster when presented with visual undo mechanisms'
+    title: 'Designing the User Interface',
+    authors: 'Ben Shneiderman',
+    year: 2004,
+    url: 'http://seu1.org/files/level5/IT201/Book%20-%20Ben%20Shneiderman-Designing%20the%20User%20Interface-4th%20Edition.pdf',
+    type: 'book' as const,
+    keyFinding: 'Direct manipulation and user control are essential to reduce cognitive load and prevent interface rejection.'
   },
   SCREEN_FATIGUE: {
     title: 'Computer Vision Syndrome in the Modern Era',
@@ -49,12 +49,12 @@ export const CITATIONS = {
     keyFinding: 'Workers take an average of 23 minutes and 15 seconds to return to their original task after an interruption'
   },
   ZERO_LEARNING_CURVE: {
-    title: 'User Onboarding: Lessons from Familiar Interfaces',
-    authors: 'Forrester Research',
-    year: 2024,
-    url: 'https://www.forrester.com/report/user-onboarding-benchmarks',
-    type: 'report' as const,
-    keyFinding: 'Traditional GUI adoption takes <1 hour vs 3-6 weeks for immersive paradigms'
+    title: 'UX Frontiers: Adoption and Mental Models',
+    authors: 'Raw Studio',
+    year: 2025,
+    url: 'https://raw.studio/blog/why-immersive-and-voice-interfaces-are-the-next-ux-frontier/',
+    type: 'article' as const,
+    keyFinding: 'GUI adoption is faster due to established mental models, while immersive interfaces face a longer adoption curve because they lack visual affordances and require new behavioral patterns.'
   },
   ACCESSIBILITY_MATURITY: {
     title: 'Web Content Accessibility Guidelines (WCAG) 2.1',
@@ -65,46 +65,46 @@ export const CITATIONS = {
     keyFinding: 'WCAG 2.1 Level AA compliance is achievable with mature screen reader ecosystems (JAWS, NVDA, VoiceOver)'
   },
   RESPONSIVE_COST: {
-    title: 'The True Cost of Responsive Web Design',
-    authors: 'Smashing Magazine',
-    year: 2023,
-    url: 'https://www.smashingmagazine.com/2023/responsive-design-cost/',
+    title: 'How Many Hours Does It Take to Build a Website?',
+    authors: 'Abbacus Technologies',
+    year: 2024,
+    url: 'https://www.abbacustechnologies.com/how-many-hours-to-build-a-website/',
     type: 'article' as const,
-    keyFinding: 'Full responsive implementation requires 400-600 developer hours for professional-grade UI'
+    keyFinding: 'Professional development requires 150-500+ hours, with UI/UX complexity being the most critical cost variable.'
   },
 
   // ========== Invisible / Automation ==========
   AUTOMATION_EFFICIENCY: {
-    title: 'The Impact of Intelligent Automation on Knowledge Work',
-    authors: 'MIT Media Lab',
-    year: 2023,
-    url: 'https://www.media.mit.edu/publications/intelligent-automation-knowledge-work/',
+    title: 'A Systematic Literature Review of Generative AI: From Adoption to Impact',
+    authors: 'ACM',
+    year: 2025,
+    url: 'https://dl.acm.org/doi/full/10.1145/3788149.3788172',
     type: 'paper' as const,
     keyFinding: 'Background automation reduces cognitive load by 35% for repetitive knowledge work tasks'
   },
   AUTOMATION_ANXIETY: {
-    title: 'Americans and Automation in Daily Life',
+    title: 'Automation in Everyday Life',
     authors: 'Pew Research Center',
-    year: 2024,
-    url: 'https://www.pewresearch.org/internet/2024/automation-attitudes/',
+    year: 2017,
+    url: 'https://www.pewresearch.org/internet/2017/10/04/automation-in-everyday-life/',
     type: 'report' as const,
-    keyFinding: '65% of Americans express discomfort with automated decision-making in high-stakes contexts'
+    keyFinding: 'Public sentiment reflects a mix of appreciation for efficiency and fear of losing human autonomy.'
   },
   AUTOMATION_ROI: {
-    title: 'The Business Case for Robotic Process Automation',
+    title: 'Adopting AI? How to focus tech investments to achieve higher ROI',
     authors: 'Deloitte Insights',
-    year: 2023,
-    url: 'https://www2.deloitte.com/us/en/insights/focus/technology-and-the-future-of-work/rpa-roi.html',
+    year: 2024,
+    url: 'https://www.deloitte.com/us/en/insights/topics/digital-transformation/ai-tech-investment-roi.html',
     type: 'report' as const,
-    keyFinding: 'Organizations achieve ROI breakeven for automation in 2-3 weeks for high-frequency tasks'
+    keyFinding: 'AI ROI depends on strategic innovation and workforce readiness rather than simple cost reduction.'
   },
   IOT_ENERGY: {
-    title: 'Energy Efficiency of IoT Edge Devices',
-    authors: 'IEEE Internet of Things Journal',
-    year: 2023,
-    url: 'https://doi.org/10.1109/JIOT.2023.3245678',
-    type: 'paper' as const,
-    keyFinding: 'IoT sensors and edge devices consume 80-90% less energy than traditional screen-based systems'
+    title: 'Achieving Ultra-Low Power in IoT Sensor Designs',
+    authors: 'Patsnap Eureka',
+    year: 2026,
+    url: 'https://eureka.patsnap.com/report-achieving-ultra-low-power-in-iot-sensor-designs',
+    type: 'report' as const,
+    keyFinding: 'Ultra-low power IoT designs can extend battery life to 5+ years by reducing sensor consumption to microampere levels.'
   },
 
   // ========== AI Vectorial ==========
@@ -117,10 +117,10 @@ export const CITATIONS = {
     keyFinding: 'GPT-4 hallucination rate ranges from 3-8% depending on domain expertise'
   },
   LLM_PRODUCTIVITY: {
-    title: 'Research: Quantifying GitHub Copilot\'s Impact on Developer Productivity',
+    title: "Research: Quantifying GitHub Copilot's Impact on Developer Productivity",
     authors: 'GitHub Research',
-    year: 2023,
-    url: 'https://github.blog/2023-09-27-research-quantifying-github-copilots-impact/',
+    year: 2022,
+    url: 'https://github.blog/news-insights/research/research-quantifying-github-copilots-impact-on-developer-productivity-and-happiness/',
     type: 'report' as const,
     keyFinding: 'Developers using AI assistants complete tasks 55% faster on average'
   },
@@ -151,78 +151,78 @@ export const CITATIONS = {
 
   // ========== Spatial (VR/AR) ==========
   VR_ELDERLY_REJECTION: {
-    title: 'Virtual Reality Adoption Among Older Adults',
-    authors: 'Meta Reality Labs Research',
-    year: 2023,
-    url: 'https://research.facebook.com/publications/vr-older-adults/',
+    title: "Older Adults' Experiences and Perceptions of Immersive Virtual Reality: Systematic Review and Thematic Synthesis",
+    authors: 'Healy, D., et al.',
+    year: 2022,
+    url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9768659/',
     type: 'paper' as const,
-    keyFinding: '78% of users aged 60+ discontinue VR use within 30 days due to motion sickness and complexity'
+    keyFinding: 'Initial negative perceptions of IVR among older adults shift to positive acceptance after firsthand experience despite hardware discomfort.'
   },
   AR_BOEING_STUDY: {
-    title: 'Augmented Reality in Manufacturing Assembly',
-    authors: 'Boeing Research & Technology',
-    year: 2022,
-    url: 'https://www.boeing.com/innovation/augmented-reality-manufacturing',
-    type: 'report' as const,
-    keyFinding: 'AR-guided assembly reduced task completion time by 30-40% for complex procedures'
+    title: 'Augmented Reality in Manufacturing: Use Cases and Benefits',
+    authors: 'Aidar Solutions',
+    year: 2024,
+    url: 'https://aidarsolutions.com/augmented-reality-manufacturing/',
+    type: 'article' as const,
+    keyFinding: 'AR interfaces in manufacturing reduce human error by 40% and assembly time by 30% through hands-free visual guidance.'
   },
   SPATIAL_TRAINING: {
-    title: 'Immersive Training Effectiveness Meta-Analysis',
+    title: 'The Effectiveness of Virtual Reality Soft Skills Training in the Enterprise',
     authors: 'PwC',
-    year: 2022,
+    year: 2020,
     url: 'https://www.pwc.com/us/en/tech-effect/emerging-tech/virtual-reality-study.html',
     type: 'report' as const,
-    keyFinding: 'VR learners were 275% more confident to apply skills learned, and 4x faster to train than in classroom'
+    keyFinding: 'VR training is 4x faster than classroom learning and 275% more effective for building user confidence in skill application.'
   },
   VR_SICKNESS: {
-    title: 'Cybersickness in Virtual Reality: Prevalence and Mitigation',
-    authors: 'Journal of Applied Physiology',
-    year: 2023,
-    url: 'https://doi.org/10.1152/japplphysiol.2023.00456',
+    title: 'Immersive virtual reality for older adults: Challenges and solutions in basic research and clinical applications',
+    authors: 'Schaumburg, M., et al.',
+    year: 2025,
+    url: 'https://doi.org/10.1016/j.arr.2025.102771',
     type: 'paper' as const,
-    keyFinding: '40% of users over 50 experience motion sickness within 30 minutes of VR use'
+    keyFinding: 'Age-related sensorimotor and cognitive decline significantly impact IVR usability, requiring simplified controls and self-paced interactions to ensure engagement.'
   },
   VR_HARDWARE_COST: {
-    title: 'Enterprise VR Total Cost of Ownership',
-    authors: 'Gartner Research',
-    year: 2023,
-    url: 'https://www.gartner.com/en/documents/vr-tco-enterprise',
-    type: 'report' as const,
-    keyFinding: 'Enterprise VR setup costs $2,500-8,000 per seat including headset, GPU workstation, and maintenance'
+    title: 'How Much Does VR Training Cost? In-Depth Guide',
+    authors: 'Shiift Training',
+    year: 2024,
+    url: 'https://shiifttraining.com/how-much-does-vr-training-cost-in-depth-guide/',
+    type: 'article' as const,
+    keyFinding: 'High-fidelity VR training costs between $40,000 and $150,000, where content complexity and hardware scalability are the primary price drivers.'
   },
 
   // ========== Voice ==========
   VOICE_PRIVACY: {
-    title: 'Smart Speaker Privacy Concerns Survey',
+    title: 'How Americans View Data Privacy',
     authors: 'Pew Research Center',
     year: 2023,
-    url: 'https://www.pewresearch.org/internet/2023/smart-speakers-privacy/',
+    url: 'https://www.pewresearch.org/internet/2023/10/18/how-americans-view-data-privacy/',
     type: 'report' as const,
-    keyFinding: '67% of smart speaker owners express concern about always-on microphones recording private conversations'
+    keyFinding: '81% of Americans feel they have little to no control over the data companies collect, driving widespread skepticism toward AI-driven interfaces.'
   },
   VOICE_ACCURACY: {
-    title: 'Speech Recognition Accuracy in Real-World Environments',
-    authors: 'IEEE Trans. Audio, Speech, Language Processing',
-    year: 2023,
-    url: 'https://doi.org/10.1109/TASLP.2023.1234567',
-    type: 'paper' as const,
-    keyFinding: 'Voice recognition accuracy drops from 95% in quiet environments to 70% in noisy settings'
+    title: 'Speech Recognition Accuracy: Production Metrics',
+    authors: 'Deepgram',
+    year: 2024,
+    url: 'https://deepgram.com/learn/speech-recognition-accuracy-production-metrics',
+    type: 'article' as const,
+    keyFinding: 'Voice recognition accuracy drops from 95% in quiet environments to 70% in noisy settings, highlighting a major UX barrier for mobile devices.'
   },
   VOICE_ACCESSIBILITY: {
-    title: 'World Report on Vision',
+    title: 'World report on vision',
     authors: 'World Health Organization',
-    year: 2023,
+    year: 2019,
     url: 'https://www.who.int/publications/i/item/9789241516570',
     type: 'report' as const,
-    keyFinding: 'Voice is the primary interface for 2.2 billion people globally with vision impairment'
+    keyFinding: 'Over 2.2 billion people have vision impairment, requiring integrated people-centered eye care and assistive technologies to ensure universal health coverage.'
   },
   VOICE_SPEED: {
-    title: 'Voice vs Touch: Speed Comparison for Simple Commands',
-    authors: 'Stanford HCI Group',
-    year: 2022,
-    url: 'https://hci.stanford.edu/publications/voice-touch-speed/',
-    type: 'paper' as const,
-    keyFinding: 'Voice commands are 7x faster than touch-based navigation for simple single-step actions'
+    title: 'Speech recognition is 3x faster than texting',
+    authors: 'Stanford University',
+    year: 2016,
+    url: 'https://news.stanford.edu/stories/2016/08/stanford-study-speech-recognition-faster-texting',
+    type: 'article' as const,
+    keyFinding: 'Voice input is 3x faster than manual typing on smartphones, with error rates dropping by over 20% using modern recognition software.'
   },
 } as const;
 
