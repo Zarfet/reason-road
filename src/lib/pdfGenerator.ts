@@ -893,7 +893,7 @@ function buildBriefRisks(answers: AssessmentAnswers, recommendation: Recommendat
 
   const items = shown.map((f: { severity: string; title: string; impact: string }) => {
     const cls = f.severity === 'critical' ? 'brief-risk-title' : 'brief-risk-high';
-    const impact = f.impact.length > 120 ? f.impact.slice(0, 117) + '...' : f.impact;
+    const impact = f.impact;
     return `
     <div class="brief-risk-item">
       <span class="${cls}">${esc(clean(f.title))}</span> — ${esc(clean(impact))}
