@@ -33,6 +33,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AssessmentProvider } from "@/context/AssessmentContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { FullscreenToggle } from "@/components/layout/FullscreenToggle";
 
 // Lazy load route components to reduce initial bundle size
 const Landing = lazy(() => import("./pages/Landing"));
@@ -67,6 +68,7 @@ const App = () => (
       <AssessmentProvider>
         <Toaster />
         <Sonner />
+        <FullscreenToggle />
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
