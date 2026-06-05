@@ -21,22 +21,7 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
   
   return (
     <div className="space-y-5">
-      <div className="mb-5">
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {report.criticalCount > 0 
-            ? `${report.criticalCount} CRITICAL issue(s) require immediate attention`
-            : `${report.totalFlags} issue(s) detected that should be addressed`}
-        </p>
-      </div>
-
-      {/* Red Flags List */}
-      <div className="space-y-4">
-        {report.flags.map((flag, idx) => (
-          <RedFlagItem key={flag.id} flag={flag} index={idx} />
-        ))}
-      </div>
-
-      {/* Action Required Notice */}
+      {/* Action Required Notice — shown at top when there are critical issues */}
       {report.criticalCount > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
@@ -56,6 +41,13 @@ export function RedFlagsCard({ recommendation, answers }: RedFlagsCardProps) {
           </div>
         </motion.div>
       )}
+
+      {/* Red Flags List */}
+      <div className="space-y-4">
+        {report.flags.map((flag, idx) => (
+          <RedFlagItem key={flag.id} flag={flag} index={idx} />
+        ))}
+      </div>
     </div>
   );
 }
