@@ -27,6 +27,22 @@ export function ImpactTab({ recommendation, answers }: ImpactTabProps) {
 
   const sections = [
     {
+      id: 'redflags',
+      icon: <AlertTriangle className="h-4 w-4 text-foreground" />,
+      title: 'Red Flags & Critical Considerations',
+      subtitle: redFlagsReport.hasFlags
+        ? `${redFlagsReport.totalFlags} issue(s) detected`
+        : 'No issues detected',
+      badge: redFlagsReport.criticalCount > 0 ? `${redFlagsReport.criticalCount} CRITICAL` : redFlagsReport.hasFlags ? `${redFlagsReport.totalFlags} FLAGS` : null,
+      badgeClass: redFlagsReport.criticalCount > 0
+        ? 'bg-risk text-risk-foreground'
+        : redFlagsReport.hasFlags
+        ? 'bg-warning text-warning-foreground'
+        : 'border border-border text-muted-foreground',
+      available: redFlagsReport.hasFlags,
+      content: <RedFlagsCard recommendation={recommendation} answers={answers} />,
+    },
+    {
       id: 'regulatory',
       icon: <Shield className="h-4 w-4 text-foreground" />,
       title: 'Regulatory Impact Analysis',
@@ -64,22 +80,6 @@ export function ImpactTab({ recommendation, answers }: ImpactTabProps) {
         : 'border border-border text-muted-foreground',
       available: sustainabilityReport.applicable,
       content: <SustainabilityCard recommendation={recommendation} answers={answers} />,
-    },
-    {
-      id: 'redflags',
-      icon: <AlertTriangle className="h-4 w-4 text-foreground" />,
-      title: 'Red Flags & Critical Considerations',
-      subtitle: redFlagsReport.hasFlags
-        ? `${redFlagsReport.totalFlags} issue(s) detected`
-        : 'No issues detected',
-      badge: redFlagsReport.criticalCount > 0 ? `${redFlagsReport.criticalCount} CRITICAL` : redFlagsReport.hasFlags ? `${redFlagsReport.totalFlags} FLAGS` : null,
-      badgeClass: redFlagsReport.criticalCount > 0
-        ? 'bg-risk text-risk-foreground'
-        : redFlagsReport.hasFlags
-        ? 'bg-warning text-warning-foreground'
-        : 'border border-border text-muted-foreground',
-      available: redFlagsReport.hasFlags,
-      content: <RedFlagsCard recommendation={recommendation} answers={answers} />,
     },
   ];
 

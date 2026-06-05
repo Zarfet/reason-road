@@ -30,8 +30,8 @@ export function WizardNavigation({ onComplete }: WizardNavigationProps) {
   };
 
   return (
-    <motion.div 
-      className="flex items-center justify-between pt-8 border-t border-border"
+    <motion.div
+      className="flex items-center justify-between mt-8 pt-8 border-t border-border"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}

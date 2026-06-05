@@ -13,7 +13,12 @@ const STEP_LABELS: Record<string, string> = {
   'exploration': 'Exploration Mode',
   'errors': 'Error Consequences',
   'control': 'Control Preference',
+  'product-type': 'Product Type',
+  'ecosystem': 'Ecosystem',
+  'initiation': 'Interaction Initiation',
+  'constraints': 'Constraints',
   'geography': 'Geographic Deployment',
+  'review': 'Review',
 };
 
 export function WizardProgress() {

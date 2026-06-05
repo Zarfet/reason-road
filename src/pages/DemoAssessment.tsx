@@ -24,6 +24,7 @@ import {
 } from '@/components/wizard/WizardSteps';
 import { StepReview } from '@/components/wizard/WizardSteps/StepReview';
 import { QuestionLayout } from '@/components/wizard/QuestionLayout';
+import { DemographicsExamples } from '@/components/wizard/DemographicsExamples';
 
 function StepContextDemo() {
   const { answers } = useAssessment();
@@ -45,6 +46,7 @@ function StepContextDemo() {
           <div className="rounded-md border border-border bg-secondary/40 px-4 py-3 text-sm text-muted-foreground leading-relaxed">
             {answers.userDemographics}
           </div>
+          <DemographicsExamples />
         </div>
       </div>
     </QuestionLayout>

@@ -157,7 +157,7 @@ export default function DemoResults() {
               <ResearchTab paradigm={recommendation.primary.paradigm} userDemographics={answers.userDemographics} flagIds={flagIds} topValue={answers.valuesRanking?.[0] || 'User Control'} />
             </TabsContent>
             <TabsContent value="actions">
-              <ActionsTab onDownloadPDF={handleDownloadPDF} onDownloadBrief={handleDownloadBrief} onStartOver={handleStartOver} savedAssessmentId={null} />
+              <ActionsTab onDownloadPDF={handleDownloadPDF} onDownloadBrief={handleDownloadBrief} onStartOver={handleStartOver} savedAssessmentId={null} isDemo />
             </TabsContent>
           </Tabs>
         </motion.div>
