@@ -45,6 +45,9 @@ const SharedResults = lazy(() => import("./pages/SharedResults"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Demo = lazy(() => import("./pages/Demo"));
+const DemoAssessment = lazy(() => import("./pages/DemoAssessment"));
+const DemoResults = lazy(() => import("./pages/DemoResults"));
 
 const queryClient = new QueryClient();
 
@@ -122,7 +125,12 @@ const App = () => (
 
               {/* Public shared results route */}
               <Route path="/shared/:token" element={<SharedResults />} />
-              
+
+              {/* Public demo routes */}
+              <Route path="/demo" element={<Demo />} />
+              <Route path="/demo/assessment" element={<DemoAssessment />} />
+              <Route path="/demo/results" element={<DemoResults />} />
+
               {/* 404 fallback */}
               <Route path="*" element={<NotFound />} />
             </Routes>
