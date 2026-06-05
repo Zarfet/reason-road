@@ -221,7 +221,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
   }).join('');
 
   return `
-  ${sectionHeader('03. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK')}
+  ${sectionHeader('04. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK')}
   <div class="section-meta">Region: ${esc(reg.region)}</div>
   ${riskSummary}
   <div class="reg-list">${reqs}</div>
@@ -311,7 +311,7 @@ function buildSustainability(answers: AssessmentAnswers, recommendation: Recomme
     <div class="disclaimer-text">${esc(clean(sust.disclaimer))}</div>`;
 
   return `
-  ${sectionHeader('04. SUSTAINABILITY REPORT')}
+  ${sectionHeader('05. SUSTAINABILITY REPORT')}
   ${content}`;
 }
 
@@ -361,7 +361,7 @@ function buildRedFlags(answers: AssessmentAnswers, recommendation: Recommendatio
   }).join('');
 
   return `
-  ${sectionHeader('05. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)')}
+  ${sectionHeader('03. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)')}
   <div class="flag-summary ${flags.criticalCount > 0 ? 'flag-summary-critical' : ''}">${esc(summary)}</div>
   ${cards}`;
 }
@@ -421,13 +421,13 @@ function buildResearch(answers: AssessmentAnswers, recommendation: Recommendatio
 
   return `
   ${sectionHeader('06. RESEARCH & CASE STUDIES')}
-  ${papers.length > 0 ? `
-  <div class="section-title">Supporting Academic Research</div>
-  <ul class="research-list">${paperItems}</ul>` : ''}
   ${(successes.length > 0 || failures.length > 0) ? `
   <div class="section-title">Real-World Case Studies</div>
   ${caseGroup(successes, 'Successes', 'group-success')}
-  ${caseGroup(failures, 'Failures', 'group-failure')}` : ''}`;
+  ${caseGroup(failures, 'Failures', 'group-failure')}` : ''}
+  ${papers.length > 0 ? `
+  <div class="section-title" style="margin-top:20px;">Supporting Academic Research</div>
+  <ul class="research-list">${paperItems}</ul>` : ''}`;
 }
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -447,7 +447,7 @@ const CSS = `
   .mt-2 { display: block; margin-top: 8px; }
 
   .section-divider {
-    margin-top: 24px;
+    margin-top: 32px;
     margin-bottom: 16px;
     border-top: 3px solid #000;
     padding-top: 8px;
@@ -539,7 +539,7 @@ const CSS = `
   .reasoning-list { list-style: none; font-size: 0.72rem; display: flex; flex-direction: column; gap: 6px; }
   .reasoning-list li { padding-left: 4px; border-left: 3px solid #000; line-height: 1.4; }
 
-  .paradigm-section { margin-bottom: 14px; }
+  .paradigm-section { margin-bottom: 20px; }
   .paradigm-bar {
     display: flex; justify-content: space-between;
     background: #1a1a1a; color: #fff;
@@ -625,12 +625,12 @@ const CSS = `
   .flag-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; }
   .flag-col { display: flex; flex-direction: column; gap: 4px; }
 
-  .research-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .research-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
   .research-item { border-left: 2px solid #ccc; padding-left: 10px; }
   .research-item strong { font-size: 0.78rem; display: block; margin-bottom: 2px; }
   .author-line { display: block; color: #525252; margin-bottom: 4px; }
   .relevance-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 6px 8px; margin-top: 5px; border-radius: 2px; }
-  .case-group { margin-bottom: 10px; }
+  .case-group { margin-bottom: 16px; }
   .case-group-title { font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
   .group-success .case-group-title { color: #166534; }
   .group-failure .case-group-title { color: #b91c1c; }
@@ -774,14 +774,14 @@ export async function generatePDFReport({
   sections.push(buildCover(answers, recommendation, dateStr, logoBase64));
   sections.push(buildAnalysis(answers, recommendation));
 
+  const flagsSection = buildRedFlags(answers, recommendation);
   const regSection = buildRegulatory(answers, recommendation);
   const sustSection = buildSustainability(answers, recommendation);
-  const flagsSection = buildRedFlags(answers, recommendation);
   const resSection = buildResearch(answers, recommendation);
 
+  if (flagsSection) sections.push(flagsSection);
   if (regSection) sections.push(regSection);
   if (sustSection) sections.push(sustSection);
-  if (flagsSection) sections.push(flagsSection);
   if (resSection) sections.push(resSection);
 
   const html = `<div class="pdf-document">${sections.join('\n')}</div>`;

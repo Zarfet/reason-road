@@ -21,29 +21,7 @@ interface ResearchTabProps {
 export function ResearchTab({ paradigm, userDemographics, flagIds, topValue }: ResearchTabProps) {
   return (
     <div className="space-y-6 mt-6">
-      <Accordion type="multiple" defaultValue={['research', 'cases']} className="space-y-0">
-        <AccordionItem value="research" className="border-border">
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex items-center gap-3 flex-1 text-left">
-              <div className="h-6 w-6 rounded-full border border-border flex items-center justify-center">
-                <BookOpen className="h-3.5 w-3.5 text-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground">Supporting Research</p>
-                <p className="text-xs text-muted-foreground font-mono">Peer-reviewed papers retrieved via Google Search</p>
-              </div>
-              <Badge variant="outline" className="text-[10px] font-mono font-semibold uppercase tracking-wider mr-2 border-border text-muted-foreground">
-                Google Scholar
-              </Badge>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="pt-2 pb-4">
-              <ResearchPanel paradigm={paradigm} userDemographics={userDemographics} flagIds={flagIds} topValue={topValue} />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
+      <Accordion type="multiple" defaultValue={['cases', 'research']} className="space-y-0">
         <AccordionItem value="cases" className="border-border">
           <AccordionTrigger className="hover:no-underline py-4">
             <div className="flex items-center gap-3 flex-1 text-left">
@@ -62,6 +40,28 @@ export function ResearchTab({ paradigm, userDemographics, flagIds, topValue }: R
           <AccordionContent>
             <div className="pt-2 pb-4">
               <CaseStudiesPanel paradigm={paradigm} userDemographics={userDemographics} />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="research" className="border-border">
+          <AccordionTrigger className="hover:no-underline py-4">
+            <div className="flex items-center gap-3 flex-1 text-left">
+              <div className="h-6 w-6 rounded-full border border-border flex items-center justify-center">
+                <BookOpen className="h-3.5 w-3.5 text-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-foreground">Supporting Research</p>
+                <p className="text-xs text-muted-foreground font-mono">Peer-reviewed papers retrieved via Google Search</p>
+              </div>
+              <Badge variant="outline" className="text-[10px] font-mono font-semibold uppercase tracking-wider mr-2 border-border text-muted-foreground">
+                Google Scholar
+              </Badge>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-2 pb-4">
+              <ResearchPanel paradigm={paradigm} userDemographics={userDemographics} flagIds={flagIds} topValue={topValue} />
             </div>
           </AccordionContent>
         </AccordionItem>
