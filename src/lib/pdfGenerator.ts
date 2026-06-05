@@ -171,7 +171,7 @@ function buildAnalysis(answers: AssessmentAnswers, recommendation: Recommendatio
   }).join('');
 
   return `
-  ${sectionHeader('02. ANALYSIS — ARGUMENTS FOR & AGAINST')}
+  ${sectionHeader('01. ANALYSIS — ARGUMENTS FOR & AGAINST')}
   <div class="page-subtitle">Arguments for and against each interface type, weighted by your context.</div>
   ${sections}`;
 }
@@ -221,7 +221,7 @@ function buildRegulatory(answers: AssessmentAnswers, recommendation: Recommendat
   }).join('');
 
   return `
-  ${sectionHeader('04. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK')}
+  ${sectionHeader('03. REGULATORY AUDIT — ' + reg.overallRiskLevel.toUpperCase() + ' RISK')}
   <div class="section-meta">Region: ${esc(reg.region)}</div>
   ${riskSummary}
   <div class="reg-list">${reqs}</div>
@@ -311,7 +311,7 @@ function buildSustainability(answers: AssessmentAnswers, recommendation: Recomme
     <div class="disclaimer-text">${esc(clean(sust.disclaimer))}</div>`;
 
   return `
-  ${sectionHeader('05. SUSTAINABILITY REPORT')}
+  ${sectionHeader('04. SUSTAINABILITY REPORT')}
   ${content}`;
 }
 
@@ -361,7 +361,7 @@ function buildRedFlags(answers: AssessmentAnswers, recommendation: Recommendatio
   }).join('');
 
   return `
-  ${sectionHeader('03. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)')}
+  ${sectionHeader('02. RED FLAGS & CRITICAL CONSIDERATIONS — ' + flags.totalFlags + ' ISSUE(S)')}
   <div class="flag-summary ${flags.criticalCount > 0 ? 'flag-summary-critical' : ''}">${esc(summary)}</div>
   ${cards}`;
 }
@@ -420,7 +420,7 @@ function buildResearch(answers: AssessmentAnswers, recommendation: Recommendatio
   }
 
   return `
-  ${sectionHeader('06. RESEARCH & CASE STUDIES')}
+  ${sectionHeader('05. RESEARCH & CASE STUDIES')}
   ${(successes.length > 0 || failures.length > 0) ? `
   <div class="section-title">Real-World Case Studies</div>
   ${caseGroup(successes, 'Successes', 'group-success')}
