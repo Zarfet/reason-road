@@ -22,7 +22,7 @@ interface ScenarioCardProps {
 function ScenarioCard({ scenario, onClick }: ScenarioCardProps) {
   return (
     <motion.div
-      className="nexus-card cursor-pointer hover:border-foreground/20 transition-colors space-y-4"
+      className="nexus-card cursor-pointer hover:border-foreground/20 transition-colors overflow-hidden p-0"
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       onClick={onClick}
@@ -32,10 +32,10 @@ function ScenarioCard({ scenario, onClick }: ScenarioCardProps) {
       <img
         src={SCENARIO_IMAGES[scenario.id]}
         alt={scenario.name}
-        className="aspect-square rounded-xl object-cover w-full"
+        className="w-full aspect-square object-cover"
       />
 
-      <div className="space-y-1">
+      <div className="p-4 space-y-1">
         <p className="font-medium text-foreground text-sm tracking-tight">{scenario.name}</p>
         <p className="text-xs font-mono text-muted-foreground">{scenario.year}</p>
         <p className="text-xs text-muted-foreground">{scenario.outcome}</p>
