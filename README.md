@@ -23,7 +23,7 @@
 
 ## Overview
 
-NEXUS guides users through an 11-step assessment wizard that collects data about their project context, user demographics, task characteristics, and design values. A weighted scoring algorithm then recommends one of five interface paradigms:
+NEXUS guides users through a 16-step assessment wizard that collects data about their project context, user demographics, task characteristics, and design values. A weighted scoring algorithm then recommends one of five interface paradigms:
 
 | Paradigm | Description |
 |---|---|
@@ -36,7 +36,12 @@ NEXUS guides users through an 11-step assessment wizard that collects data about
 ### User Flow
 
 ```
-Landing → Auth → Assessment Wizard (11 steps) → Results (5 tabs) → Save/Share/PDF
+Landing → Auth → Assessment Wizard (16 steps) → Results (4 tabs) → Save/Share/PDF
+```
+
+**Demo flow (no auth required):**
+```
+/demo → Select scenario → /demo/assessment → /demo/results
 ```
 
 **Routes:**
@@ -45,7 +50,10 @@ Landing → Auth → Assessment Wizard (11 steps) → Results (5 tabs) → Save/
 |---|---|---|
 | `/` | Public | Landing page |
 | `/auth` | Public | Login / Sign up |
-| `/assessment` | Protected | 11-step wizard |
+| `/demo` | Public | Demo scenario selector (5 historical failures) |
+| `/demo/assessment` | Public | Pre-filled wizard — no DB persistence |
+| `/demo/results` | Public | Results view — no DB save, no share/rate |
+| `/assessment` | Protected | 16-step wizard |
 | `/results` | Protected | Live results from current session |
 | `/results/:id` | Protected | Saved assessment results |
 | `/shared/:token` | Public | Shared read-only results |
@@ -97,7 +105,6 @@ Landing → Auth → Assessment Wizard (11 steps) → Results (5 tabs) → Save/
 | **React Query 5** | Server state management and caching |
 | **Framer Motion** | Animations and transitions |
 | **Recharts** | Charts in admin analytics dashboard |
-| **jsPDF** | Client-side PDF generation of results |
 | **@dnd-kit** | Drag-and-drop for values ranking step |
 | **Zod** | Input validation schemas |
 | **React Hook Form** | Form state management |
@@ -123,7 +130,7 @@ Landing → Auth → Assessment Wizard (11 steps) → Results (5 tabs) → Save/
 
 ## Scoring Algorithm
 
-**File:** `src/lib/scoring.ts` (661 lines, heavily documented)
+**File:** `src/lib/scoring.ts`
 
 The algorithm uses **11 weighted question categories** to score each paradigm. Weights total 105% before normalization:
 
@@ -172,7 +179,7 @@ interface RecommendationResult {
 | `src/lib/regulatoryAnalysis.ts` | EU AI Act / GDPR / ADA compliance checks |
 | `src/lib/sustainabilityAnalysis.ts` | Environmental impact analysis per paradigm |
 | `src/lib/citations.ts` | Static database of peer-reviewed HCI citations |
-| `src/lib/pdfGenerator.ts` | Generates downloadable PDF report |
+| `src/lib/pdfGenerator.ts` | HTML/iframe PDF via browser print — vectorial, no jsPDF dependency |
 
 ---
 
@@ -300,27 +307,30 @@ src/
 ├── components/
 │   ├── admin/                 # Admin dashboard components
 │   ├── auth/                  # ProtectedRoute wrapper
-│   ├── layout/                # Navbar, Logo
+│   ├── layout/                # Navbar, Logo, FullscreenToggle
 │   ├── results/               # Results page components
-│   │   ├── tabs/              # 5 result tabs (Overview, Analysis, Impact, Research, Actions)
+│   │   ├── tabs/              # 4 result tabs (Analysis, Impact, Research, Actions)
 │   │   └── bento/             # Bento grid layout
 │   ├── ui/                    # shadcn/ui components
 │   └── wizard/                # Assessment wizard steps
 ├── context/
 │   └── AssessmentContext.tsx   # Wizard state management
+├── data/
+│   └── demoScenarios.ts       # 5 pre-filled historical failure scenarios
 ├── hooks/
 │   ├── useAuth.ts             # Authentication state
 │   ├── useAdmin.ts            # Admin role check
+│   ├── useFullscreen.ts       # Fullscreen API + keyboard shortcut (F)
 │   └── use-mobile.tsx         # Responsive detection
 ├── lib/
-│   ├── scoring.ts             # Core scoring algorithm (661 lines)
+│   ├── scoring.ts             # Core scoring algorithm
 │   ├── contradictionDetector.ts
 │   ├── redFlagsDetector.ts
 │   ├── argumentsGenerator.ts
 │   ├── regulatoryAnalysis.ts
 │   ├── sustainabilityAnalysis.ts
 │   ├── citations.ts           # Static HCI citation database
-│   ├── pdfGenerator.ts
+│   ├── pdfGenerator.ts        # HTML/iframe PDF via browser print
 │   └── utils.ts               # Tailwind merge utility
 ├── pages/
 │   ├── Landing.tsx            # Public landing page
@@ -331,6 +341,9 @@ src/
 │   ├── SharedResults.tsx      # Public shared view
 │   ├── Profile.tsx            # User profile
 │   ├── Admin.tsx              # Analytics dashboard
+│   ├── Demo.tsx               # Demo scenario selector
+│   ├── DemoAssessment.tsx     # Pre-filled wizard (no DB)
+│   ├── DemoResults.tsx        # Results without persistence
 │   └── NotFound.tsx           # 404
 ├── types/
 │   └── assessment.ts          # TypeScript types + constants
@@ -339,6 +352,10 @@ src/
         ├── client.ts          # Auto-generated Supabase client
         └── types.ts           # Auto-generated database types
 
+public/
+└── demo/
+    └── images/                # Scenario card images (Google Glass, Clippy, etc.)
+
 supabase/
 ├── config.toml                # Edge function config (verify_jwt = false)
 ├── functions/
@@ -346,6 +363,36 @@ supabase/
 │   └── case-studies/          # AI case study generation
 └── migrations/                # Database migrations (read-only)
 ```
+
+---
+
+## Demo Mode
+
+A fully offline-capable demo is available at `/demo` — no login, no internet required (after pre-caching).
+
+### Scenarios
+
+Five real products that failed at launch, pre-loaded as `AssessmentAnswers`:
+
+| ID | Product | Year | Outcome |
+|---|---|---|---|
+| `google-glass` | Google Glass | 2013 | Discontinued 2015 |
+| `clippy` | Microsoft Clippy | 1997 | Removed 2007 |
+| `fire-phone` | Amazon Fire Phone | 2014 | Discontinued 2015 |
+| `humane-ai-pin` | Humane AI Pin | 2024 | Mass returns |
+| `rabbit-r1` | Rabbit R1 | 2024 | Significant returns |
+
+### How it works
+
+- `resetAssessment()` clears state, then all `AssessmentAnswers` fields are loaded via `updateAnswer`
+- `userDemographics` is rendered as non-editable text (it's the Research cache key — editing it would trigger a new API fetch)
+- All other wizard fields are fully interactive
+- Results page skips `saveAssessmentToDb` and hides Share/Rate/New Assessment in the Actions tab
+- The Research tab loads from `localStorage` cache (7-day TTL)
+
+### Pre-caching for offline use
+
+Run all 5 scenarios end-to-end with internet once before the presentation. The Research tab will cache results in `localStorage` under keys like `nexus_research_<paradigm>_<demographics>`.
 
 ---
 
