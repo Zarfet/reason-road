@@ -1,6 +1,6 @@
-# NEXUS — Interface Paradigm Assessment Tool
+# NEXUS — Interface Type Assessment Tool
 
-> Evidence-based DIKW assessment tool for interface paradigm selection.  
+> Evidence-based DIKW assessment tool for interface type selection.  
 > Research project from the **Universitat Politècnica de Catalunya (UPC)** — Master in Advanced Studies in Design.
 
 ---
@@ -23,9 +23,9 @@
 
 ## Overview
 
-NEXUS guides users through a 16-step assessment wizard that collects data about their project context, user demographics, task characteristics, and design values. A weighted scoring algorithm then recommends one of five interface paradigms:
+NEXUS guides users through a 16-step assessment wizard that collects data about their project context, user demographics, task characteristics, and design values. A weighted scoring algorithm then recommends one of five interface types:
 
-| Paradigm | Description |
+| Interface Type | Description |
 |---|---|
 | **Traditional Screen** | Mobile/desktop screens with visual UI elements |
 | **Invisible/Ambient** | Background automation with minimal user interaction |
@@ -132,7 +132,7 @@ Landing → Auth → Assessment Wizard (16 steps) → Results (4 tabs) → Save/
 
 **File:** `src/lib/scoring.ts`
 
-The algorithm uses **11 weighted question categories** to score each paradigm. Weights total 105% before normalization:
+The algorithm uses **11 weighted question categories** to score each interface type. Weights total 105% before normalization:
 
 | Category | Weight | Source |
 |---|---|---|
@@ -175,9 +175,9 @@ interface RecommendationResult {
 |---|---|
 | `src/lib/contradictionDetector.ts` | Detects conflicting answers (e.g., "full control" + "automatic") |
 | `src/lib/redFlagsDetector.ts` | Identifies potential risks in the recommendation |
-| `src/lib/argumentsGenerator.ts` | Generates structured arguments for/against each paradigm |
+| `src/lib/argumentsGenerator.ts` | Generates structured arguments for/against each interface type |
 | `src/lib/regulatoryAnalysis.ts` | EU AI Act / GDPR / ADA compliance checks |
-| `src/lib/sustainabilityAnalysis.ts` | Environmental impact analysis per paradigm |
+| `src/lib/sustainabilityAnalysis.ts` | Environmental impact analysis per interface type |
 | `src/lib/citations.ts` | Static database of peer-reviewed HCI citations |
 | `src/lib/pdfGenerator.ts` | HTML/iframe PDF via browser print — vectorial, no jsPDF dependency |
 
@@ -253,7 +253,7 @@ Role-based access control (separate from profiles for security).
 Two serverless functions use the **Lovable AI Gateway** (Gemini) to generate contextual research evidence:
 
 ### `research-papers`
-Generates 5 relevant academic papers supporting the recommended paradigm.
+Generates 5 relevant academic papers supporting the recommended interface type.
 
 - **Auth:** Manual JWT validation via `getClaims()`
 - **Input validation:** Paradigm must match whitelist; demographics capped at 500 chars
@@ -261,7 +261,7 @@ Generates 5 relevant academic papers supporting the recommended paradigm.
 - **Model:** `google/gemini-3-flash-preview`
 
 ### `case-studies`
-Generates real-world case studies for the recommended paradigm.
+Generates real-world case studies for the recommended interface type.
 
 - Same security pattern as `research-papers`
 - Returns structured JSON with company, industry, outcomes
