@@ -33,6 +33,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AssessmentProvider } from "@/context/AssessmentContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 // Lazy load route components to reduce initial bundle size
 const Landing = lazy(() => import("./pages/Landing"));
@@ -64,10 +65,16 @@ const PageLoader = () => (
  * Main App component
  * Sets up all providers and routes
  */
+function AppInner() {
+  useFullscreen('f');
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AssessmentProvider>
+        <AppInner />
         <Toaster />
         <Sonner />
         <BrowserRouter>
