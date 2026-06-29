@@ -9,7 +9,7 @@ export interface DemoScenario {
   answers: AssessmentAnswers;
 }
 
-export const DEMO_SCENARIOS: DemoScenario[] = [
+export const DEMO_SCENARIOS_FAILED: DemoScenario[] = [
   {
     id: 'google-glass',
     name: 'Google Glass',
@@ -135,4 +135,161 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
       productConstraints: [],
     }
   }
+];
+
+// Keep backward-compatible export
+export const DEMO_SCENARIOS = DEMO_SCENARIOS_FAILED;
+
+export const DEMO_SCENARIO_ANA: DemoScenario = {
+  id: 'ana-garcia',
+  name: "Ana's Journey",
+  year: '2024',
+  investment: 'Pre-development decision',
+  outcome: 'HiPPO pushes AR/VR for chronic patient app',
+  answers: {
+    projectName: 'Chronic Patient Monitoring App',
+    userDemographics: 'Chronic patients across age ranges (18-75+), mixed digital literacy, performing daily health monitoring tasks (medication intake, vitals logging, symptom tracking). Clinical staff reviewing patient data. Informal caregivers monitoring family members. Many users have reduced motor or visual capacity.',
+    geography: 'Primarily Europe',
+    valuesRanking: ['User Control', 'Accessibility', 'Efficiency', 'Sustainability', 'Joy'],
+    taskComplexity: 'Complex',
+    frequency: 'Multiple times daily',
+    predictability: 'Varies within known patterns',
+    contextOfUse: 'Mobile',
+    informationType: 'Structured data',
+    explorationMode: 'Mix of both',
+    errorConsequence: 'Serious',
+    controlPreference: 'Full control',
+    deviceType: 'Software/App',
+    existingEcosystem: 'Partial: some alternatives exist but with significant gaps',
+    interactionInitiation: 'Both: system can interrupt AND user can ask',
+    productConstraints: ['biometric-data', 'narrow-demographic', 'always-on'],
+  }
+};
+
+export const DEMO_SCENARIOS_SUCCEEDED: DemoScenario[] = [
+  {
+    id: 'apple-vision-pro',
+    name: 'Apple Vision Pro',
+    year: '2024',
+    investment: '$700M revenue Y1',
+    outcome: 'Defined spatial computing category',
+    answers: {
+      projectName: 'Apple Vision Pro',
+      userDemographics: 'Creative professionals and developers, 25-45 years old, high tech literacy, comfortable with Apple ecosystem, working in design, video production, architecture, or software development, willing to pay $3,499 for a professional spatial computing tool, seeking immersive focused work environment',
+      geography: 'Primarily US',
+      valuesRanking: ['Efficiency', 'User Control', 'Joy', 'Accessibility', 'Sustainability'],
+      taskComplexity: 'Complex',
+      frequency: 'Several times per week',
+      predictability: 'Varies within known patterns',
+      contextOfUse: 'Desktop',
+      informationType: 'Spatial/3D',
+      explorationMode: 'Mix of both',
+      errorConsequence: 'Annoying but recoverable',
+      controlPreference: 'Full control',
+      deviceType: 'Dedicated hardware',
+      existingEcosystem: 'Partial: some alternatives exist but with significant gaps',
+      interactionInitiation: 'User-initiated: system only responds when asked',
+      productConstraints: ['hardware-limitations', 'narrow-demographic'],
+    }
+  },
+  {
+    id: 'kindle',
+    name: 'Amazon Kindle',
+    year: '2007',
+    investment: 'Sold out in 5.5 hours',
+    outcome: 'Dominant e-reader platform globally',
+    answers: {
+      projectName: 'Amazon Kindle',
+      userDemographics: 'Avid readers and book lovers, 25-55 years old, mixed tech literacy, comfortable with basic digital devices, seeking a dedicated reading experience that replicates paper without screen fatigue, willing to pay premium for a focused single-purpose device',
+      geography: 'Primarily US',
+      valuesRanking: ['Efficiency', 'Accessibility', 'User Control', 'Joy', 'Sustainability'],
+      taskComplexity: 'Simple',
+      frequency: 'Several times per week',
+      predictability: 'Always identical',
+      contextOfUse: 'Mobile',
+      informationType: 'Unstructured text',
+      explorationMode: 'Mix of both',
+      errorConsequence: 'Annoying but recoverable',
+      controlPreference: 'Supervised',
+      deviceType: 'Dedicated hardware',
+      existingEcosystem: 'Partial: some alternatives exist but with significant gaps',
+      interactionInitiation: 'User-initiated: system only responds when asked',
+      productConstraints: ['narrow-demographic'],
+    }
+  },
+  {
+    id: 'notion',
+    name: 'Notion',
+    year: '2016',
+    investment: '$10B+ valuation by 2021',
+    outcome: '30M+ users, $275M ARR',
+    answers: {
+      projectName: 'Notion',
+      userDemographics: 'Knowledge workers, students, and teams, 20-45 years old, mixed-to-high tech literacy, comfortable with web applications, seeking an all-in-one workspace that replaces fragmented tools (Evernote, Trello, Google Docs, Confluence) with a unified, flexible system',
+      geography: 'Global (multiple regions)',
+      valuesRanking: ['User Control', 'Efficiency', 'Accessibility', 'Joy', 'Sustainability'],
+      taskComplexity: 'Complex',
+      frequency: 'Multiple times daily',
+      predictability: 'Varies within known patterns',
+      contextOfUse: 'Desktop',
+      informationType: 'Unstructured text',
+      explorationMode: 'Mix of both',
+      errorConsequence: 'Annoying but recoverable',
+      controlPreference: 'Full control',
+      deviceType: 'Web platform',
+      existingEcosystem: 'Partial: some alternatives exist but with significant gaps',
+      interactionInitiation: 'User-initiated: system only responds when asked',
+      productConstraints: [],
+    }
+  },
+  {
+    id: 'iphone-original',
+    name: 'Apple iPhone (2007)',
+    year: '2007',
+    investment: '$200B+ annual revenue by 2023',
+    outcome: 'Redefined the smartphone category',
+    answers: {
+      projectName: 'Apple iPhone (2007)',
+      userDemographics: 'Early adopters and mainstream consumers, 18-45 years old, mixed tech literacy, familiar with iPod and basic mobile phones, seeking a device that combines phone, music player, and internet communicator in one pocket-sized product',
+      geography: 'Primarily US',
+      valuesRanking: ['User Control', 'Joy', 'Efficiency', 'Accessibility', 'Sustainability'],
+      taskComplexity: 'Medium',
+      frequency: 'Multiple times daily',
+      predictability: 'Varies within known patterns',
+      contextOfUse: 'Mobile',
+      informationType: 'Visual content',
+      explorationMode: 'Mix of both',
+      errorConsequence: 'Annoying but recoverable',
+      controlPreference: 'Full control',
+      deviceType: 'Dedicated hardware',
+      existingEcosystem: 'Partial: some alternatives exist but with significant gaps',
+      interactionInitiation: 'User-initiated: system only responds when asked',
+      productConstraints: ['narrow-demographic'],
+    }
+  },
+  {
+    id: 'rayban-meta',
+    name: 'Ray-Ban Meta',
+    year: '2023',
+    investment: '1M+ units by early 2024',
+    outcome: "Meta's fastest-selling hardware product",
+    answers: {
+      projectName: 'Ray-Ban Meta Smart Glasses',
+      userDemographics: 'Fashion-conscious consumers and early adopters, 18-35 years old, high social media engagement, comfortable with voice assistants, seeking hands-free photo/video capture and audio interaction without carrying visible tech hardware, willing to pay $299 for a stylish wearable',
+      geography: 'Global (multiple regions)',
+      valuesRanking: ['Joy', 'Efficiency', 'User Control', 'Accessibility', 'Sustainability'],
+      taskComplexity: 'Simple',
+      frequency: 'Several times per week',
+      predictability: 'Varies within known patterns',
+      contextOfUse: 'Social situations',
+      informationType: 'Visual content',
+      explorationMode: 'Know exactly',
+      errorConsequence: 'Annoying but recoverable',
+      controlPreference: 'Supervised',
+      deviceType: 'Dedicated hardware',
+      existingEcosystem: 'Partial: some alternatives exist but with significant gaps',
+      interactionInitiation: 'User-initiated: system only responds when asked',
+      productConstraints: [],
+    }
+  },
 ];
