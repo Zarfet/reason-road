@@ -143,7 +143,7 @@ export const DEMO_SCENARIOS = DEMO_SCENARIOS_FAILED;
 export const DEMO_SCENARIO_ANA: DemoScenario = {
   id: 'ana-garcia',
   name: "Ana's Journey",
-  year: '2024',
+  year: '2026',
   investment: 'Pre-development decision',
   outcome: 'HiPPO pushes AR/VR for chronic patient app',
   answers: {
